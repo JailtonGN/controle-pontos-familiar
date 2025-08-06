@@ -72,9 +72,12 @@ const register = async (req, res) => {
 // @access  Public
 const login = async (req, res) => {
     try {
+        console.log('Login iniciado:', { email: req.body.email }); // Debug
+        
         // Verificar erros de validação
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
+            console.log('Erros de validação:', errors.array()); // Debug
             return res.status(400).json({
                 success: false,
                 message: 'Dados inválidos',
@@ -83,10 +86,15 @@ const login = async (req, res) => {
         }
 
         const { email, password } = req.body;
+        console.log('Dados recebidos:', { email, password: password ? '***' : 'undefined' }); // Debug
 
         // Buscar usuário por email
+        console.log('Buscando usuário por email:', email); // Debug
         const user = await User.findOne({ email });
+        console.log('Usuário encontrado:', user ? 'Sim' : 'Não'); // Debug
+        
         if (!user) {
+            console.log('Usuário não encontrado'); // Debug
             return res.status(401).json({
                 success: false,
                 message: 'Email ou senha inválidos'
@@ -102,16 +110,25 @@ const login = async (req, res) => {
         }
 
         // Verificar senha
+        console.log('Verificando senha...'); // Debug
         const isPasswordValid = await user.comparePassword(password);
+        console.log('Senha válida:', isPasswordValid); // Debug
+        
         if (!isPasswordValid) {
+            console.log('Senha inválida'); // Debug
             return res.status(401).json({
                 success: false,
                 message: 'Email ou senha inválidos'
             });
         }
 
-        // Atualizar último login
-        await user.updateLastLogin();
+        // Atualizar último login (não falhar se der erro)
+        try {
+            await user.updateLastLogin();
+        } catch (error) {
+            console.error('Erro ao atualizar último login:', error);
+            // Continua o processo mesmo se falhar
+        }
 
         // Gerar token
         const token = generateToken(user._id);
@@ -127,6 +144,33 @@ const login = async (req, res) => {
 
     } catch (error) {
         console.error('Erro no login:', error);
+        
+        // Verificar se é um erro de validação de senha
+        if (error.message === 'Erro ao comparar senhas') {
+            return res.status(401).json({
+                success: false,
+                message: 'Email ou senha inválidos'
+            });
+        }
+        
+        // Verificar se é um erro de MongoDB
+        if (error.name === 'MongoError' || error.name === 'MongoServerError') {
+            console.error('Erro de MongoDB:', error);
+            return res.status(500).json({
+                success: false,
+                message: 'Erro de conexão com o banco de dados'
+            });
+        }
+        
+        // Verificar se é um erro de JWT
+        if (error.name === 'JsonWebTokenError') {
+            console.error('Erro de JWT:', error);
+            return res.status(500).json({
+                success: false,
+                message: 'Erro na geração do token'
+            });
+        }
+        
         res.status(500).json({
             success: false,
             message: 'Erro interno do servidor'

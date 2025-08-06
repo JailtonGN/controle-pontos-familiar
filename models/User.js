@@ -74,9 +74,16 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
 };
 
 // Método para atualizar último login
-userSchema.methods.updateLastLogin = function() {
-    this.lastLogin = new Date();
-    return this.save();
+userSchema.methods.updateLastLogin = async function() {
+    try {
+        this.lastLogin = new Date();
+        await this.save();
+        return true;
+    } catch (error) {
+        console.error('Erro ao atualizar último login:', error);
+        // Não falhar o login por causa deste erro
+        return false;
+    }
 };
 
 // Método para obter dados públicos do usuário (sem senha)
