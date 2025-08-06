@@ -364,17 +364,26 @@ function showNotification(title, message, type = 'info') {
 
         // Mostrar modal
         modal.classList.remove('hidden');
+        modal.style.display = 'flex'; // Forçar exibição
+        modal.style.opacity = '1';
+        modal.style.visibility = 'visible';
         console.log('Modal mostrado, classes:', modal.className); // Debug
 
         // Configurar botão de fechar
         closeBtn.onclick = () => {
             modal.classList.add('hidden');
+            modal.style.display = 'none';
+            modal.style.opacity = '0';
+            modal.style.visibility = 'hidden';
             console.log('Modal fechado'); // Debug
         };
 
         // Auto-fechar após 5 segundos
         setTimeout(() => {
             modal.classList.add('hidden');
+            modal.style.display = 'none';
+            modal.style.opacity = '0';
+            modal.style.visibility = 'hidden';
             console.log('Modal auto-fechado'); // Debug
         }, 5000);
     } else {

@@ -88,9 +88,21 @@ userSchema.methods.updateLastLogin = async function() {
 
 // Método para obter dados públicos do usuário (sem senha)
 userSchema.methods.toPublicJSON = function() {
-    const user = this.toObject();
-    delete user.password;
-    return user;
+    try {
+        const user = this.toObject();
+        delete user.password;
+        return user;
+    } catch (error) {
+        console.error('Erro ao converter usuário para JSON:', error);
+        // Retornar objeto básico em caso de erro
+        return {
+            _id: this._id,
+            name: this.name,
+            email: this.email,
+            role: this.role,
+            isActive: this.isActive
+        };
+    }
 };
 
 // Índices

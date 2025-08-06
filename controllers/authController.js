@@ -4,11 +4,22 @@ const User = require('../models/User');
 
 // Gerar token JWT
 const generateToken = (userId) => {
-    return jwt.sign(
-        { userId },
-        process.env.JWT_SECRET || 'fallback_secret',
-        { expiresIn: process.env.JWT_EXPIRE || '24h' }
-    );
+    try {
+        console.log('Gerando token para userId:', userId); // Debug
+        console.log('JWT_SECRET disponível:', !!process.env.JWT_SECRET); // Debug
+        
+        const token = jwt.sign(
+            { userId },
+            process.env.JWT_SECRET || 'fallback_secret',
+            { expiresIn: process.env.JWT_EXPIRE || '24h' }
+        );
+        
+        console.log('Token gerado com sucesso'); // Debug
+        return token;
+    } catch (error) {
+        console.error('Erro ao gerar token:', error);
+        throw error;
+    }
 };
 
 // @desc    Registrar novo usuário
@@ -131,8 +142,11 @@ const login = async (req, res) => {
         }
 
         // Gerar token
+        console.log('Gerando token...'); // Debug
         const token = generateToken(user._id);
+        console.log('Token gerado com sucesso'); // Debug
 
+        console.log('Enviando resposta de sucesso...'); // Debug
         res.json({
             success: true,
             message: 'Login realizado com sucesso',
