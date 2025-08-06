@@ -19,6 +19,7 @@ const addPointsValidation = [
         .isMongoId()
         .withMessage('ID da criança inválido'),
     body('activityId')
+        .optional()
         .isMongoId()
         .withMessage('ID da atividade inválido'),
     body('points')
@@ -29,7 +30,12 @@ const addPointsValidation = [
         .optional()
         .trim()
         .isLength({ max: 500 })
-        .withMessage('Observações não podem ter mais de 500 caracteres')
+        .withMessage('Observações não podem ter mais de 500 caracteres'),
+    body('reason')
+        .optional()
+        .trim()
+        .isLength({ min: 1, max: 200 })
+        .withMessage('Motivo deve ter entre 1 e 200 caracteres')
 ];
 
 // Validação para remover pontos
@@ -49,7 +55,12 @@ const removePointsValidation = [
         .optional()
         .trim()
         .isLength({ max: 500 })
-        .withMessage('Observações não podem ter mais de 500 caracteres')
+        .withMessage('Observações não podem ter mais de 500 caracteres'),
+    body('reason')
+        .optional()
+        .trim()
+        .isLength({ min: 1, max: 200 })
+        .withMessage('Motivo deve ter entre 1 e 200 caracteres')
 ];
 
 // Todas as rotas requerem autenticação

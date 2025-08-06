@@ -18,7 +18,7 @@ const addPoints = async (req, res) => {
             });
         }
 
-        const { kidId, activityId, points, notes } = req.body;
+        const { kidId, activityId, points, notes, reason } = req.body;
 
         // Verificar se a criança existe e pertence ao usuário
         const kid = await Kid.findOne({ 
@@ -34,42 +34,42 @@ const addPoints = async (req, res) => {
             });
         }
 
-        // Verificar se a atividade existe
-        const activity = await Activity.findById(activityId);
-        if (!activity || !activity.isActive) {
-            return res.status(404).json({
-                success: false,
-                message: 'Atividade não encontrada'
-            });
+        let activity = null;
+        let pointsToAdd = points;
+
+        // Se activityId foi fornecido, verificar se a atividade existe
+        if (activityId) {
+            activity = await Activity.findById(activityId);
+            if (!activity || !activity.isActive) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Atividade não encontrada'
+                });
+            }
+            // Usar pontos da atividade se não fornecidos no request
+            pointsToAdd = points || activity.points;
+        } else {
+            // Pontos avulsos - verificar se points foi fornecido
+            if (!points || points < 1) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Quantidade de pontos é obrigatória para pontos avulsos'
+                });
+            }
+            pointsToAdd = points;
         }
-
-        // Usar pontos da atividade se não fornecidos no request
-        const pointsToAdd = points || activity.points;
-
-        // Verificar se a atividade é apropriada para a idade da criança
-        // (Método não implementado ainda - comentado temporariamente)
-        // if (!activity.isAppropriateForAge(kid.age)) {
-        //     return res.status(400).json({
-        //         success: false,
-        //         message: 'Atividade não é apropriada para a idade da criança'
-        //     });
-        // }
 
         // Criar registro de pontos
         const pointRecord = new Point({
             kidId,
-            activityId,
+            activityId: activityId || null,
             points: pointsToAdd,
-            notes,
+            notes: notes || reason || `Pontos ${activity ? 'da atividade' : 'avulsos'} adicionados`,
             awardedBy: req.user._id,
             type: 'add'
         });
 
         await pointRecord.save();
-
-        // Incrementar contador de uso da atividade
-        // (Método não implementado ainda - comentado temporariamente)
-        // await activity.incrementUsage();
 
         // Buscar a criança atualizada
         const updatedKid = await Kid.findById(kidId);
@@ -80,11 +80,11 @@ const addPoints = async (req, res) => {
             data: {
                 point: pointRecord,
                 kid: updatedKid,
-                activity: {
+                activity: activity ? {
                     name: activity.name,
                     icon: activity.icon,
                     color: activity.color
-                }
+                } : null
             }
         });
 
@@ -112,7 +112,7 @@ const removePoints = async (req, res) => {
             });
         }
 
-        const { kidId, activityId, points, notes } = req.body;
+        const { kidId, activityId, points, notes, reason } = req.body;
 
         // Verificar se a criança existe e pertence ao usuário
         const kid = await Kid.findOne({ 
@@ -141,19 +141,23 @@ const removePoints = async (req, res) => {
                 });
             }
             pointsToRemove = points || activity.points;
-        } else if (!points) {
-            return res.status(400).json({
-                success: false,
-                message: 'Pontos são obrigatórios quando não há atividade selecionada'
-            });
+        } else {
+            // Pontos avulsos - verificar se points foi fornecido
+            if (!points || points < 1) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Quantidade de pontos é obrigatória para pontos avulsos'
+                });
+            }
+            pointsToRemove = points;
         }
 
         // Criar registro de remoção de pontos
         const pointRecord = new Point({
             kidId,
-            activityId,
+            activityId: activityId || null,
             points: pointsToRemove,
-            notes,
+            notes: notes || reason || `Pontos ${activity ? 'da atividade' : 'avulsos'} removidos`,
             awardedBy: req.user._id,
             type: 'remove'
         });
