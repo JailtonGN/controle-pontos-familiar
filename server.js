@@ -1,84 +1,66 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 
-// Importar configuração do banco de dados
-const { connectDB } = require('./config/db');
-
-// Importar rotas
-const authRoutes = require('./routes/auth');
-const pointsRoutes = require('./routes/points');
-const kidsRoutes = require('./routes/kids');
-const activitiesRoutes = require('./routes/activities');
-const messagesRoutes = require('./routes/messages');
-const remindersRoutes = require('./routes/reminders');
-
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+    credentials: true
+}));
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.static('public'));
 
-// Servir arquivos estáticos
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Conectar ao banco de dados
-connectDB();
+// Conectar ao MongoDB
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/controle-pontos-familiar', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+})
+.then(() => console.log('✅ Conectado ao MongoDB'))
+.catch(err => console.error('❌ Erro ao conectar ao MongoDB:', err));
 
 // Rotas da API
-app.use('/api/auth', authRoutes);
-app.use('/api/points', pointsRoutes);
-app.use('/api/kids', kidsRoutes);
-app.use('/api/activities', activitiesRoutes);
-app.use('/api/messages', messagesRoutes);
-app.use('/api/reminders', remindersRoutes);
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/kids', require('./routes/kids'));
+app.use('/api/activities', require('./routes/activities'));
+app.use('/api/points', require('./routes/points'));
+app.use('/api/messages', require('./routes/messages'));
+app.use('/api/reminders', require('./routes/reminders'));
 
-// Rota principal - servir index.html
+// Rotas para páginas HTML
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Rota para dashboard
 app.get('/dashboard', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
 });
 
-// Rota para child-view
-app.get('/child-view', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'child-view.html'));
-});
-
-// Rota para reminders
-app.get('/reminders', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'reminders.html'));
-});
-
-// Rota para gerenciar pontos
-app.get('/manage-points', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'manage-points.html'));
-});
-
-// Rota para cadastros de crianças
 app.get('/kids', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'kids.html'));
 });
 
-// Rota para configuração de atividades (removida - unificada com cadastros)
-// app.get('/activities', (req, res) => {
-//     res.sendFile(path.join(__dirname, 'public', 'activities.html'));
-// });
-
-// Rota para área da criança
-app.get('/kid-area', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'kid-area.html'));
+app.get('/activities', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'activities.html'));
 });
 
-// Rota para comunicação
+app.get('/manage-points', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'manage-points.html'));
+});
+
 app.get('/communication', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'communication.html'));
+});
+
+app.get('/child-view', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'child-view.html'));
+});
+
+app.get('/kid-area', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'kid-area.html'));
 });
 
 // Middleware de tratamento de erros
@@ -87,22 +69,30 @@ app.use((err, req, res, next) => {
     res.status(500).json({ 
         success: false, 
         message: 'Erro interno do servidor',
-        error: process.env.NODE_ENV === 'development' ? err.message : undefined
+        error: process.env.NODE_ENV === 'development' ? err.message : 'Algo deu errado'
     });
 });
 
-// Rota 404
-app.use('*', (req, res) => {
-    res.status(404).json({ 
-        success: false, 
-        message: 'Rota não encontrada' 
+// Rota para verificar se o servidor está funcionando
+app.get('/api/health', (req, res) => {
+    res.json({ 
+        success: true, 
+        message: 'Servidor funcionando!',
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV || 'development'
     });
 });
 
-// Iniciar servidor
+// Rota para qualquer outra requisição (SPA)
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, () => {
-    console.log(`Servidor rodando na porta ${PORT}`);
-    console.log(`Acesse: http://localhost:${PORT}`);
-});
-
+    console.log(`🚀 Servidor rodando na porta ${PORT}`);
+    console.log(`📱 Ambiente: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🌐 URL: http://localhost:${PORT}`);
+}); 
 module.exports = app; 

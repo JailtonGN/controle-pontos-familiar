@@ -1,5 +1,11 @@
 # 🏆 Sistema de Controle de Pontos Familiar
 
+[![Node.js](https://img.shields.io/badge/Node.js-18+-green)](https://nodejs.org/)
+[![Express](https://img.shields.io/badge/Express-4.18+-blue)](https://expressjs.com/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-5+-green)](https://mongodb.com/)
+[![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
+[![Deploy](https://img.shields.io/badge/Deploy-Render-blue)](https://controle-pontos-familiar.onrender.com)
+
 Um sistema web completo para gerenciar pontos e recompensas de crianças, desenvolvido com Node.js, Express e MongoDB.
 
 ## ✨ Características
@@ -28,9 +34,11 @@ Um sistema web completo para gerenciar pontos e recompensas de crianças, desenv
 
 ## 🛠️ Instalação
 
+### **Opção 1: Instalação Local**
+
 1. **Clone o repositório**
    ```bash
-   git clone https://github.com/seu-usuario/controle-pontos-familiar.git
+   git clone https://github.com/JailtonGN/controle-pontos-familiar.git
    cd controle-pontos-familiar
    ```
 
@@ -60,6 +68,16 @@ Um sistema web completo para gerenciar pontos e recompensas de crianças, desenv
    ```
    http://localhost:3000
    ```
+
+### **Opção 2: Deploy no Render (Recomendado)**
+
+Para deploy automático no Render, siga o guia completo em [`RENDER_DEPLOY.md`](RENDER_DEPLOY.md).
+
+**URL da aplicação**: [https://controle-pontos-familiar.onrender.com](https://controle-pontos-familiar.onrender.com)
+
+## 🚀 Deploy Rápido
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy/schema-new?schema=https://github.com/JailtonGN/controle-pontos-familiar/blob/main/render.yaml)
 
 ## 📁 Estrutura do Projeto
 
