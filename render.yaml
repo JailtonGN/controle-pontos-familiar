@@ -3,6 +3,7 @@ services:
     name: controle-pontos-familiar
     env: node
     plan: free
+    region: oregon
     buildCommand: npm install
     startCommand: npm start
     envVars:
@@ -12,11 +13,15 @@ services:
         value: 10000
       - key: MONGODB_URI
         sync: false
+        description: "String de conexão do MongoDB Atlas (mongodb+srv://username:password@cluster.mongodb.net/controle-pontos-familiar?retryWrites=true&w=majority)"
       - key: JWT_SECRET
         sync: false
+        description: "Chave secreta para JWT (mínimo 32 caracteres)"
       - key: JWT_EXPIRE
         value: 24h
       - key: BCRYPT_ROUNDS
         value: 12
       - key: CORS_ORIGIN
-        value: https://controle-pontos-familiar.onrender.com 
+        value: https://controle-pontos-familiar.onrender.com
+    healthCheckPath: /api/health
+    autoDeploy: true 

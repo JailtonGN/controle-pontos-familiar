@@ -8,7 +8,9 @@
     "dev": "nodemon server.js",
     "seed": "node scripts/seed-activities.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "npm install"
+    "build": "npm install",
+    "test-db": "node scripts/test-mongodb-connection.js",
+    "check-config": "node scripts/check-render-config.js"
   },
   "keywords": [
     "pontos",

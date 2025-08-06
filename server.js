@@ -1,8 +1,10 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
+
+// Importar configuração do banco de dados
+const { connectDB } = require('./config/db');
 
 const app = express();
 
@@ -15,36 +17,13 @@ app.use(express.json());
 app.use(express.static('public'));
 
 // Conectar ao MongoDB
-const mongoURI = process.env.MONGODB_URI;
+console.log('🚀 Iniciando aplicação...');
 console.log('🔍 Configuração MongoDB:');
-console.log('- MONGODB_URI configurada:', !!mongoURI);
+console.log('- MONGODB_URI configurada:', !!process.env.MONGODB_URI);
 console.log('- Ambiente:', process.env.NODE_ENV);
-console.log('- URI (mascarada):', mongoURI ? mongoURI.replace(/\/\/[^:]+:[^@]+@/, '//***:***@') : 'NÃO CONFIGURADA');
 
-if (!mongoURI) {
-    console.error('❌ MONGODB_URI não configurada!');
-    console.error('Configure a variável de ambiente MONGODB_URI no Render');
-    process.exit(1);
-}
-
-mongoose.connect(mongoURI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    serverSelectionTimeoutMS: 5000,
-    socketTimeoutMS: 45000,
-})
-.then(() => {
-    console.log('✅ Conectado ao MongoDB com sucesso!');
-    console.log('📊 Database:', mongoose.connection.name);
-})
-.catch(err => {
-    console.error('❌ Erro ao conectar ao MongoDB:', err);
-    console.error('🔧 Verifique:');
-    console.error('  1. Se a MONGODB_URI está configurada no Render');
-    console.error('  2. Se a string de conexão está correta');
-    console.error('  3. Se o IP whitelist está configurado no MongoDB Atlas');
-    process.exit(1);
-});
+// Conectar ao banco de dados
+connectDB();
 
 // Rotas da API
 app.use('/api/auth', require('./routes/auth'));
@@ -87,6 +66,17 @@ app.get('/kid-area', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'kid-area.html'));
 });
 
+// Rota para verificar se o servidor está funcionando
+app.get('/api/health', (req, res) => {
+    res.json({
+        success: true,
+        message: 'Servidor funcionando!',
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV || 'development',
+        database: 'MongoDB Atlas'
+    });
+});
+
 // Middleware de tratamento de erros
 app.use((err, req, res, next) => {
     console.error(err.stack);
@@ -95,21 +85,6 @@ app.use((err, req, res, next) => {
         message: 'Erro interno do servidor',
         error: process.env.NODE_ENV === 'development' ? err.message : 'Algo deu errado'
     });
-});
-
-// Rota para verificar se o servidor está funcionando
-app.get('/api/health', (req, res) => {
-    res.json({ 
-        success: true, 
-        message: 'Servidor funcionando!',
-        timestamp: new Date().toISOString(),
-        environment: process.env.NODE_ENV || 'development'
-    });
-});
-
-// Rota para qualquer outra requisição (SPA)
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 const PORT = process.env.PORT || 3000;

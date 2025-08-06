@@ -3,19 +3,43 @@ const mongoose = require('mongoose');
 // Função para conectar ao MongoDB
 const connectDB = async () => {
     try {
-        const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/controle-pontos-familiar', {
+        // Verificar se a variável de ambiente está configurada
+        const mongoURI = process.env.MONGODB_URI;
+        
+        if (!mongoURI) {
+            console.error('❌ MONGODB_URI não configurada!');
+            console.error('Configure a variável de ambiente MONGODB_URI no Render');
+            console.error('Exemplo: mongodb+srv://username:password@cluster.mongodb.net/controle-pontos-familiar?retryWrites=true&w=majority');
+            console.error('Para teste local, crie um arquivo .env com MONGODB_URI');
+            return; // Não sai do processo, apenas retorna
+        }
+
+        console.log('🔍 Tentando conectar ao MongoDB...');
+        console.log('- URI configurada:', !!mongoURI);
+        console.log('- Ambiente:', process.env.NODE_ENV);
+        console.log('- URI (mascarada):', mongoURI.replace(/\/\/[^:]+:[^@]+@/, '//***:***@'));
+
+        const conn = await mongoose.connect(mongoURI, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
+            serverSelectionTimeoutMS: 10000,
+            socketTimeoutMS: 45000,
         });
 
         console.log(`✅ MongoDB conectado: ${conn.connection.host}`);
+        console.log(`📊 Database: ${conn.connection.name}`);
 
         // Criar índices para melhor performance
         await createIndexes();
 
     } catch (error) {
         console.error('❌ Erro ao conectar ao MongoDB:', error.message);
-        process.exit(1);
+        console.error('🔧 Verifique:');
+        console.error('  1. Se a MONGODB_URI está configurada no Render');
+        console.error('  2. Se a string de conexão está correta');
+        console.error('  3. Se o IP whitelist está configurado no MongoDB Atlas');
+        console.error('  4. Se o usuário e senha estão corretos');
+        console.error('⚠️ Servidor continuará rodando sem conexão com MongoDB');
     }
 };
 
@@ -32,6 +56,12 @@ const disconnectDB = async () => {
 // Função para criar índices
 const createIndexes = async () => {
     try {
+        // Verificar se a conexão está ativa
+        if (!mongoose.connection || mongoose.connection.readyState !== 1) {
+            console.log('⚠️ Conexão com MongoDB não está ativa, pulando criação de índices');
+            return;
+        }
+
         // Índice para usuários (email único)
         await mongoose.connection.db.collection('users').createIndex(
             { email: 1 }, 
