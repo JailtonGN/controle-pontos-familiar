@@ -244,6 +244,8 @@
                 
                 const result = await response.json();
                 
+                console.log('Resposta do login:', result); // Debug
+                
                 if (result.success) {
                     showNotification('Sucesso', 'Login realizado com sucesso! Redirecionando...', 'success');
                     localStorage.setItem('token', result.data.token);
@@ -253,9 +255,11 @@
                         window.location.href = '/dashboard';
                     }, 1500);
                 } else {
-                    showNotification('Erro', result.message, 'error');
+                    console.log('Erro no login:', result.message); // Debug
+                    showNotification('Erro', result.message || 'Usuário ou senha incorretos', 'error');
                 }
             } catch (error) {
+                console.error('Erro na requisição:', error); // Debug
                 showNotification('Erro', 'Erro ao conectar com o servidor', 'error');
             } finally {
                 spinner.classList.add('hidden');

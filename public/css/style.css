@@ -496,6 +496,12 @@ body {
     visibility: visible;
 }
 
+/* Garantir que o modal seja visível quando não estiver hidden */
+.modal:not(.hidden) {
+    opacity: 1;
+    visibility: visible;
+}
+
 .modal-content {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(20px);

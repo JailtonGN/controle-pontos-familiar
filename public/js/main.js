@@ -338,13 +338,17 @@ class NavigationManager {
 
 // Função para mostrar notificação (compatibilidade)
 function showNotification(title, message, type = 'info') {
+    console.log('showNotification chamada:', { title, message, type }); // Debug
+    
     const modal = document.getElementById('notification-modal');
     const icon = document.getElementById('notification-icon');
     const titleEl = document.getElementById('notification-title');
     const messageEl = document.getElementById('notification-message');
     const closeBtn = document.getElementById('notification-close');
 
-    if (modal) {
+    console.log('Elementos do modal:', { modal, icon, titleEl, messageEl, closeBtn }); // Debug
+
+    if (modal && icon && titleEl && messageEl && closeBtn) {
         // Definir ícone baseado no tipo
         const icons = {
             success: '✅',
@@ -360,17 +364,21 @@ function showNotification(title, message, type = 'info') {
 
         // Mostrar modal
         modal.classList.remove('hidden');
+        console.log('Modal mostrado, classes:', modal.className); // Debug
 
         // Configurar botão de fechar
         closeBtn.onclick = () => {
             modal.classList.add('hidden');
+            console.log('Modal fechado'); // Debug
         };
 
         // Auto-fechar após 5 segundos
         setTimeout(() => {
             modal.classList.add('hidden');
+            console.log('Modal auto-fechado'); // Debug
         }, 5000);
     } else {
+        console.error('Elementos do modal não encontrados'); // Debug
         // Fallback para notificação simples
         NotificationManager.show(message, type);
     }
