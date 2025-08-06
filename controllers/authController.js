@@ -167,12 +167,12 @@ const login = async (req, res) => {
             });
         }
         
-        // Verificar se é um erro de MongoDB
-        if (error.name === 'MongoError' || error.name === 'MongoServerError') {
+        // Verificar se é um erro de MongoDB (incluindo timeout)
+        if (error.name === 'MongoError' || error.name === 'MongoServerError' || error.message.includes('buffering timed out')) {
             console.error('Erro de MongoDB:', error);
             return res.status(500).json({
                 success: false,
-                message: 'Erro de conexão com o banco de dados'
+                message: 'Erro de conexão com o banco de dados. Tente novamente em alguns instantes.'
             });
         }
         

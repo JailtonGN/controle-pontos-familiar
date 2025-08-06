@@ -25,7 +25,14 @@ const addPointsValidation = [
     body('points')
         .optional()
         .isInt({ min: 1, max: 100 })
-        .withMessage('Pontos devem ser entre 1 e 100'),
+        .withMessage('Pontos devem ser entre 1 e 100')
+        .custom((value, { req }) => {
+            // Se não há activityId (pontos avulsos), points é obrigatório
+            if (!req.body.activityId && (!value || value < 1)) {
+                throw new Error('Quantidade de pontos é obrigatória para pontos avulsos');
+            }
+            return true;
+        }),
     body('notes')
         .optional()
         .trim()
@@ -50,7 +57,14 @@ const removePointsValidation = [
     body('points')
         .optional()
         .isInt({ min: 1, max: 100 })
-        .withMessage('Pontos devem ser entre 1 e 100'),
+        .withMessage('Pontos devem ser entre 1 e 100')
+        .custom((value, { req }) => {
+            // Se não há activityId (pontos avulsos), points é obrigatório
+            if (!req.body.activityId && (!value || value < 1)) {
+                throw new Error('Quantidade de pontos é obrigatória para pontos avulsos');
+            }
+            return true;
+        }),
     body('notes')
         .optional()
         .trim()

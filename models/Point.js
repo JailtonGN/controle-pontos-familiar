@@ -9,9 +9,7 @@ const pointSchema = new mongoose.Schema({
     activityId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Activity',
-        required: function() {
-            return this.type === 'add';
-        },
+        required: false,
         default: null
     },
     points: {
@@ -50,17 +48,31 @@ const pointSchema = new mongoose.Schema({
 pointSchema.pre('save', async function(next) {
     if (this.isNew) {
         try {
+            console.log('🔄 [POINT PRE-SAVE] Atualizando pontos da criança...');
+            console.log('📊 [POINT PRE-SAVE] Dados:', {
+                kidId: this.kidId,
+                points: this.points,
+                type: this.type,
+                activityId: this.activityId
+            });
+            
             const Kid = require('./Kid');
             const kid = await Kid.findById(this.kidId);
             
             if (kid) {
+                console.log('✅ [POINT PRE-SAVE] Criança encontrada:', kid.name);
                 if (this.type === 'add') {
                     await kid.addPoints(this.points);
+                    console.log('✅ [POINT PRE-SAVE] Pontos adicionados com sucesso');
                 } else if (this.type === 'remove') {
                     await kid.removePoints(this.points);
+                    console.log('✅ [POINT PRE-SAVE] Pontos removidos com sucesso');
                 }
+            } else {
+                console.error('❌ [POINT PRE-SAVE] Criança não encontrada:', this.kidId);
             }
         } catch (error) {
+            console.error('❌ [POINT PRE-SAVE] Erro ao atualizar pontos da criança:', error);
             return next(error);
         }
     }

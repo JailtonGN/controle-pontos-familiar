@@ -8,9 +8,19 @@ const Activity = require('../models/Activity');
 // @access  Private
 const addPoints = async (req, res) => {
     try {
+        console.log('🔍 [ADD POINTS] Iniciando adição de pontos...');
+        console.log('📊 [ADD POINTS] Dados recebidos:', {
+            kidId: req.body.kidId,
+            activityId: req.body.activityId,
+            points: req.body.points,
+            notes: req.body.notes,
+            reason: req.body.reason
+        });
+
         // Verificar erros de validação
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
+            console.log('❌ [ADD POINTS] Erros de validação:', errors.array());
             return res.status(400).json({
                 success: false,
                 message: 'Dados inválidos',
@@ -28,19 +38,24 @@ const addPoints = async (req, res) => {
         });
 
         if (!kid) {
+            console.log('❌ [ADD POINTS] Criança não encontrada:', kidId);
             return res.status(404).json({
                 success: false,
                 message: 'Criança não encontrada'
             });
         }
 
+        console.log('✅ [ADD POINTS] Criança encontrada:', kid.name);
+
         let activity = null;
         let pointsToAdd = points;
 
         // Se activityId foi fornecido, verificar se a atividade existe
         if (activityId) {
+            console.log('🔍 [ADD POINTS] Buscando atividade:', activityId);
             activity = await Activity.findById(activityId);
             if (!activity || !activity.isActive) {
+                console.log('❌ [ADD POINTS] Atividade não encontrada:', activityId);
                 return res.status(404).json({
                     success: false,
                     message: 'Atividade não encontrada'
@@ -48,18 +63,32 @@ const addPoints = async (req, res) => {
             }
             // Usar pontos da atividade se não fornecidos no request
             pointsToAdd = points || activity.points;
+            console.log('✅ [ADD POINTS] Atividade encontrada:', activity.name, 'Pontos:', pointsToAdd);
         } else {
             // Pontos avulsos - verificar se points foi fornecido
+            console.log('🔍 [ADD POINTS] Pontos avulsos - verificando pontos:', points);
             if (!points || points < 1) {
+                console.log('❌ [ADD POINTS] Pontos inválidos para pontos avulsos:', points);
                 return res.status(400).json({
                     success: false,
                     message: 'Quantidade de pontos é obrigatória para pontos avulsos'
                 });
             }
             pointsToAdd = points;
+            console.log('✅ [ADD POINTS] Pontos avulsos configurados:', pointsToAdd);
         }
 
         // Criar registro de pontos
+        console.log('🔍 [ADD POINTS] Criando registro de pontos...');
+        console.log('📊 [ADD POINTS] Dados do registro:', {
+            kidId,
+            activityId: activityId || null,
+            points: pointsToAdd,
+            notes: notes || reason || `Pontos ${activity ? 'da atividade' : 'avulsos'} adicionados`,
+            awardedBy: req.user._id,
+            type: 'add'
+        });
+        
         const pointRecord = new Point({
             kidId,
             activityId: activityId || null,
@@ -69,7 +98,14 @@ const addPoints = async (req, res) => {
             type: 'add'
         });
 
-        await pointRecord.save();
+        console.log('💾 [ADD POINTS] Salvando registro...');
+        try {
+            await pointRecord.save();
+            console.log('✅ [ADD POINTS] Registro salvo com sucesso');
+        } catch (saveError) {
+            console.error('❌ [ADD POINTS] Erro ao salvar registro:', saveError);
+            throw saveError;
+        }
 
         // Buscar a criança atualizada
         const updatedKid = await Kid.findById(kidId);
@@ -89,7 +125,7 @@ const addPoints = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Erro ao adicionar pontos:', error);
+        console.error('❌ [ADD POINTS] Erro ao adicionar pontos:', error);
         res.status(500).json({
             success: false,
             message: 'Erro interno do servidor'
@@ -102,9 +138,19 @@ const addPoints = async (req, res) => {
 // @access  Private
 const removePoints = async (req, res) => {
     try {
+        console.log('🔍 [REMOVE POINTS] Iniciando remoção de pontos...');
+        console.log('📊 [REMOVE POINTS] Dados recebidos:', {
+            kidId: req.body.kidId,
+            activityId: req.body.activityId,
+            points: req.body.points,
+            notes: req.body.notes,
+            reason: req.body.reason
+        });
+
         // Verificar erros de validação
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
+            console.log('❌ [REMOVE POINTS] Erros de validação:', errors.array());
             return res.status(400).json({
                 success: false,
                 message: 'Dados inválidos',
@@ -122,37 +168,56 @@ const removePoints = async (req, res) => {
         });
 
         if (!kid) {
+            console.log('❌ [REMOVE POINTS] Criança não encontrada:', kidId);
             return res.status(404).json({
                 success: false,
                 message: 'Criança não encontrada'
             });
         }
 
+        console.log('✅ [REMOVE POINTS] Criança encontrada:', kid.name);
+
         // Se activityId for fornecido, buscar a atividade e usar seus pontos
         let pointsToRemove = points;
         let activity = null;
         
         if (activityId) {
+            console.log('🔍 [REMOVE POINTS] Buscando atividade:', activityId);
             activity = await Activity.findById(activityId);
             if (!activity || !activity.isActive) {
+                console.log('❌ [REMOVE POINTS] Atividade não encontrada:', activityId);
                 return res.status(404).json({
                     success: false,
                     message: 'Atividade não encontrada'
                 });
             }
             pointsToRemove = points || activity.points;
+            console.log('✅ [REMOVE POINTS] Atividade encontrada:', activity.name, 'Pontos:', pointsToRemove);
         } else {
             // Pontos avulsos - verificar se points foi fornecido
+            console.log('🔍 [REMOVE POINTS] Pontos avulsos - verificando pontos:', points);
             if (!points || points < 1) {
+                console.log('❌ [REMOVE POINTS] Pontos inválidos para pontos avulsos:', points);
                 return res.status(400).json({
                     success: false,
                     message: 'Quantidade de pontos é obrigatória para pontos avulsos'
                 });
             }
             pointsToRemove = points;
+            console.log('✅ [REMOVE POINTS] Pontos avulsos configurados:', pointsToRemove);
         }
 
         // Criar registro de remoção de pontos
+        console.log('🔍 [REMOVE POINTS] Criando registro de remoção...');
+        console.log('📊 [REMOVE POINTS] Dados do registro:', {
+            kidId,
+            activityId: activityId || null,
+            points: pointsToRemove,
+            notes: notes || reason || `Pontos ${activity ? 'da atividade' : 'avulsos'} removidos`,
+            awardedBy: req.user._id,
+            type: 'remove'
+        });
+        
         const pointRecord = new Point({
             kidId,
             activityId: activityId || null,
@@ -162,7 +227,14 @@ const removePoints = async (req, res) => {
             type: 'remove'
         });
 
-        await pointRecord.save();
+        console.log('💾 [REMOVE POINTS] Salvando registro...');
+        try {
+            await pointRecord.save();
+            console.log('✅ [REMOVE POINTS] Registro salvo com sucesso');
+        } catch (saveError) {
+            console.error('❌ [REMOVE POINTS] Erro ao salvar registro:', saveError);
+            throw saveError;
+        }
 
         // Buscar a criança atualizada
         const updatedKid = await Kid.findById(kidId);
@@ -182,7 +254,7 @@ const removePoints = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Erro ao remover pontos:', error);
+        console.error('❌ [REMOVE POINTS] Erro ao remover pontos:', error);
         res.status(500).json({
             success: false,
             message: 'Erro interno do servidor'
