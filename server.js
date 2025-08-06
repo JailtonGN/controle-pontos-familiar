@@ -15,12 +15,36 @@ app.use(express.json());
 app.use(express.static('public'));
 
 // Conectar ao MongoDB
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/controle-pontos-familiar', {
+const mongoURI = process.env.MONGODB_URI;
+console.log('🔍 Configuração MongoDB:');
+console.log('- MONGODB_URI configurada:', !!mongoURI);
+console.log('- Ambiente:', process.env.NODE_ENV);
+console.log('- URI (mascarada):', mongoURI ? mongoURI.replace(/\/\/[^:]+:[^@]+@/, '//***:***@') : 'NÃO CONFIGURADA');
+
+if (!mongoURI) {
+    console.error('❌ MONGODB_URI não configurada!');
+    console.error('Configure a variável de ambiente MONGODB_URI no Render');
+    process.exit(1);
+}
+
+mongoose.connect(mongoURI, {
     useNewUrlParser: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
 })
-.then(() => console.log('✅ Conectado ao MongoDB'))
-.catch(err => console.error('❌ Erro ao conectar ao MongoDB:', err));
+.then(() => {
+    console.log('✅ Conectado ao MongoDB com sucesso!');
+    console.log('📊 Database:', mongoose.connection.name);
+})
+.catch(err => {
+    console.error('❌ Erro ao conectar ao MongoDB:', err);
+    console.error('🔧 Verifique:');
+    console.error('  1. Se a MONGODB_URI está configurada no Render');
+    console.error('  2. Se a string de conexão está correta');
+    console.error('  3. Se o IP whitelist está configurado no MongoDB Atlas');
+    process.exit(1);
+});
 
 // Rotas da API
 app.use('/api/auth', require('./routes/auth'));
