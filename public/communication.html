@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comunicação - Controle de Pontos Familiar</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/png" href="assets/logo.png">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-content">
+                <!-- Brand -->
+                <div class="navbar-brand">
+                    <div class="navbar-logo"></div>
+                    <div>
+                        <div class="navbar-title">Comunicação</div>
+                        <div class="navbar-subtitle">Sistema de Pontos</div>
+                    </div>
+                </div>
+
+                <!-- Desktop Menu -->
+                <div class="navbar-menu">
+                    <div class="navbar-item">
+                        <a href="/dashboard" class="navbar-button" id="nav-dashboard">
+                            <span class="navbar-button-text">Tela Inicial</span>
+                        </a>
+                    </div>
+                    <div class="navbar-item">
+                        <a href="/manage-points" class="navbar-button" id="nav-activities">
+                            <span class="navbar-button-text">Atividades</span>
+                        </a>
+                    </div>
+                    <div class="navbar-item">
+                        <a href="/kids" class="navbar-button" id="nav-kids">
+                            <span class="navbar-button-text">Cadastros</span>
+                        </a>
+                    </div>
+                    
+                    <div class="navbar-item">
+                        <a href="/communication" class="navbar-button active" id="nav-communication">
+                            <span class="navbar-button-text">Comunicação</span>
+                        </a>
+                    </div>
+                    <div class="navbar-item">
+                        <a href="/settings" class="navbar-button" id="nav-settings">
+                            <span class="navbar-button-text">Configuração</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- User Menu -->
+                <div class="navbar-user">
+                    <span id="user-name" class="navbar-user-name"></span>
+                    <button onclick="logout()" class="navbar-button navbar-button-logout">
+                        Sair
+                    </button>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="navbar-mobile-menu">
+                    <button class="navbar-mobile-button" onclick="toggleMobileMenu()">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="navbar-mobile-menu-content hidden">
+                <a href="/dashboard" class="navbar-mobile-item" onclick="setActiveNav('nav-dashboard')">
+                    Tela Inicial
+                </a>
+                <a href="/manage-points" class="navbar-mobile-item" onclick="setActiveNav('nav-activities')">
+                    Atividades
+                </a>
+                <a href="/kids" class="navbar-mobile-item" onclick="setActiveNav('nav-kids')">
+                    Cadastros
+                </a>
+                
+                <a href="/communication" class="navbar-mobile-item active" onclick="setActiveNav('nav-communication')">
+                    Comunicação
+                </a>
+                <a href="/settings" class="navbar-mobile-item" onclick="setActiveNav('nav-settings')">
+                    Configuração
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container" style="padding-top: 32px; padding-bottom: 32px;">
+        <!-- Abas de Navegação -->
+        <div class="professional-section">
+            <div class="professional-card">
+                <div class="professional-card-header">
+                    <div class="professional-card-title">
+                        Comunicação
+                    </div>
+                    <div class="professional-card-subtitle">Gerencie mensagens e lembretes</div>
+                </div>
+                <div class="professional-card-body">
+                    <div class="tab-navigation">
+                        <button class="tab-button active" onclick="showTab('messages')" id="tab-messages">
+                            Mensagens
+                        </button>
+                        <button class="tab-button" onclick="showTab('reminders')" id="tab-reminders">
+                            Lembretes
+                        </button>
+                        <button class="tab-button" onclick="showTab('notifications')" id="tab-notifications">
+                            Notificações
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aba Mensagens -->
+        <div id="messages-tab" class="tab-content active">
+            <!-- Enviar Mensagem -->
+            <div class="professional-section">
+                <div class="professional-card">
+                    <div class="professional-card-header">
+                        <div class="professional-card-title">
+                            Enviar Mensagem
+                        </div>
+                        <div class="professional-card-subtitle">Envie uma mensagem para uma criança específica</div>
+                    </div>
+                    <div class="professional-card-body">
+                        <form id="send-message-form" class="professional-form-grid">
+                            <div class="professional-input-group">
+                                <label for="message-kid" class="professional-label">Para</label>
+                                <select id="message-kid" name="kidId" required class="professional-input">
+                                    <option value="">Escolha uma criança</option>
+                                </select>
+                            </div>
+                            
+                            <div class="professional-input-group">
+                                <label for="message-type" class="professional-label">Tipo</label>
+                                <select id="message-type" name="type" required class="professional-input">
+                                    <option value="">Escolha o tipo</option>
+                                    <option value="motivation">Motivação</option>
+                                    <option value="reminder">Lembrete</option>
+                                    <option value="praise">Elogio</option>
+                                    <option value="task">Tarefa</option>
+                                </select>
+                            </div>
+                            
+                            <div class="professional-input-group">
+                                <label for="message-title" class="professional-label">Título</label>
+                                <input type="text" id="message-title" name="title" required class="professional-input" placeholder="Título da mensagem">
+                            </div>
+                            
+                            <div class="professional-input-group">
+                                <label for="message-content" class="professional-label">Mensagem</label>
+                                <textarea id="message-content" name="content" required class="professional-input" placeholder="Digite sua mensagem" rows="4"></textarea>
+                            </div>
+                            
+                            <div class="professional-input-group" style="grid-column: 1 / -1;">
+                                <button type="submit" class="professional-button professional-button-success" style="width: 100%;">
+                                    Enviar Mensagem
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mensagens Enviadas -->
+            <div class="professional-section">
+                <div class="professional-card">
+                    <div class="professional-card-header">
+                        <div class="professional-card-title">
+                            Mensagens Enviadas
+                        </div>
+                        <div class="professional-card-subtitle">Histórico de mensagens enviadas</div>
+                    </div>
+                    <div class="professional-card-body">
+                        <div id="messages-list" class="space-y-4">
+                            <!-- Lista de mensagens será carregada aqui -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aba Lembretes -->
+        <div id="reminders-tab" class="tab-content">
+            <!-- Criar Lembrete -->
+            <div class="professional-section">
+                <div class="professional-card">
+                    <div class="professional-card-header">
+                        <div class="professional-card-title">
+                            Criar Lembrete
+                        </div>
+                        <div class="professional-card-subtitle">Configure lembretes para as crianças</div>
+                    </div>
+                    <div class="professional-card-body">
+                        <form id="create-reminder-form" class="professional-form-grid">
+                            <div class="professional-input-group">
+                                <label for="reminder-kid" class="professional-label">Para</label>
+                                <select id="reminder-kid" name="kidId" required class="professional-input">
+                                    <option value="">Escolha uma criança</option>
+                                </select>
+                            </div>
+                            
+                            <div class="professional-input-group">
+                                <label for="reminder-title" class="professional-label">Título</label>
+                                <input type="text" id="reminder-title" name="title" required class="professional-input" placeholder="Título do lembrete">
+                            </div>
+                            
+                            <div class="professional-input-group">
+                                <label for="reminder-description" class="professional-label">Descrição</label>
+                                <textarea id="reminder-description" name="description" required class="professional-input" placeholder="Descrição do lembrete" rows="3"></textarea>
+                            </div>
+                            
+                            <div class="professional-input-group">
+                                <label for="reminder-date" class="professional-label">Data</label>
+                                <input type="date" id="reminder-date" name="date" required class="professional-input">
+                            </div>
+                            
+                            <div class="professional-input-group">
+                                <label for="reminder-time" class="professional-label">Horário</label>
+                                <input type="time" id="reminder-time" name="time" required class="professional-input">
+                            </div>
+                            
+                            <div class="professional-input-group">
+                                <label for="reminder-repeat" class="professional-label">Repetir</label>
+                                <select id="reminder-repeat" name="repeat" required class="professional-input">
+                                    <option value="none">Não repetir</option>
+                                    <option value="daily">Diariamente</option>
+                                    <option value="weekly">Semanalmente</option>
+                                    <option value="monthly">Mensalmente</option>
+                                </select>
+                            </div>
+                            
+                            <div class="professional-input-group" style="grid-column: 1 / -1;">
+                                <button type="submit" class="professional-button professional-button-success" style="width: 100%;">
+                                    Criar Lembrete
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lembretes Ativos -->
+            <div class="professional-section">
+                <div class="professional-card">
+                    <div class="professional-card-header">
+                        <div class="professional-card-title">
+                            Lembretes Ativos
+                        </div>
+                        <div class="professional-card-subtitle">Gerencie os lembretes configurados</div>
+                    </div>
+                    <div class="professional-card-body">
+                        <div id="reminders-list" class="space-y-4">
+                            <!-- Lista de lembretes será carregada aqui -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aba Notificações -->
+        <div id="notifications-tab" class="tab-content">
+            <!-- Configurar Notificações -->
+            <div class="professional-section">
+                <div class="professional-card">
+                    <div class="professional-card-header">
+                        <div class="professional-card-title">
+                            Configurar Notificações
+                        </div>
+                        <div class="professional-card-subtitle">Configure quando receber notificações</div>
+                    </div>
+                    <div class="professional-card-body">
+                        <form id="notification-settings-form" class="professional-form-grid">
+                            <div class="professional-input-group">
+                                <label class="professional-label">Tipos de Notificação</label>
+                                <div class="space-y-3">
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="notify-points" name="notifyPoints" class="mr-3">
+                                        <label for="notify-points">Pontos alterados</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="notify-activities" name="notifyActivities" class="mr-3">
+                                        <label for="notify-activities">Novas atividades</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="notify-reminders" name="notifyReminders" class="mr-3">
+                                        <label for="notify-reminders">Lembretes</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="notify-messages" name="notifyMessages" class="mr-3">
+                                        <label for="notify-messages">Novas mensagens</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="professional-input-group">
+                                <label for="notification-time" class="professional-label">Horário de Notificação</label>
+                                <select id="notification-time" name="notificationTime" class="professional-input">
+                                    <option value="immediate">Imediato</option>
+                                    <option value="hourly">A cada hora</option>
+                                    <option value="daily">Diário</option>
+                                    <option value="weekly">Semanal</option>
+                                </select>
+                            </div>
+                            
+                            <div class="professional-input-group" style="grid-column: 1 / -1;">
+                                <button type="submit" class="professional-button professional-button-success" style="width: 100%;">
+                                    Salvar Configurações
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Histórico de Notificações -->
+            <div class="professional-section">
+                <div class="professional-card">
+                    <div class="professional-card-header">
+                        <div class="professional-card-title">
+                            Histórico de Notificações
+                        </div>
+                        <div class="professional-card-subtitle">Notificações recentes</div>
+                    </div>
+                    <div class="professional-card-body">
+                        <div id="notifications-list" class="space-y-4">
+                            <!-- Lista de notificações será carregada aqui -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal de Confirmação -->
+    <div id="confirm-modal" class="modal hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-sm w-full p-6">
+                <div class="flex items-center mb-4">
+                    <div class="flex-shrink-0 mr-3">
+                        <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                            <span class="text-red-600 font-bold">!</span>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900">Confirmar Exclusão</h3>
+                </div>
+                <p class="text-sm text-gray-500 mb-4">Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.</p>
+                <div class="flex justify-end space-x-3">
+                    <button onclick="hideConfirmModal()" class="btn btn-secondary">
+                        Cancelar
+                    </button>
+                    <button onclick="confirmDelete()" class="btn btn-danger">
+                        Excluir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script>
+        // Variáveis específicas da página de comunicação
+        let messages = [];
+        let reminders = [];
+        let notifications = [];
+        let currentItemId = null;
+        let currentItemType = null;
+
+        // Função para gerenciar abas
+        function showTab(tabName) {
+            // Esconder todas as abas
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remover active de todos os botões
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Mostrar aba selecionada
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+        }
+
+        // Carregar dados na inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            loadKids();
+            loadMessages();
+            loadReminders();
+            loadNotifications();
+        });
+
+        // Carregar lista de crianças para os selects
+        async function loadKids() {
+            try {
+                const response = await API.get('/kids');
+                const kids = response.data.kids;
+                
+                // Preencher selects de crianças
+                const kidSelects = ['message-kid', 'reminder-kid'];
+                kidSelects.forEach(selectId => {
+                    const select = document.getElementById(selectId);
+                    if (select) {
+                        select.innerHTML = '<option value="">Escolha uma criança</option>';
+                        kids.forEach(kid => {
+                            select.innerHTML += `<option value="${kid._id}">${kid.name}</option>`;
+                        });
+                    }
+                });
+            } catch (error) {
+                showNotification('Erro', 'Erro ao carregar crianças', 'error');
+            }
+        }
+
+        // Carregar mensagens
+        async function loadMessages() {
+            try {
+                const response = await API.get('/messages');
+                messages = response.data.messages || [];
+                renderMessagesList();
+            } catch (error) {
+                showNotification('Erro', 'Erro ao carregar mensagens', 'error');
+            }
+        }
+
+        // Renderizar lista de mensagens
+        function renderMessagesList() {
+            const container = document.getElementById('messages-list');
+            
+            if (messages.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <div class="text-gray-400 text-6xl mb-4">💬</div>
+                        <p class="text-gray-500 text-lg">Nenhuma mensagem enviada</p>
+                        <p class="text-gray-400 text-sm">Envie sua primeira mensagem usando o formulário acima</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = messages.map(message => `
+                <div class="professional-summary-card">
+                    <div class="professional-summary-header">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-xl" style="background: ${getMessageTypeColor(message.type)}">
+                                    ${getMessageTypeIcon(message.type)}
+                                </div>
+                                <div class="ml-3">
+                                    <div class="professional-summary-name">${message.title}</div>
+                                    <div class="professional-summary-age">Para: ${message.kidName}</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="professional-summary-points">${formatDate(message.createdAt)}</div>
+                                <div class="professional-summary-label">${message.type}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <p class="text-gray-600">${message.content}</p>
+                    </div>
+                    <div class="mt-4 flex justify-end">
+                        <button onclick="deleteItem('${message._id}', 'message')" class="professional-button professional-button-danger text-sm">
+                            Excluir
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Carregar lembretes
+        async function loadReminders() {
+            try {
+                const response = await API.get('/reminders');
+                reminders = response.data.reminders || [];
+                renderRemindersList();
+            } catch (error) {
+                showNotification('Erro', 'Erro ao carregar lembretes', 'error');
+            }
+        }
+
+        // Renderizar lista de lembretes
+        function renderRemindersList() {
+            const container = document.getElementById('reminders-list');
+            
+            if (reminders.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <div class="text-gray-400 text-6xl mb-4">⏰</div>
+                        <p class="text-gray-500 text-lg">Nenhum lembrete configurado</p>
+                        <p class="text-gray-400 text-sm">Configure seu primeiro lembrete usando o formulário acima</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = reminders.map(reminder => `
+                <div class="professional-summary-card">
+                    <div class="professional-summary-header">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-xl" style="background: #F59E0B">
+                                    ⏰
+                                </div>
+                                <div class="ml-3">
+                                    <div class="professional-summary-name">${reminder.title}</div>
+                                    <div class="professional-summary-age">Para: ${reminder.kidName}</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="professional-summary-points">${formatDateTime(reminder.date, reminder.time)}</div>
+                                <div class="professional-summary-label">${reminder.repeat}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <p class="text-gray-600">${reminder.description}</p>
+                    </div>
+                    <div class="mt-4 flex justify-end">
+                        <button onclick="deleteItem('${reminder._id}', 'reminder')" class="professional-button professional-button-danger text-sm">
+                            Excluir
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Carregar notificações
+        async function loadNotifications() {
+            try {
+                const response = await API.get('/notifications');
+                notifications = response.data.notifications || [];
+                renderNotificationsList();
+            } catch (error) {
+                showNotification('Erro', 'Erro ao carregar notificações', 'error');
+            }
+        }
+
+        // Renderizar lista de notificações
+        function renderNotificationsList() {
+            const container = document.getElementById('notifications-list');
+            
+            if (notifications.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <div class="text-gray-400 text-6xl mb-4">🔔</div>
+                        <p class="text-gray-500 text-lg">Nenhuma notificação</p>
+                        <p class="text-gray-400 text-sm">As notificações aparecerão aqui</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = notifications.map(notification => `
+                <div class="professional-summary-card">
+                    <div class="professional-summary-header">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-xl" style="background: #3B82F6">
+                                    🔔
+                                </div>
+                                <div class="ml-3">
+                                    <div class="professional-summary-name">${notification.title}</div>
+                                    <div class="professional-summary-age">${notification.type}</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="professional-summary-points">${formatDate(notification.createdAt)}</div>
+                                <div class="professional-summary-label">${notification.status}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <p class="text-gray-600">${notification.message}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Funções auxiliares
+        function getMessageTypeColor(type) {
+            const colors = {
+                'motivation': '#10B981',
+                'reminder': '#F59E0B',
+                'praise': '#8B5CF6',
+                'task': '#EF4444'
+            };
+            return colors[type] || '#3B82F6';
+        }
+
+        function getMessageTypeIcon(type) {
+            const icons = {
+                'motivation': '💪',
+                'reminder': '⏰',
+                'praise': '👏',
+                'task': '📋'
+            };
+            return icons[type] || '💬';
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('pt-BR');
+        }
+
+        function formatDateTime(dateString, timeString) {
+            const date = new Date(`${dateString}T${timeString}`);
+            return date.toLocaleString('pt-BR');
+        }
+
+        // Funções de exclusão
+        function deleteItem(itemId, itemType) {
+            currentItemId = itemId;
+            currentItemType = itemType;
+            document.getElementById('confirm-modal').classList.remove('hidden');
+        }
+
+        function hideConfirmModal() {
+            document.getElementById('confirm-modal').classList.add('hidden');
+            currentItemId = null;
+            currentItemType = null;
+        }
+
+        async function confirmDelete() {
+            if (!currentItemId || !currentItemType) return;
+
+            try {
+                await API.delete(`/${currentItemType}s/${currentItemId}`);
+                showNotification('Sucesso', 'Item excluído com sucesso!', 'success');
+                hideConfirmModal();
+                
+                // Recarregar dados específicos
+                switch (currentItemType) {
+                    case 'message':
+                        loadMessages();
+                        break;
+                    case 'reminder':
+                        loadReminders();
+                        break;
+                    case 'notification':
+                        loadNotifications();
+                        break;
+                }
+            } catch (error) {
+                showNotification('Erro', error.message, 'error');
+            }
+        }
+
+        // Event listeners para formulários
+        document.getElementById('send-message-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = {
+                kidId: formData.get('kidId'),
+                type: formData.get('type'),
+                title: formData.get('title'),
+                content: formData.get('content')
+            };
+
+            try {
+                await API.post('/messages', data);
+                showNotification('Sucesso', 'Mensagem enviada com sucesso!', 'success');
+                this.reset();
+                loadMessages();
+            } catch (error) {
+                showNotification('Erro', error.message, 'error');
+            }
+        });
+
+        document.getElementById('create-reminder-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = {
+                kidId: formData.get('kidId'),
+                title: formData.get('title'),
+                description: formData.get('description'),
+                date: formData.get('date'),
+                time: formData.get('time'),
+                repeat: formData.get('repeat')
+            };
+
+            try {
+                await API.post('/reminders', data);
+                showNotification('Sucesso', 'Lembrete criado com sucesso!', 'success');
+                this.reset();
+                loadReminders();
+            } catch (error) {
+                showNotification('Erro', error.message, 'error');
+            }
+        });
+
+        document.getElementById('notification-settings-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = {
+                notifyPoints: formData.get('notifyPoints') === 'on',
+                notifyActivities: formData.get('notifyActivities') === 'on',
+                notifyReminders: formData.get('notifyReminders') === 'on',
+                notifyMessages: formData.get('notifyMessages') === 'on',
+                notificationTime: formData.get('notificationTime')
+            };
+
+            try {
+                await API.put('/settings/notifications', data);
+                showNotification('Sucesso', 'Configurações salvas com sucesso!', 'success');
+            } catch (error) {
+                showNotification('Erro', error.message, 'error');
+            }
+        });
+    </script>
+</body>
+</html> 

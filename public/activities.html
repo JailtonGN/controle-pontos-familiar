@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuração de Atividades - Controle de Pontos Familiar</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/png" href="assets/logo.png">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-content">
+                <!-- Brand -->
+                <div class="navbar-brand">
+                    <div class="navbar-logo"></div>
+                    <div>
+                        <div class="navbar-title">Atividades</div>
+                        <div class="navbar-subtitle">Sistema de Pontos</div>
+                    </div>
+                </div>
+
+                <!-- Desktop Menu -->
+                <div class="navbar-menu">
+                    <div class="navbar-item">
+                        <a href="/dashboard" class="navbar-button" id="nav-dashboard">
+                            <span class="navbar-button-text">Tela Inicial</span>
+                        </a>
+                    </div>
+                    <div class="navbar-item">
+                        <a href="/manage-points" class="navbar-button" id="nav-activities">
+                            <span class="navbar-button-text">Atividades</span>
+                        </a>
+                    </div>
+                    <div class="navbar-item">
+                        <a href="/kids" class="navbar-button" id="nav-kids">
+                            <span class="navbar-button-text">Cadastros</span>
+                        </a>
+                    </div>
+                    <div class="navbar-item">
+                        <a href="/activities" class="navbar-button active" id="nav-activities-config">
+                            <span class="navbar-button-text">Atividades</span>
+                        </a>
+                    </div>
+                    <div class="navbar-item">
+                        <a href="/communication" class="navbar-button" id="nav-communication">
+                            <span class="navbar-button-text">Comunicação</span>
+                        </a>
+                    </div>
+                    <div class="navbar-item">
+                        <a href="/settings" class="navbar-button" id="nav-settings">
+                            <span class="navbar-button-text">Configuração</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- User Menu -->
+                <div class="navbar-user">
+                    <span id="user-name" class="navbar-user-name"></span>
+                    <button onclick="logout()" class="navbar-button navbar-button-logout">
+                        Sair
+                    </button>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="navbar-mobile-menu">
+                    <button class="navbar-mobile-button" onclick="toggleMobileMenu()">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="navbar-mobile-menu-content hidden">
+                <a href="/dashboard" class="navbar-mobile-item" onclick="setActiveNav('nav-dashboard')">
+                    Tela Inicial
+                </a>
+                <a href="/manage-points" class="navbar-mobile-item" onclick="setActiveNav('nav-activities')">
+                    Atividades
+                </a>
+                <a href="/kids" class="navbar-mobile-item" onclick="setActiveNav('nav-kids')">
+                    Cadastros
+                </a>
+                <a href="/activities" class="navbar-mobile-item active" onclick="setActiveNav('nav-activities-config')">
+                    Atividades
+                </a>
+                <a href="/communication" class="navbar-mobile-item" onclick="setActiveNav('nav-communication')">
+                    Comunicação
+                </a>
+                <a href="/settings" class="navbar-mobile-item" onclick="setActiveNav('nav-settings')">
+                    Configuração
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container" style="padding-top: 32px; padding-bottom: 32px;">
+        <!-- Ações -->
+        <div class="professional-section">
+            <div class="professional-card">
+                <div class="professional-card-header">
+                    <div class="professional-card-title">
+                        Atividades Cadastradas
+                    </div>
+                    <div class="professional-card-subtitle">Gerencie as atividades do sistema</div>
+                </div>
+                <div class="professional-card-body">
+                    <div class="flex justify-end mb-6">
+                        <button onclick="showAddActivityModal()" class="professional-button professional-button-success">
+                            Adicionar Atividade
+                        </button>
+                    </div>
+                    
+                    <!-- Nova seção com caixas separadas -->
+                    <div class="activities-grid">
+                        <!-- Caixa de Atividades Positivas -->
+                        <div class="activities-box activities-positive">
+                            <div class="activities-box-header">
+                                <div class="activities-box-icon positive-icon">⭐</div>
+                                <div class="activities-box-title">Atividades Positivas</div>
+                                <div class="activities-box-subtitle">Comportamentos que geram pontos</div>
+                            </div>
+                            <div class="activities-box-content" id="positive-activities">
+                                <!-- Atividades positivas serão carregadas aqui -->
+                            </div>
+                        </div>
+
+                        <!-- Caixa de Atividades Negativas -->
+                        <div class="activities-box activities-negative">
+                            <div class="activities-box-header">
+                                <div class="activities-box-icon negative-icon">⚠️</div>
+                                <div class="activities-box-title">Atividades Negativas</div>
+                                <div class="activities-box-subtitle">Comportamentos que removem pontos</div>
+                            </div>
+                            <div class="activities-box-content" id="negative-activities">
+                                <!-- Atividades negativas serão carregadas aqui -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Adicionar/Editar Atividade -->
+    <div id="activity-modal" class="modal hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 id="modal-title" class="text-lg font-medium text-gray-900">Adicionar Atividade</h3>
+                    <button onclick="hideActivityModal()" class="text-gray-400 hover:text-gray-600">
+                        <span class="text-2xl">×</span>
+                    </button>
+                </div>
+                <form id="activity-form" class="space-y-4">
+                    <input type="hidden" id="activity-id" name="id">
+                    <div>
+                        <label for="activity-name" class="block text-sm font-medium text-gray-700">Nome da Atividade</label>
+                        <input type="text" id="activity-name" name="name" required class="professional-input">
+                    </div>
+                    <div>
+                        <label for="activity-description" class="block text-sm font-medium text-gray-700">Descrição</label>
+                        <textarea id="activity-description" name="description" rows="3" class="professional-input"></textarea>
+                    </div>
+                    <div>
+                        <label for="activity-type" class="block text-sm font-medium text-gray-700">Tipo</label>
+                        <select id="activity-type" name="type" required class="professional-input">
+                            <option value="">Selecione o tipo</option>
+                            <option value="positive">Positiva</option>
+                            <option value="negative">Negativa</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="activity-points" class="block text-sm font-medium text-gray-700">Pontos</label>
+                        <input type="number" id="activity-points" name="points" min="1" max="100" required class="professional-input">
+                    </div>
+                    <div>
+                        <label for="activity-category" class="block text-sm font-medium text-gray-700">Categoria</label>
+                        <select id="activity-category" name="category" required class="professional-input">
+                            <option value="">Selecione a categoria</option>
+                            <option value="comportamento">Comportamento</option>
+                            <option value="estudos">Estudos</option>
+                            <option value="tarefas">Tarefas Domésticas</option>
+                            <option value="esportes">Esportes</option>
+                            <option value="social">Social</option>
+                            <option value="outros">Outros</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="activity-icon" class="block text-sm font-medium text-gray-700">Ícone (emoji)</label>
+                        <input type="text" id="activity-icon" name="icon" placeholder="⭐" class="professional-input">
+                    </div>
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" onclick="hideActivityModal()" class="btn btn-secondary">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            Salvar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação -->
+    <div id="confirm-modal" class="modal hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-sm w-full p-6">
+                <div class="flex items-center mb-4">
+                    <div class="flex-shrink-0 mr-3">
+                        <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                            <span class="text-red-600 font-bold">!</span>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900">Confirmar Exclusão</h3>
+                </div>
+                <p class="text-sm text-gray-500 mb-4">Tem certeza que deseja excluir esta atividade? Esta ação não pode ser desfeita.</p>
+                <div class="flex justify-end space-x-3">
+                    <button onclick="hideConfirmModal()" class="btn btn-secondary">
+                        Cancelar
+                    </button>
+                    <button onclick="confirmDelete()" class="btn btn-danger">
+                        Excluir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script>
+        let activities = [];
+        let currentActivityId = null;
+
+        // Carregar dados na inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            loadActivities();
+        });
+
+        // Carregar lista de atividades
+        async function loadActivities() {
+            try {
+                const response = await API.get('/activities');
+                activities = response.data.activities;
+                renderActivitiesTable();
+            } catch (error) {
+                showNotification('Erro', 'Erro ao carregar atividades', 'error');
+            }
+        }
+
+        // Renderizar atividades nas caixas separadas
+        function renderActivitiesTable() {
+            const positiveContainer = document.getElementById('positive-activities');
+            const negativeContainer = document.getElementById('negative-activities');
+            
+            // Separar atividades por tipo
+            const positiveActivities = activities.filter(activity => activity.type === 'positive');
+            const negativeActivities = activities.filter(activity => activity.type === 'negative');
+            
+            // Renderizar atividades positivas
+            if (positiveActivities.length === 0) {
+                positiveContainer.innerHTML = `
+                    <div class="activities-empty">
+                        <div class="activities-empty-icon">⭐</div>
+                        <h3>Nenhuma atividade positiva</h3>
+                        <p>Adicione atividades positivas para começar</p>
+                    </div>
+                `;
+            } else {
+                positiveContainer.innerHTML = positiveActivities.map(activity => `
+                    <div class="activity-card">
+                        <div class="activity-card-content">
+                            <div class="activity-info">
+                                <div class="activity-icon">
+                                    ${activity.icon || activity.name.charAt(0).toUpperCase()}
+                                </div>
+                                <div class="activity-details">
+                                    <h3>${activity.name}</h3>
+                                    <p>${activity.description || activity.category}</p>
+                                </div>
+                            </div>
+                            <div class="activity-points positive">
+                                <span class="activity-points-number">+${activity.points}</span>
+                                <span>pontos</span>
+                            </div>
+                        </div>
+                        <div class="activity-actions">
+                            <button onclick="editActivity('${activity._id}')" class="activity-btn activity-btn-edit">
+                                ✏️ Editar
+                            </button>
+                            <button onclick="deleteActivity('${activity._id}')" class="activity-btn activity-btn-delete">
+                                🗑️ Apagar
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            // Renderizar atividades negativas
+            if (negativeActivities.length === 0) {
+                negativeContainer.innerHTML = `
+                    <div class="activities-empty">
+                        <div class="activities-empty-icon">⚠️</div>
+                        <h3>Nenhuma atividade negativa</h3>
+                        <p>Adicione atividades negativas para começar</p>
+                    </div>
+                `;
+            } else {
+                negativeContainer.innerHTML = negativeActivities.map(activity => `
+                    <div class="activity-card negative">
+                        <div class="activity-card-content">
+                            <div class="activity-info">
+                                <div class="activity-icon">
+                                    ${activity.icon || activity.name.charAt(0).toUpperCase()}
+                                </div>
+                                <div class="activity-details">
+                                    <h3>${activity.name}</h3>
+                                    <p>${activity.description || activity.category}</p>
+                                </div>
+                            </div>
+                            <div class="activity-points negative">
+                                <span class="activity-points-number">-${activity.points}</span>
+                                <span>pontos</span>
+                            </div>
+                        </div>
+                        <div class="activity-actions">
+                            <button onclick="editActivity('${activity._id}')" class="activity-btn activity-btn-edit">
+                                ✏️ Editar
+                            </button>
+                            <button onclick="deleteActivity('${activity._id}')" class="activity-btn activity-btn-delete">
+                                🗑️ Apagar
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Mostrar modal de adicionar atividade
+        function showAddActivityModal() {
+            document.getElementById('modal-title').textContent = 'Adicionar Atividade';
+            document.getElementById('activity-form').reset();
+            document.getElementById('activity-id').value = '';
+            currentActivityId = null;
+            document.getElementById('activity-modal').classList.remove('hidden');
+        }
+
+        // Mostrar modal de editar atividade
+        function editActivity(activityId) {
+            const activity = activities.find(a => a._id === activityId);
+            if (!activity) return;
+
+            document.getElementById('modal-title').textContent = 'Editar Atividade';
+            document.getElementById('activity-id').value = activity._id;
+            document.getElementById('activity-name').value = activity.name;
+            document.getElementById('activity-description').value = activity.description || '';
+            document.getElementById('activity-type').value = activity.type;
+            document.getElementById('activity-points').value = activity.points;
+            document.getElementById('activity-category').value = activity.category;
+            document.getElementById('activity-icon').value = activity.icon || '';
+            currentActivityId = activityId;
+            document.getElementById('activity-modal').classList.remove('hidden');
+        }
+
+        // Esconder modal
+        function hideActivityModal() {
+            document.getElementById('activity-modal').classList.add('hidden');
+        }
+
+        // Excluir atividade
+        function deleteActivity(activityId) {
+            currentActivityId = activityId;
+            document.getElementById('confirm-modal').classList.remove('hidden');
+        }
+
+        // Esconder modal de confirmação
+        function hideConfirmModal() {
+            document.getElementById('confirm-modal').classList.add('hidden');
+            currentActivityId = null;
+        }
+
+        // Confirmar exclusão
+        async function confirmDelete() {
+            if (!currentActivityId) return;
+
+            try {
+                await API.delete(`/activities/${currentActivityId}`);
+                showNotification('Sucesso', 'Atividade excluída com sucesso!', 'success');
+                hideConfirmModal();
+                loadActivities();
+            } catch (error) {
+                showNotification('Erro', error.message, 'error');
+            }
+        }
+
+        // Event listener para o formulário
+        document.getElementById('activity-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = {
+                name: formData.get('name'),
+                description: formData.get('description') || '',
+                type: formData.get('type'),
+                points: parseInt(formData.get('points')),
+                category: formData.get('category'),
+                icon: formData.get('icon') || ''
+            };
+
+            try {
+                if (currentActivityId) {
+                    // Editar
+                    await API.put(`/activities/${currentActivityId}`, data);
+                    showNotification('Sucesso', 'Atividade atualizada com sucesso!', 'success');
+                } else {
+                    // Adicionar
+                    await API.post('/activities', data);
+                    showNotification('Sucesso', 'Atividade adicionada com sucesso!', 'success');
+                }
+                
+                hideActivityModal();
+                loadActivities();
+            } catch (error) {
+                showNotification('Erro', error.message, 'error');
+            }
+        });
+    </script>
+</body>
+</html> 

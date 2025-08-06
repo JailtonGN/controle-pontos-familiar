@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Controle de Pontos Familiar</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/png" href="assets/logo.png">
+</head>
+<body>
+    <!-- Modern Navigation Bar -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-content">
+                <!-- Brand -->
+                <div class="navbar-brand">
+                    <div class="navbar-logo"></div>
+                    <div>
+                        <div class="navbar-title">Dashboard</div>
+                        <div class="navbar-subtitle">Sistema de Pontos</div>
+                    </div>
+                </div>
+
+                <!-- Desktop Menu -->
+                <div class="navbar-menu">
+                    <div class="navbar-item">
+                        <a href="/dashboard" class="navbar-button active" id="nav-dashboard">
+                            <span class="navbar-button-text">Tela Inicial</span>
+                        </a>
+                    </div>
+                    <div class="navbar-item">
+                        <a href="/manage-points" class="navbar-button" id="nav-activities">
+                            <span class="navbar-button-text">Atividades</span>
+                        </a>
+                    </div>
+                    <div class="navbar-item">
+                        <a href="/kids" class="navbar-button" id="nav-kids">
+                            <span class="navbar-button-text">Cadastros</span>
+                        </a>
+                    </div>
+                    <div class="navbar-item">
+                        <a href="/communication" class="navbar-button" id="nav-communication">
+                            <span class="navbar-button-text">Comunicação</span>
+                        </a>
+                    </div>
+                    <div class="navbar-item">
+                        <a href="/settings" class="navbar-button" id="nav-settings">
+                            <span class="navbar-button-text">Configuração</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- User Menu -->
+                <div class="navbar-user">
+                    <span id="user-name" class="navbar-user-name"></span>
+                    <button onclick="logout()" class="navbar-button navbar-button-logout">
+                        Sair
+                    </button>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="navbar-mobile-menu">
+                    <button class="navbar-mobile-button" onclick="toggleMobileMenu()">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="navbar-mobile-menu-content hidden">
+                <a href="/dashboard" class="navbar-mobile-item active" onclick="setActiveNav('nav-dashboard')">
+                    Tela Inicial
+                </a>
+                <a href="/manage-points" class="navbar-mobile-item" onclick="setActiveNav('nav-activities')">
+                    Atividades
+                </a>
+                <a href="/kids" class="navbar-mobile-item" onclick="setActiveNav('nav-kids')">
+                    Cadastros
+                </a>
+                <a href="/communication" class="navbar-mobile-item" onclick="setActiveNav('nav-communication')">
+                    Comunicação
+                </a>
+                <a href="/settings" class="navbar-mobile-item" onclick="setActiveNav('nav-settings')">
+                    Configuração
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container" style="padding-top: 32px; padding-bottom: 32px;">
+        <!-- Cards de Pontos das Crianças -->
+        <div class="professional-section">
+            <div class="professional-card">
+                <div class="professional-card-header">
+                    <div class="professional-card-title">
+                        🏆 Pontuação das Crianças
+                    </div>
+                    <div class="professional-card-subtitle">Acompanhe o progresso de cada criança</div>
+                </div>
+                <div class="professional-card-body">
+                    <div id="kids-points-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Cards das crianças serão carregados aqui -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Histórico de Atividades -->
+        <div class="professional-section">
+            <div class="professional-card">
+                <div class="professional-card-header">
+                    <div class="professional-card-title">
+                        📊 Histórico de Atividades
+                    </div>
+                    <div class="professional-card-subtitle">Acompanhe todas as atividades registradas</div>
+                </div>
+                <div class="professional-card-body">
+                    <!-- Filtros -->
+                    <div class="history-filters">
+                        <div class="history-filters-grid">
+                            <div class="history-filter-group">
+                                <label for="filter-kid" class="history-filter-label">Criança</label>
+                                <select id="filter-kid" class="history-filter-input">
+                                    <option value="">Todas as crianças</option>
+                                </select>
+                            </div>
+                            <div class="history-filter-group">
+                                <label for="filter-date" class="history-filter-label">Data</label>
+                                <input type="date" id="filter-date" class="history-filter-input">
+                            </div>
+                            <div class="history-filter-group">
+                                <button onclick="applyFilters()" class="professional-button professional-button-secondary">
+                                    🔍 Filtrar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Cards de Histórico -->
+                    <div id="history-cards" class="space-y-4">
+                        <!-- Cards serão carregados aqui -->
+                    </div>
+                    
+                    <!-- Estado vazio -->
+                    <div id="history-empty" class="history-empty hidden">
+                        <div class="history-empty-icon">📝</div>
+                        <h3>Nenhuma atividade registrada</h3>
+                        <p>Comece a registrar atividades para ver o histórico aqui</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Adicionar Criança -->
+    <div id="add-kid-modal" class="modal hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">Adicionar Criança</h3>
+                    <button onclick="hideAddKidModal()" class="text-gray-400 hover:text-gray-600">
+                        <span class="text-2xl">×</span>
+                    </button>
+                </div>
+                <form id="add-kid-form" class="space-y-4">
+                    <div>
+                        <label for="kid-name" class="block text-sm font-medium text-gray-700">Nome</label>
+                        <input type="text" id="kid-name" name="name" required class="input">
+                    </div>
+                    <div>
+                        <label for="kid-age" class="block text-sm font-medium text-gray-700">Idade</label>
+                        <input type="number" id="kid-age" name="age" min="1" max="18" required class="input">
+                    </div>
+                    <div>
+                        <label for="kid-avatar" class="block text-sm font-medium text-gray-700">Avatar (emoji)</label>
+                        <input type="text" id="kid-avatar" name="avatar" placeholder="👶" class="input">
+                    </div>
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" onclick="hideAddKidModal()" class="btn btn-secondary">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            Adicionar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+</html> 
