@@ -12,6 +12,7 @@
     "test-db": "node scripts/test-mongodb-connection.js",
     "test-new-password": "node scripts/update-mongodb-password.js",
     "generate-connection": "node scripts/update-mongodb-password.js --generate",
+    "find-cluster": "node scripts/find-mongodb-connection.js",
     "check-config": "node scripts/check-render-config.js"
   },
   "keywords": [
