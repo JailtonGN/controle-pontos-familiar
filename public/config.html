@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurações - Controle de Pontos Familiar</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+    <!-- Modern Navigation Bar -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-content">
+                <!-- Brand -->
+                <div class="navbar-brand">
+                    <div class="navbar-logo"></div>
+                    <div>
+                        <div class="navbar-title">Configurações</div>
+                        <div class="navbar-subtitle">Sistema de Pontos</div>
+                    </div>
+                </div>
+
+                <!-- Desktop Menu -->
+                <div class="navbar-menu">
+                    <div class="navbar-item">
+                        <a href="/dashboard" class="navbar-button" id="nav-dashboard">
+                            <span class="navbar-button-text">Tela Inicial</span>
+                        </a>
+                    </div>
+                    <div class="navbar-item">
+                        <a href="/manage-points" class="navbar-button" id="nav-activities">
+                            <span class="navbar-button-text">Atividades</span>
+                        </a>
+                    </div>
+                    <div class="navbar-item">
+                        <a href="/kids" class="navbar-button" id="nav-kids">
+                            <span class="navbar-button-text">Cadastros</span>
+                        </a>
+                    </div>
+                    <div class="navbar-item">
+                        <a href="/communication" class="navbar-button" id="nav-communication">
+                            <span class="navbar-button-text">Comunicação</span>
+                        </a>
+                    </div>
+                    <div class="navbar-item">
+                        <a href="/config" class="navbar-button active" id="nav-settings">
+                            <span class="navbar-button-text">Configuração</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- User Menu -->
+                <div class="navbar-user">
+                    <span id="user-name" class="navbar-user-name"></span>
+                    <button onclick="logout()" class="navbar-button navbar-button-logout">
+                        Sair
+                    </button>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="navbar-mobile-menu">
+                    <button class="navbar-mobile-button" onclick="toggleMobileMenu()">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="navbar-mobile-menu-content hidden">
+                <a href="/dashboard" class="navbar-mobile-item" onclick="setActiveNav('nav-dashboard')">
+                    Tela Inicial
+                </a>
+                <a href="/manage-points" class="navbar-mobile-item" onclick="setActiveNav('nav-activities')">
+                    Atividades
+                </a>
+                <a href="/kids" class="navbar-mobile-item" onclick="setActiveNav('nav-kids')">
+                    Cadastros
+                </a>
+                <a href="/communication" class="navbar-mobile-item" onclick="setActiveNav('nav-communication')">
+                    Comunicação
+                </a>
+                <a href="/config" class="navbar-mobile-item active" onclick="setActiveNav('nav-settings')">
+                    Configuração
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container config-container" style="padding-top: 32px; padding-bottom: 32px;">
+        
+        <!-- Seção de Perfil -->
+        <div class="professional-section">
+            <div class="professional-card">
+                <div class="professional-card-header">
+                    <div class="professional-card-title">
+                        👤 Perfil do Usuário
+                    </div>
+                </div>
+                <div class="professional-card-content">
+                    <div class="profile-info">
+                        <div class="profile-avatar">👤</div>
+                        <div class="profile-details">
+                            <h3 id="profile-name">Carregando...</h3>
+                            <p id="profile-email">carregando@email.com</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção de Segurança -->
+        <div class="professional-section">
+            <div class="professional-card">
+                <div class="professional-card-header">
+                    <div class="professional-card-title">
+                        🔒 Segurança
+                    </div>
+                </div>
+                <div class="professional-card-content">
+                    <h3>Alterar Senha</h3>
+                    <form id="change-password-form" class="config-form">
+                        <div class="form-group">
+                            <label for="current-password">Senha Atual</label>
+                            <input type="password" id="current-password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-password">Nova Senha</label>
+                            <input type="password" id="new-password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirm-new-password">Confirmar Nova Senha</label>
+                            <input type="password" id="confirm-new-password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <span class="loading-spinner hidden"></span>
+                            <span class="button-text">Alterar Senha</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção de Dados -->
+        <div class="professional-section">
+            <div class="professional-card">
+                <div class="professional-card-header">
+                    <div class="professional-card-title">
+                        📊 Gerenciamento de Dados
+                    </div>
+                </div>
+                <div class="professional-card-content">
+                    
+                    <!-- Apagar Pontos -->
+                    <div class="config-card danger">
+                        <h3>🗑️ Apagar Todos os Pontos</h3>
+                        <p class="warning-text">⚠️ Esta ação irá remover TODOS os pontos de TODAS as crianças. Esta ação não pode ser desfeita!</p>
+                        <button onclick="confirmDeletePoints()" class="btn btn-danger">
+                            Apagar Todos os Pontos
+                        </button>
+                    </div>
+
+                    <!-- Apagar Histórico -->
+                    <div class="config-card danger">
+                        <h3>🗑️ Apagar Histórico Completo</h3>
+                        <p class="warning-text">⚠️ Esta ação irá remover TODO o histórico de pontos. Esta ação não pode ser desfeita!</p>
+                        <button onclick="confirmDeleteHistory()" class="btn btn-danger">
+                            Apagar Histórico Completo
+                        </button>
+                    </div>
+
+                                         <!-- Baixar Histórico -->
+                     <div class="config-card">
+                         <h3>📄 Baixar Histórico em PDF</h3>
+                         <p>Baixe o histórico de pontos organizado por criança e mês</p>
+                         <div class="form-group">
+                             <label for="history-month">Selecionar Mês:</label>
+                             <select id="history-month" class="form-control">
+                                 <option value="">Carregando...</option>
+                             </select>
+                         </div>
+                         <div class="form-group">
+                             <label for="history-kid">Selecionar Criança (opcional):</label>
+                             <select id="history-kid" class="form-control">
+                                 <option value="">Todas as crianças</option>
+                             </select>
+                         </div>
+                         <button onclick="downloadHistoryPDF()" class="btn btn-secondary">
+                             📄 Baixar Histórico
+                         </button>
+                     </div>
+
+                                         <!-- Baixar Atividades -->
+                     <div class="config-card">
+                         <h3>📋 Baixar Relatório de Atividades</h3>
+                         <p>Baixe um relatório completo de todas as atividades cadastradas</p>
+                         <div class="form-group">
+                             <label for="activities-filter">Filtrar por tipo:</label>
+                             <select id="activities-filter" class="form-control">
+                                 <option value="all">Todas as atividades</option>
+                                 <option value="positive">Apenas positivas</option>
+                                 <option value="negative">Apenas negativas</option>
+                             </select>
+                         </div>
+                         <button onclick="downloadActivitiesPDF()" class="btn btn-secondary">
+                             📋 Baixar Atividades
+                         </button>
+                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção de Estatísticas -->
+        <div class="professional-section">
+            <div class="professional-card">
+                <div class="professional-card-header">
+                    <div class="professional-card-title">
+                        📈 Estatísticas do Sistema
+                    </div>
+                </div>
+                <div class="professional-card-content">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number" id="total-kids">-</div>
+                            <div class="stat-label">Crianças Cadastradas</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="total-activities">-</div>
+                            <div class="stat-label">Atividades Cadastradas</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="total-points">-</div>
+                            <div class="stat-label">Total de Pontos</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="total-records">-</div>
+                            <div class="stat-label">Registros de Pontos</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modals -->
+    <div id="confirm-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Confirmação</h3>
+                <button onclick="closeModal('confirm-modal')" class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="modal-message">Tem certeza que deseja continuar?</p>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeModal('confirm-modal')" class="btn btn-secondary">Cancelar</button>
+                <button id="modal-confirm-btn" class="btn btn-danger">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="notification-title">Notificação</h3>
+                <button onclick="closeModal('notification-modal')" class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="notification-message">Operação realizada com sucesso!</p>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeModal('notification-modal')" class="btn btn-primary">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script>
+        // Client-side logic for config page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserProfile();
+            loadStats();
+            populateMonthSelect();
+            populateKidsSelect();
+            setActiveNav('nav-settings');
+        });
+
+        // Carregar perfil do usuário
+        async function loadUserProfile() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    window.location.href = '/';
+                    return;
+                }
+
+                const response = await fetch('/api/auth/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.data && data.data.user) {
+                        document.getElementById('user-name').textContent = data.data.user.name;
+                        document.getElementById('profile-name').textContent = data.data.user.name;
+                        document.getElementById('profile-email').textContent = data.data.user.email;
+                    } else {
+                        throw new Error('Estrutura de dados inválida');
+                    }
+                } else {
+                    throw new Error('Erro ao carregar perfil');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                showNotification('Erro ao carregar perfil do usuário', 'error');
+            }
+        }
+
+        // Carregar estatísticas
+        async function loadStats() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/kids', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const kidsData = await response.json();
+                    const totalKids = kidsData.success && kidsData.data && kidsData.data.kids ? kidsData.data.kids.length : 0;
+                    document.getElementById('total-kids').textContent = totalKids;
+
+                    // Carregar atividades
+                    const activitiesResponse = await fetch('/api/activities', {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (activitiesResponse.ok) {
+                        const activitiesData = await activitiesResponse.json();
+                        const totalActivities = activitiesData.success && activitiesData.data && activitiesData.data.activities ? activitiesData.data.activities.length : 0;
+                        document.getElementById('total-activities').textContent = totalActivities;
+                    }
+
+                    // Carregar pontos
+                    const pointsResponse = await fetch('/api/points/history', {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (pointsResponse.ok) {
+                        const pointsData = await pointsResponse.json();
+                        if (pointsData.success && pointsData.data && pointsData.data.history) {
+                            const totalRecords = pointsData.data.history.length;
+                            document.getElementById('total-records').textContent = totalRecords;
+
+                            // Calcular total de pontos
+                            let totalPointsValue = 0;
+                            pointsData.data.history.forEach(point => {
+                                if (point.type === 'add') {
+                                    totalPointsValue += point.points;
+                                } else {
+                                    totalPointsValue -= point.points;
+                                }
+                            });
+                            document.getElementById('total-points').textContent = totalPointsValue;
+                        } else {
+                            document.getElementById('total-records').textContent = '0';
+                            document.getElementById('total-points').textContent = '0';
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao carregar estatísticas:', error);
+                // Definir valores padrão em caso de erro
+                document.getElementById('total-kids').textContent = '0';
+                document.getElementById('total-activities').textContent = '0';
+                document.getElementById('total-records').textContent = '0';
+                document.getElementById('total-points').textContent = '0';
+            }
+        }
+
+        // Popular select de meses
+        function populateMonthSelect() {
+            const select = document.getElementById('history-month');
+            const currentDate = new Date();
+            const currentYear = currentDate.getFullYear();
+            
+            select.innerHTML = '<option value="">Selecione um mês</option>';
+            
+            // Últimos 12 meses
+            for (let i = 0; i < 12; i++) {
+                const date = new Date(currentYear, currentDate.getMonth() - i, 1);
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const monthName = date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+                
+                const option = document.createElement('option');
+                option.value = `${year}-${month}`;
+                option.textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+                select.appendChild(option);
+            }
+        }
+
+        // Popular select de crianças
+        async function populateKidsSelect() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/kids', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const select = document.getElementById('history-kid');
+                    
+                    if (data.success && data.data && data.data.kids && data.data.kids.length > 0) {
+                        data.data.kids.forEach(kid => {
+                            const option = document.createElement('option');
+                            option.value = kid._id;
+                            option.textContent = `${kid.name} (${kid.age} anos)`;
+                            select.appendChild(option);
+                        });
+                    } else {
+                        console.log('Nenhuma criança encontrada ou estrutura de dados inválida:', data);
+                    }
+                } else {
+                    console.error('Erro na resposta da API:', response.status);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar crianças:', error);
+            }
+        }
+
+        // Alterar senha
+        document.getElementById('change-password-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const currentPassword = document.getElementById('current-password').value;
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-new-password').value;
+            
+            if (newPassword !== confirmPassword) {
+                showNotification('As senhas não coincidem', 'error');
+                return;
+            }
+            
+            if (newPassword.length < 6) {
+                showNotification('A nova senha deve ter pelo menos 6 caracteres', 'error');
+                return;
+            }
+            
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/auth/change-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        currentPassword,
+                        newPassword
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showNotification('Senha alterada com sucesso!', 'success');
+                    document.getElementById('change-password-form').reset();
+                } else {
+                    showNotification(data.message || 'Erro ao alterar senha', 'error');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                showNotification('Erro ao alterar senha', 'error');
+            }
+        });
+
+        // Confirmar exclusão de pontos
+        function confirmDeletePoints() {
+            showConfirmModal(
+                'Apagar Todos os Pontos',
+                'Tem certeza que deseja apagar TODOS os pontos de TODAS as crianças? Esta ação não pode ser desfeita!',
+                deleteAllPoints
+            );
+        }
+
+        // Apagar todos os pontos
+        async function deleteAllPoints() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/points/delete-all', {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showNotification(data.message, 'success');
+                    loadStats(); // Recarregar estatísticas
+                } else {
+                    showNotification(data.message || 'Erro ao apagar pontos', 'error');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                showNotification('Erro ao apagar pontos', 'error');
+            }
+        }
+
+        // Confirmar exclusão de histórico
+        function confirmDeleteHistory() {
+            showConfirmModal(
+                'Apagar Histórico Completo',
+                'Tem certeza que deseja apagar TODO o histórico de pontos? Esta ação não pode ser desfeita!',
+                deleteAllHistory
+            );
+        }
+
+        // Apagar todo o histórico
+        async function deleteAllHistory() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/points/delete-history', {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showNotification(data.message, 'success');
+                    loadStats(); // Recarregar estatísticas
+                } else {
+                    showNotification(data.message || 'Erro ao apagar histórico', 'error');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                showNotification('Erro ao apagar histórico', 'error');
+            }
+        }
+
+        // Baixar histórico em PDF
+        async function downloadHistoryPDF() {
+            const month = document.getElementById('history-month').value;
+            const kidId = document.getElementById('history-kid').value;
+            
+            if (!month) {
+                showNotification('Selecione um mês para baixar o histórico', 'error');
+                return;
+            }
+            
+            try {
+                const token = localStorage.getItem('token');
+                let url = `/api/points/history-by-month?month=${month}`;
+                if (kidId) {
+                    url += `&kidId=${kidId}`;
+                }
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    generateHistoryPDF(data.data, kidId);
+                } else {
+                    showNotification(data.message || 'Erro ao baixar histórico', 'error');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                showNotification('Erro ao baixar histórico', 'error');
+            }
+        }
+
+                 // Baixar atividades em PDF
+         async function downloadActivitiesPDF() {
+             try {
+                 const token = localStorage.getItem('token');
+                 const response = await fetch('/api/activities', {
+                     headers: {
+                         'Authorization': `Bearer ${token}`
+                     }
+                 });
+                 
+                 const data = await response.json();
+                 
+                 if (response.ok && data.success && data.data && data.data.activities) {
+                     const filterType = document.getElementById('activities-filter').value;
+                     generateActivitiesPDF(data.data.activities, filterType);
+                 } else {
+                     showNotification(data.message || 'Erro ao baixar atividades', 'error');
+                 }
+             } catch (error) {
+                 console.error('Erro:', error);
+                 showNotification('Erro ao baixar atividades', 'error');
+             }
+         }
+
+        // Gerar PDF do histórico
+        function generateHistoryPDF(data, kidId) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Título
+            doc.setFontSize(20);
+            doc.text('Histórico de Pontos', 20, 20);
+            
+            doc.setFontSize(12);
+            doc.text(`Mês: ${data.month}`, 20, 30);
+            doc.text(`Período: ${new Date(data.startDate).toLocaleDateString('pt-BR')} a ${new Date(data.endDate).toLocaleDateString('pt-BR')}`, 20, 40);
+            
+            if (data.history.length === 0) {
+                doc.text('Nenhum registro encontrado para este mês.', 20, 60);
+            } else {
+                // Agrupar por criança
+                const kidsData = {};
+                data.history.forEach(point => {
+                    const kidName = point.kidId.name;
+                    if (!kidsData[kidName]) {
+                        kidsData[kidName] = [];
+                    }
+                    kidsData[kidName].push(point);
+                });
+                
+                let yPosition = 60;
+                
+                Object.keys(kidsData).forEach(kidName => {
+                    const points = kidsData[kidName];
+                    
+                    // Nome da criança
+                    doc.setFontSize(14);
+                    doc.setFont(undefined, 'bold');
+                    doc.text(`Criança: ${kidName}`, 20, yPosition);
+                    yPosition += 10;
+                    
+                    // Tabela de pontos
+                    const tableData = points.map(point => [
+                        new Date(point.date).toLocaleDateString('pt-BR'),
+                        point.activityId ? point.activityId.name : 'Pontos avulsos',
+                        point.type === 'add' ? `+${point.points}` : `-${point.points}`,
+                        point.notes || '-'
+                    ]);
+                    
+                    doc.autoTable({
+                        startY: yPosition,
+                        head: [['Data', 'Atividade', 'Pontos', 'Observações']],
+                        body: tableData,
+                        theme: 'grid',
+                        headStyles: { fillColor: [66, 139, 202] }
+                    });
+                    
+                    yPosition = doc.lastAutoTable.finalY + 15;
+                    
+                    // Calcular total da criança
+                    const total = points.reduce((sum, point) => {
+                        return sum + (point.type === 'add' ? point.points : -point.points);
+                    }, 0);
+                    
+                    doc.setFontSize(12);
+                    doc.setFont(undefined, 'bold');
+                    doc.text(`Total da criança: ${total} pontos`, 20, yPosition);
+                    yPosition += 20;
+                });
+            }
+            
+            // Salvar PDF
+            let fileName = `historico_pontos_${data.month}`;
+            if (kidId) {
+                const selectedKid = document.getElementById('history-kid').options[document.getElementById('history-kid').selectedIndex].text;
+                fileName += `_${selectedKid.split(' ')[0]}`; // Adiciona o nome da criança ao arquivo
+            }
+            fileName += '.pdf';
+            doc.save(fileName);
+            showNotification('PDF do histórico baixado com sucesso!', 'success');
+        }
+
+                 // Gerar PDF das atividades
+         function generateActivitiesPDF(activities, filterType = 'all') {
+             const { jsPDF } = window.jspdf;
+             const doc = new jsPDF();
+             
+             // Título
+             doc.setFontSize(20);
+             doc.text('Relatório de Atividades', 20, 20);
+             doc.setFontSize(12);
+             doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 20, 30);
+             
+             // Filtrar atividades baseado no tipo selecionado
+             let filteredActivities = activities;
+             let filterText = 'Todas as atividades';
+             
+             if (filterType === 'positive') {
+                 filteredActivities = activities.filter(activity => activity.type === 'positive');
+                 filterText = 'Apenas atividades positivas';
+             } else if (filterType === 'negative') {
+                 filteredActivities = activities.filter(activity => activity.type === 'negative');
+                 filterText = 'Apenas atividades negativas';
+             }
+             
+             doc.text(`Filtro: ${filterText}`, 20, 40);
+             
+             if (filteredActivities.length === 0) {
+                 doc.text('Nenhuma atividade encontrada com o filtro selecionado.', 20, 60);
+             } else {
+                 // Ordenar alfabeticamente
+                 filteredActivities.sort((a, b) => a.name.localeCompare(b.name));
+                 
+                 let yPosition = 60;
+                 
+                 // Se mostrar todas ou apenas positivas
+                 if (filterType === 'all' || filterType === 'positive') {
+                     const positiveActivities = filteredActivities.filter(activity => activity.type === 'positive');
+                     if (positiveActivities.length > 0) {
+                         doc.setFontSize(14);
+                         doc.setFont(undefined, 'bold');
+                         doc.text('✅ Atividades Positivas', 20, yPosition);
+                         yPosition += 10;
+                         
+                         const positiveData = positiveActivities.map(activity => [
+                             activity.name,
+                             activity.points,
+                             activity.icon,
+                             activity.description || '-'
+                         ]);
+                         
+                         doc.autoTable({
+                             startY: yPosition,
+                             head: [['Atividade', 'Pontos', 'Ícone', 'Descrição']],
+                             body: positiveData,
+                             theme: 'grid',
+                             headStyles: { fillColor: [40, 167, 69] }
+                         });
+                         
+                         yPosition = doc.lastAutoTable.finalY + 20;
+                     }
+                 }
+                 
+                 // Se mostrar todas ou apenas negativas
+                 if (filterType === 'all' || filterType === 'negative') {
+                     const negativeActivities = filteredActivities.filter(activity => activity.type === 'negative');
+                     if (negativeActivities.length > 0) {
+                         doc.setFontSize(14);
+                         doc.setFont(undefined, 'bold');
+                         doc.text('❌ Atividades Negativas', 20, yPosition);
+                         yPosition += 10;
+                         
+                         const negativeData = negativeActivities.map(activity => [
+                             activity.name,
+                             activity.points,
+                             activity.icon,
+                             activity.description || '-'
+                         ]);
+                         
+                         doc.autoTable({
+                             startY: yPosition,
+                             head: [['Atividade', 'Pontos', 'Ícone', 'Descrição']],
+                             body: negativeData,
+                             theme: 'grid',
+                             headStyles: { fillColor: [220, 53, 69] }
+                         });
+                     }
+                 }
+             }
+             
+             // Salvar PDF
+             let fileName = `relatorio_atividades_${new Date().toISOString().split('T')[0]}`;
+             if (filterType !== 'all') {
+                 fileName += `_${filterType}`;
+             }
+             fileName += '.pdf';
+             doc.save(fileName);
+             showNotification('PDF das atividades baixado com sucesso!', 'success');
+         }
+
+        // Funções auxiliares para modais
+        function showConfirmModal(title, message, onConfirm) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-message').textContent = message;
+            document.getElementById('modal-confirm-btn').onclick = () => {
+                closeModal('confirm-modal');
+                onConfirm();
+            };
+            document.getElementById('confirm-modal').classList.remove('hidden');
+        }
+
+        function showNotification(message, type = 'info') {
+            document.getElementById('notification-title').textContent = type === 'error' ? 'Erro' : 'Sucesso';
+            document.getElementById('notification-message').textContent = message;
+            document.getElementById('notification-modal').classList.remove('hidden');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+    </script>
+</body>
+</html> 

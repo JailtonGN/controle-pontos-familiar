@@ -1,13 +1,16 @@
 const express = require('express');
 const { body } = require('express-validator');
-const { authenticateToken } = require('../middleware/auth');
-const {
-    register,
-    login,
-    getProfile,
-    updateProfile,
-    changePassword,
-    verifyToken
+const { authenticateToken, authenticateKidToken } = require('../middleware/auth');
+const { 
+    register, 
+    login, 
+    getProfile, 
+    updateProfile, 
+    changePassword, 
+    verifyToken,
+    kidLogin,
+    verifyKidToken,
+    getKidProfile
 } = require('../controllers/authController');
 
 const router = express.Router();
@@ -71,5 +74,10 @@ router.get('/profile', authenticateToken, getProfile);
 router.put('/profile', authenticateToken, updateProfileValidation, updateProfile);
 router.put('/change-password', authenticateToken, changePasswordValidation, changePassword);
 router.get('/verify', authenticateToken, verifyToken);
+
+// Rotas para crianças
+router.post('/kid/login', kidLogin);
+router.get('/kid/verify', authenticateKidToken, verifyKidToken);
+router.get('/kid/profile', authenticateKidToken, getKidProfile);
 
 module.exports = router; 

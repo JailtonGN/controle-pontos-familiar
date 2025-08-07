@@ -187,7 +187,7 @@ class AuthManager {
     }
 
     static async checkAuth() {
-        const protectedPages = ['/dashboard', '/manage-points', '/child-view', '/reminders', '/kids', '/kid-area', '/communication'];
+        const protectedPages = ['/dashboard', '/manage-points', '/child-view', '/kids', '/kid-area', '/communication'];
         const currentPath = window.location.pathname;
         
         if (protectedPages.includes(currentPath)) {
@@ -416,7 +416,7 @@ function logout() {
 // Inicialização quando o DOM estiver pronto
 document.addEventListener('DOMContentLoaded', function() {
     // Verificar autenticação em páginas protegidas
-    const protectedPages = ['/dashboard', '/child-view', '/reminders'];
+    const protectedPages = ['/dashboard', '/child-view'];
     const currentPath = window.location.pathname;
     
     if (protectedPages.includes(currentPath)) {
@@ -542,8 +542,10 @@ async function loadHistory() {
 async function loadUserInfo() {
     try {
         const user = AuthManager.getUser();
-        if (user) {
-            document.getElementById('user-name').textContent = user.name;
+        const userNameElement = document.getElementById('user-name');
+        
+        if (user && userNameElement) {
+            userNameElement.textContent = user.name;
         }
     } catch (error) {
         console.error('Erro ao carregar informações do usuário:', error);

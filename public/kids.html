@@ -45,7 +45,7 @@
                         </a>
                     </div>
                     <div class="navbar-item">
-                        <a href="/settings" class="navbar-button" id="nav-settings">
+                        <a href="/config" class="navbar-button" id="nav-settings">
                             <span class="navbar-button-text">Configuração</span>
                         </a>
                     </div>
@@ -84,7 +84,7 @@
                 <a href="/communication" class="navbar-mobile-item" onclick="setActiveNav('nav-communication')">
                     Comunicação
                 </a>
-                <a href="/settings" class="navbar-mobile-item" onclick="setActiveNav('nav-settings')">
+                <a href="/config" class="navbar-mobile-item" onclick="setActiveNav('nav-settings')">
                     Configuração
                 </a>
             </div>
@@ -355,6 +355,92 @@
         </div>
     </div>
 
+    <!-- Modal de Editar Atividade -->
+    <div id="edit-activity-modal" class="modal hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 border-t-8 border-blue-500">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                            <span class="text-blue-500 text-2xl">✏️</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-900">Editar Atividade</h3>
+                    </div>
+                    <button onclick="hideEditActivityModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+                </div>
+                
+                <form id="edit-activity-form" class="space-y-4">
+                    <input type="hidden" id="edit-activity-id">
+                    
+                    <div>
+                        <label for="edit-activity-name" class="block text-sm font-medium text-gray-700 mb-2">Nome da Atividade</label>
+                        <input type="text" id="edit-activity-name" name="name" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    
+                    <div>
+                        <label for="edit-activity-description" class="block text-sm font-medium text-gray-700 mb-2">Descrição (opcional)</label>
+                        <textarea id="edit-activity-description" name="description" rows="3"
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="edit-activity-type" class="block text-sm font-medium text-gray-700 mb-2">Tipo</label>
+                            <select id="edit-activity-type" name="type" required
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="positive">Positiva</option>
+                                <option value="negative">Negativa</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="edit-activity-points" class="block text-sm font-medium text-gray-700 mb-2">Pontos</label>
+                            <input type="number" id="edit-activity-points" name="points" min="1" max="100" required
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <button type="button" onclick="hideEditActivityModal()" 
+                                class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                            Cancelar
+                        </button>
+                        <button type="submit" 
+                                class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                            Salvar Alterações
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação de Exclusão de Atividade -->
+    <div id="delete-activity-modal" class="modal hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-8 border-t-8 border-red-500">
+                <div class="flex items-center mb-6">
+                    <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mr-3">
+                        <span class="text-red-500 text-2xl">🗑️</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900">Confirmar Exclusão</h3>
+                </div>
+                <p class="text-base text-gray-600 mb-6">Tem certeza que deseja excluir esta atividade? Esta ação não pode ser desfeita.</p>
+                <div class="flex justify-end space-x-3">
+                    <button onclick="hideDeleteActivityModal()" 
+                            class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                        Cancelar
+                    </button>
+                    <button onclick="confirmDeleteActivity()" 
+                            class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                        Excluir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal de Confirmação -->
     <div id="confirm-modal" class="modal hidden">
         <div class="flex items-center justify-center min-h-screen p-4">
@@ -455,9 +541,11 @@
              const positiveContainer = document.getElementById('positive-activities');
              const negativeContainer = document.getElementById('negative-activities');
              
-             // Separar atividades por tipo
-             const positiveActivities = activities.filter(activity => activity.type === 'positive');
-             const negativeActivities = activities.filter(activity => activity.type === 'negative');
+             // Separar atividades por tipo e ordenar alfabeticamente
+             const positiveActivities = activities.filter(activity => activity.type === 'positive')
+                 .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+             const negativeActivities = activities.filter(activity => activity.type === 'negative')
+                 .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
              
              // Renderizar atividades positivas
              if (positiveActivities.length === 0) {
@@ -655,15 +743,30 @@
              const activity = activities.find(a => a._id === activityId);
              if (!activity) return;
 
-             // Preencher formulário de edição (implementar modal se necessário)
-             showNotification('Info', 'Funcionalidade de edição em desenvolvimento', 'info');
+             // Preencher formulário de edição
+             document.getElementById('edit-activity-id').value = activity._id;
+             document.getElementById('edit-activity-name').value = activity.name;
+             document.getElementById('edit-activity-description').value = activity.description || '';
+             document.getElementById('edit-activity-type').value = activity.type;
+             document.getElementById('edit-activity-points').value = activity.points;
+             
+             // Mostrar modal
+             document.getElementById('edit-activity-modal').classList.remove('hidden');
+         }
+
+         function hideEditActivityModal() {
+             document.getElementById('edit-activity-modal').classList.add('hidden');
+             document.getElementById('edit-activity-form').reset();
          }
 
          function deleteActivity(activityId) {
              currentActivityId = activityId;
-             if (confirm('Tem certeza que deseja excluir esta atividade?')) {
-                 confirmDeleteActivity();
-             }
+             document.getElementById('delete-activity-modal').classList.remove('hidden');
+         }
+
+         function hideDeleteActivityModal() {
+             document.getElementById('delete-activity-modal').classList.add('hidden');
+             currentActivityId = null;
          }
 
          async function confirmDeleteActivity() {
@@ -671,12 +774,52 @@
 
              try {
                  await API.delete(`/activities/${currentActivityId}`);
-                 showNotification('Sucesso', 'Atividade excluída com sucesso!', 'success');
+                 hideDeleteActivityModal();
                  loadActivities();
+                 // Feedback visual simples
+                 const deleteBtn = document.querySelector('#delete-activity-modal button[onclick="confirmDeleteActivity()"]');
+                 const originalText = deleteBtn.textContent;
+                 deleteBtn.textContent = '✓ Excluído!';
+                 deleteBtn.style.backgroundColor = '#10B981';
+                 setTimeout(() => {
+                     deleteBtn.textContent = originalText;
+                     deleteBtn.style.backgroundColor = '';
+                 }, 2000);
              } catch (error) {
                  showNotification('Erro', error.message, 'error');
              }
          }
+
+         // Event listener para o formulário de edição de atividades
+         document.getElementById('edit-activity-form').addEventListener('submit', async function(e) {
+             e.preventDefault();
+             
+             const formData = new FormData(this);
+             const activityId = document.getElementById('edit-activity-id').value;
+             const data = {
+                 name: formData.get('name'),
+                 type: formData.get('type'),
+                 points: parseInt(formData.get('points')),
+                 description: formData.get('description') || ''
+             };
+
+             try {
+                 await API.put(`/activities/${activityId}`, data);
+                 hideEditActivityModal();
+                 loadActivities();
+                 // Feedback visual simples
+                 const submitBtn = this.querySelector('button[type="submit"]');
+                 const originalText = submitBtn.textContent;
+                 submitBtn.textContent = '✓ Salvo!';
+                 submitBtn.style.backgroundColor = '#10B981';
+                 setTimeout(() => {
+                     submitBtn.textContent = originalText;
+                     submitBtn.style.backgroundColor = '';
+                 }, 2000);
+             } catch (error) {
+                 showNotification('Erro', error.message, 'error');
+             }
+         });
 
          // Event listener para o formulário de criação de atividades
          document.getElementById('create-activity-form').addEventListener('submit', async function(e) {
@@ -692,9 +835,17 @@
 
              try {
                  await API.post('/activities', data);
-                 showNotification('Sucesso', 'Atividade criada com sucesso!', 'success');
                  this.reset();
                  loadActivities();
+                 // Feedback visual simples sem modal
+                 const submitBtn = this.querySelector('button[type="submit"]');
+                 const originalText = submitBtn.textContent;
+                 submitBtn.textContent = '✓ Criada!';
+                 submitBtn.style.backgroundColor = '#10B981';
+                 setTimeout(() => {
+                     submitBtn.textContent = originalText;
+                     submitBtn.style.backgroundColor = '';
+                 }, 2000);
              } catch (error) {
                  showNotification('Erro', error.message, 'error');
              }

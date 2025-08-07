@@ -49,7 +49,7 @@
                         </a>
                     </div>
                     <div class="navbar-item">
-                        <a href="/settings" class="navbar-button" id="nav-settings">
+                        <a href="/config" class="navbar-button" id="nav-settings">
                             <span class="navbar-button-text">Configuração</span>
                         </a>
                     </div>
@@ -90,7 +90,7 @@
                 <a href="/communication" class="navbar-mobile-item" onclick="setActiveNav('nav-communication')">
                     Comunicação
                 </a>
-                <a href="/settings" class="navbar-mobile-item" onclick="setActiveNav('nav-settings')">
+                <a href="/config" class="navbar-mobile-item" onclick="setActiveNav('nav-settings')">
                     Configuração
                 </a>
             </div>
@@ -258,9 +258,11 @@
             const positiveContainer = document.getElementById('positive-activities');
             const negativeContainer = document.getElementById('negative-activities');
             
-            // Separar atividades por tipo
-            const positiveActivities = activities.filter(activity => activity.type === 'positive');
-            const negativeActivities = activities.filter(activity => activity.type === 'negative');
+                         // Separar atividades por tipo e ordenar alfabeticamente
+             const positiveActivities = activities.filter(activity => activity.type === 'positive')
+                 .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+             const negativeActivities = activities.filter(activity => activity.type === 'negative')
+                 .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
             
             // Renderizar atividades positivas
             if (positiveActivities.length === 0) {
@@ -420,7 +422,6 @@
                 } else {
                     // Adicionar
                     await API.post('/activities', data);
-                    showNotification('Sucesso', 'Atividade adicionada com sucesso!', 'success');
                 }
                 
                 hideActivityModal();

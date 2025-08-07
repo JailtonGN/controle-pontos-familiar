@@ -552,6 +552,204 @@ const deletePoint = async (req, res) => {
     }
 };
 
+// @desc    Apagar todos os pontos de todas as crianças
+// @route   DELETE /api/points/delete-all
+// @access  Private
+const deleteAllPoints = async (req, res) => {
+    try {
+        // Buscar todas as crianças do usuário
+        const kids = await Kid.find({ 
+            parentId: req.user._id,
+            isActive: true 
+        });
+
+        if (kids.length === 0) {
+            return res.json({
+                success: true,
+                message: 'Nenhuma criança encontrada'
+            });
+        }
+
+        // Obter IDs das crianças
+        const kidIds = kids.map(kid => kid._id);
+
+        // Marcar todos os pontos como inativos
+        await Point.updateMany(
+            { kidId: { $in: kidIds } },
+            { isActive: false }
+        );
+
+        // Zerar pontos de todas as crianças
+        await Kid.updateMany(
+            { _id: { $in: kidIds } },
+            { 
+                totalPoints: 0,
+                currentLevel: 1
+            }
+        );
+
+        res.json({
+            success: true,
+            message: 'Todos os pontos foram apagados com sucesso',
+            data: {
+                kidsAffected: kids.length,
+                pointsDeleted: await Point.countDocuments({ kidId: { $in: kidIds } })
+            }
+        });
+
+    } catch (error) {
+        console.error('Erro ao apagar todos os pontos:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro interno do servidor'
+        });
+    }
+};
+
+// @desc    Obter histórico por mês específico
+// @route   GET /api/points/history-by-month
+// @access  Private
+const getHistoryByMonth = async (req, res) => {
+    try {
+        const { month, kidId } = req.query;
+        
+        if (!month) {
+            return res.status(400).json({
+                success: false,
+                message: 'Mês é obrigatório'
+            });
+        }
+
+        let kidIds;
+        
+        if (kidId) {
+            // Verificar se a criança pertence ao usuário
+            const kid = await Kid.findOne({
+                _id: kidId,
+                parentId: req.user._id,
+                isActive: true
+            });
+            
+            if (!kid) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Criança não encontrada'
+                });
+            }
+            
+            kidIds = [kid._id];
+        } else {
+            // Buscar todas as crianças do usuário
+            const kids = await Kid.find({ 
+                parentId: req.user._id,
+                isActive: true 
+            });
+
+            if (kids.length === 0) {
+                return res.json({
+                    success: true,
+                    data: {
+                        history: [],
+                        month: month,
+                        startDate: null,
+                        endDate: null
+                    }
+                });
+            }
+
+            // Obter IDs das crianças
+            kidIds = kids.map(kid => kid._id);
+        }
+
+        // Parsear mês (formato: YYYY-MM)
+        const [year, monthNum] = month.split('-');
+        const startDate = new Date(parseInt(year), parseInt(monthNum) - 1, 1);
+        const endDate = new Date(parseInt(year), parseInt(monthNum), 0, 23, 59, 59);
+
+        // Buscar pontos do mês específico
+        const points = await Point.find({
+            kidId: { $in: kidIds },
+            date: {
+                $gte: startDate,
+                $lte: endDate
+            },
+            isActive: true
+        })
+        .populate('kidId', 'name age avatar emoji color')
+        .populate('activityId', 'name icon color category')
+        .populate('awardedBy', 'name')
+        .sort({ date: -1 });
+
+        res.json({
+            success: true,
+            data: {
+                history: points,
+                month: month,
+                startDate: startDate,
+                endDate: endDate
+            }
+        });
+
+    } catch (error) {
+        console.error('Erro ao obter histórico por mês:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro interno do servidor'
+        });
+    }
+};
+
+// @desc    Apagar todo o histórico de pontos
+// @route   DELETE /api/points/delete-history
+// @access  Private
+const deleteAllHistory = async (req, res) => {
+    try {
+        // Buscar todas as crianças do usuário
+        const kids = await Kid.find({ 
+            parentId: req.user._id,
+            isActive: true 
+        });
+
+        if (kids.length === 0) {
+            return res.json({
+                success: true,
+                message: 'Nenhuma criança encontrada'
+            });
+        }
+
+        // Obter IDs das crianças
+        const kidIds = kids.map(kid => kid._id);
+
+        // Deletar fisicamente todos os registros de pontos
+        const deleteResult = await Point.deleteMany({ kidId: { $in: kidIds } });
+
+        // Zerar pontos de todas as crianças
+        await Kid.updateMany(
+            { _id: { $in: kidIds } },
+            { 
+                totalPoints: 0,
+                currentLevel: 1
+            }
+        );
+
+        res.json({
+            success: true,
+            message: 'Todo o histórico foi apagado com sucesso',
+            data: {
+                kidsAffected: kids.length,
+                recordsDeleted: deleteResult.deletedCount
+            }
+        });
+
+    } catch (error) {
+        console.error('Erro ao apagar histórico:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro interno do servidor'
+        });
+    }
+};
+
 module.exports = {
     addPoints,
     removePoints,
@@ -559,5 +757,8 @@ module.exports = {
     getGeneralHistory,
     getPointStats,
     getPointsByCategory,
-    deletePoint
+    deletePoint,
+    deleteAllPoints,
+    deleteAllHistory,
+    getHistoryByMonth
 }; 

@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 const User = require('../models/User');
+const Kid = require('../models/Kid');
 
 // Gerar token JWT
 const generateToken = (userId) => {
@@ -337,11 +338,142 @@ const verifyToken = async (req, res) => {
     }
 };
 
+// @desc    Login da criança
+// @route   POST /api/auth/kid/login
+// @access  Public
+const kidLogin = async (req, res) => {
+    try {
+        console.log('🔍 [KID LOGIN] Iniciando login da criança...');
+        console.log('📊 [KID LOGIN] Dados recebidos:', {
+            kidId: req.body.kidId,
+            pin: req.body.pin ? '***' : 'undefined'
+        });
+
+        const { kidId, pin } = req.body;
+
+        // Verificar se a criança existe
+        const kid = await Kid.findById(kidId);
+        if (!kid || !kid.isActive) {
+            console.log('❌ [KID LOGIN] Criança não encontrada:', kidId);
+            return res.status(404).json({
+                success: false,
+                message: 'Criança não encontrada'
+            });
+        }
+
+        console.log('✅ [KID LOGIN] Criança encontrada:', kid.name);
+
+        // Verificar PIN
+        if (kid.pin !== pin) {
+            console.log('❌ [KID LOGIN] PIN incorreto');
+            return res.status(401).json({
+                success: false,
+                message: 'PIN incorreto'
+            });
+        }
+
+        console.log('✅ [KID LOGIN] PIN correto');
+
+        // Gerar token para criança
+        const token = jwt.sign(
+            { 
+                kidId: kid._id,
+                type: 'kid'
+            },
+            process.env.JWT_SECRET || 'fallback_secret',
+            { expiresIn: process.env.JWT_EXPIRE || '24h' }
+        );
+
+        console.log('✅ [KID LOGIN] Token gerado com sucesso');
+
+        res.json({
+            success: true,
+            message: 'Login da criança realizado com sucesso',
+            data: {
+                kid: {
+                    _id: kid._id,
+                    name: kid.name,
+                    age: kid.age,
+                    emoji: kid.emoji,
+                    color: kid.color,
+                    totalPoints: kid.totalPoints,
+                    currentLevel: kid.currentLevel
+                },
+                token
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ [KID LOGIN] Erro no login da criança:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro interno do servidor'
+        });
+    }
+};
+
+// @desc    Verificar token da criança
+// @route   GET /api/auth/kid/verify
+// @access  Private (Kid)
+const verifyKidToken = async (req, res) => {
+    try {
+        res.json({
+            success: true,
+            message: 'Token da criança válido',
+            data: {
+                kid: req.kid
+            }
+        });
+
+    } catch (error) {
+        console.error('Erro ao verificar token da criança:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro interno do servidor'
+        });
+    }
+};
+
+// @desc    Obter perfil da criança
+// @route   GET /api/auth/kid/profile
+// @access  Private (Kid)
+const getKidProfile = async (req, res) => {
+    try {
+        const kid = await Kid.findById(req.kid._id);
+        
+        res.json({
+            success: true,
+            data: {
+                kid: {
+                    _id: kid._id,
+                    name: kid.name,
+                    age: kid.age,
+                    emoji: kid.emoji,
+                    color: kid.color,
+                    totalPoints: kid.totalPoints,
+                    currentLevel: kid.currentLevel,
+                    levelProgress: kid.getLevelProgress()
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('Erro ao obter perfil da criança:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro interno do servidor'
+        });
+    }
+};
+
 module.exports = {
     register,
     login,
     getProfile,
     updateProfile,
     changePassword,
-    verifyToken
+    verifyToken,
+    kidLogin,
+    verifyKidToken,
+    getKidProfile
 }; 

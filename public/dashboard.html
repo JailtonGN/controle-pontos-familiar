@@ -44,7 +44,7 @@
                         </a>
                     </div>
                     <div class="navbar-item">
-                        <a href="/settings" class="navbar-button" id="nav-settings">
+                        <a href="/config" class="navbar-button" id="nav-settings">
                             <span class="navbar-button-text">Configuração</span>
                         </a>
                     </div>
@@ -82,7 +82,7 @@
                 <a href="/communication" class="navbar-mobile-item" onclick="setActiveNav('nav-communication')">
                     Comunicação
                 </a>
-                <a href="/settings" class="navbar-mobile-item" onclick="setActiveNav('nav-settings')">
+                <a href="/config" class="navbar-mobile-item" onclick="setActiveNav('nav-settings')">
                     Configuração
                 </a>
             </div>
@@ -192,5 +192,191 @@
     </div>
 
     <script src="js/main.js"></script>
+    <script>
+        // API específica para crianças
+        const KidAPI = {
+            baseURL: '/api',
+            
+            async request(endpoint, options = {}) {
+                const url = this.baseURL + endpoint;
+                const config = {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                };
+
+                const token = localStorage.getItem('kidToken');
+                if (token) {
+                    config.headers.Authorization = `Bearer ${token}`;
+                }
+
+                try {
+                    const response = await fetch(url, config);
+                    const data = await response.json();
+                    
+                    if (!response.ok) {
+                        throw new Error(data.message || 'Erro na requisição');
+                    }
+                    
+                    return data;
+                } catch (error) {
+                    console.error('Erro na API:', error);
+                    throw error;
+                }
+            },
+
+            async get(endpoint) {
+                return this.request(endpoint, { method: 'GET' });
+            }
+        };
+
+        // Verificar se é uma criança e adaptar interface
+        document.addEventListener('DOMContentLoaded', function() {
+            const kidData = localStorage.getItem('kidData');
+            const kidToken = localStorage.getItem('kidToken');
+            
+            if (kidData && kidToken) {
+                // É uma criança - adaptar interface
+                adaptDashboardForKid();
+            }
+        });
+
+        // Adaptar dashboard para criança
+        function adaptDashboardForKid() {
+            console.log('Adaptando dashboard para criança');
+            
+            // Ocultar navegação dos pais
+            const navbar = document.querySelector('.navbar');
+            if (navbar) {
+                navbar.style.display = 'none';
+            }
+            
+            // Adicionar header da criança
+            const body = document.body;
+            const header = document.createElement('header');
+            header.className = 'kid-header';
+            header.innerHTML = `
+                <div class="kid-header-content">
+                    <div class="kid-info">
+                        <div class="kid-avatar" id="kid-avatar">👶</div>
+                        <div class="kid-details">
+                            <h1 id="kid-name">Carregando...</h1>
+                            <p id="kid-age">Idade: -- anos</p>
+                        </div>
+                    </div>
+                    <div class="kid-actions">
+                        <button id="communication-btn" class="action-button">
+                            <span class="action-icon">💬</span>
+                            Comunicação
+                        </button>
+                        <button id="logout-btn" class="logout-button">
+                            <span class="logout-icon">🚪</span>
+                            Sair
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            body.insertBefore(header, body.firstChild);
+            
+            // Carregar dados da criança
+            loadKidDashboardData();
+            
+            // Event listeners para criança
+            document.getElementById('communication-btn').addEventListener('click', function() {
+                window.location.href = '/communication';
+            });
+            
+            document.getElementById('logout-btn').addEventListener('click', function() {
+                logout();
+            });
+            
+            // Adaptar conteúdo principal
+            adaptMainContentForKid();
+        }
+
+        // Carregar dados do dashboard da criança
+        async function loadKidDashboardData() {
+            try {
+                const kidData = JSON.parse(localStorage.getItem('kidData'));
+                const response = await KidAPI.get(`/auth/kid/profile`);
+                const kid = response.data.kid;
+                
+                document.getElementById('kid-avatar').textContent = kid.emoji || '👶';
+                document.getElementById('kid-name').textContent = kid.name;
+                document.getElementById('kid-age').textContent = `Idade: ${kid.age} anos`;
+                
+            } catch (error) {
+                console.error('Erro ao carregar dados da criança:', error);
+            }
+        }
+
+        // Adaptar conteúdo principal para criança
+        function adaptMainContentForKid() {
+            const main = document.querySelector('main');
+            if (!main) return;
+            
+            main.innerHTML = `
+                <div class="container" style="padding-top: 32px; padding-bottom: 32px;">
+                    <div class="professional-section">
+                        <div class="professional-card">
+                            <div class="professional-card-header">
+                                <div class="professional-card-title">
+                                    <h2>🎯 Seus Pontos</h2>
+                                </div>
+                            </div>
+                            <div class="professional-card-body">
+                                <div id="kid-points-display" class="text-center py-8">
+                                    <div class="text-6xl font-bold text-blue-600 mb-4" id="kid-total-points">0</div>
+                                    <div class="text-xl text-gray-600 mb-6">Pontos Totais</div>
+                                    <div class="bg-blue-100 rounded-lg p-4">
+                                        <div class="text-lg font-semibold text-blue-800 mb-2" id="kid-level">Nível 1</div>
+                                        <div class="w-full bg-blue-200 rounded-full h-3">
+                                            <div class="bg-blue-600 h-3 rounded-full" id="kid-progress" style="width: 0%"></div>
+                                        </div>
+                                        <div class="text-sm text-blue-600 mt-2" id="kid-progress-text">0%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Carregar dados dos pontos
+            loadKidPoints();
+        }
+
+        // Carregar pontos da criança
+        async function loadKidPoints() {
+            try {
+                const kidData = JSON.parse(localStorage.getItem('kidData'));
+                const response = await KidAPI.get(`/auth/kid/profile`);
+                const kid = response.data.kid;
+                
+                const totalPoints = kid.totalPoints || 0;
+                const level = Math.floor(totalPoints / 100) + 1;
+                const progressInLevel = totalPoints % 100;
+                const progressPercentage = Math.min(100, (progressInLevel / 100) * 100);
+                
+                document.getElementById('kid-total-points').textContent = totalPoints;
+                document.getElementById('kid-level').textContent = `Nível ${level}`;
+                document.getElementById('kid-progress').style.width = `${progressPercentage}%`;
+                document.getElementById('kid-progress-text').textContent = `${Math.round(progressPercentage)}%`;
+                
+            } catch (error) {
+                console.error('Erro ao carregar pontos da criança:', error);
+            }
+        }
+
+        // Logout para criança
+        function logout() {
+            localStorage.removeItem('kidData');
+            localStorage.removeItem('kidToken');
+            window.location.href = '/';
+        }
+    </script>
 </body>
 </html> 

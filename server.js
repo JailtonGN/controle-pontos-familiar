@@ -31,7 +31,7 @@ app.use('/api/kids', require('./routes/kids'));
 app.use('/api/activities', require('./routes/activities'));
 app.use('/api/points', require('./routes/points'));
 app.use('/api/messages', require('./routes/messages'));
-app.use('/api/reminders', require('./routes/reminders'));
+// Removido: app.use('/api/reminders', require('./routes/reminders'));
 
 // Rotas para páginas HTML
 app.get('/', (req, res) => {
@@ -64,6 +64,22 @@ app.get('/child-view', (req, res) => {
 
 app.get('/kid-area', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'kid-area.html'));
+});
+
+app.get('/kid-login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'kid-login.html'));
+});
+
+app.get('/kid-dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'kid-dashboard.html'));
+});
+
+app.get('/kid-communication', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'kid-communication.html'));
+});
+
+app.get('/config', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'config.html'));
 });
 
 // Rota para verificar se o servidor está funcionando

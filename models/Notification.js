@@ -15,8 +15,8 @@ const notificationSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Tipo da notificação é obrigatório'],
         enum: {
-            values: ['points', 'activity', 'reminder', 'message', 'system'],
-            message: 'Tipo deve ser "points", "activity", "reminder", "message" ou "system"'
+                    values: ['points', 'activity', 'message', 'system'],
+        message: 'Tipo deve ser "points", "activity", "message" ou "system"'
         }
     },
     title: {

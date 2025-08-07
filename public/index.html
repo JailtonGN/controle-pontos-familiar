@@ -96,6 +96,14 @@
                 <p class="text-sm text-gray-500">
                     Sistema seguro para famílias gerenciarem pontos e recompensas
                 </p>
+                
+                <!-- Botão Sou Criança -->
+                <div class="mt-6 pt-6 border-t border-gray-200" style="display: flex; justify-content: center;">
+                    <button id="kid-login-btn" class="kid-login-button">
+                        <span class="kid-icon">👶</span>
+                        Sou Criança
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -180,6 +188,11 @@
                 
                 loginUser(data);
             });
+            
+            // Botão Sou Criança
+            document.getElementById('kid-login-btn').addEventListener('click', function() {
+                window.location.href = '/kid-login';
+            });
         });
 
         // Função para registro
@@ -258,6 +271,18 @@
                     console.log('Erro no login:', result.message); // Debug
                     showNotification('Erro', result.message || 'Usuário ou senha incorretos', 'error');
                 }
+            } catch (error) {
+                console.error('Erro na requisição:', error); // Debug
+                showNotification('Erro', 'Erro ao conectar com o servidor', 'error');
+            } finally {
+                spinner.classList.add('hidden');
+                buttonText.textContent = 'Entrar';
+                button.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>                 }
             } catch (error) {
                 console.error('Erro na requisição:', error); // Debug
                 showNotification('Erro', 'Erro ao conectar com o servidor', 'error');

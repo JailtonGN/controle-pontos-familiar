@@ -44,7 +44,7 @@
                         </a>
                     </div>
                     <div class="navbar-item">
-                        <a href="/settings" class="navbar-button" id="nav-settings">
+                        <a href="/config" class="navbar-button" id="nav-settings">
                             <span class="navbar-button-text">Configuração</span>
                         </a>
                     </div>
@@ -82,7 +82,7 @@
                 <a href="/communication" class="navbar-mobile-item" onclick="setActiveNav('nav-communication')">
                     Comunicação
                 </a>
-                <a href="/settings" class="navbar-mobile-item" onclick="setActiveNav('nav-settings')">
+                <a href="/config" class="navbar-mobile-item" onclick="setActiveNav('nav-settings')">
                     Configuração
                 </a>
             </div>
@@ -345,9 +345,11 @@
                 const allActivities = response.data.activities || [];
                 console.log('Todas as atividades:', allActivities);
                 
-                // Separar atividades positivas e negativas pelo campo type
-                positiveActivities = allActivities.filter(activity => activity.type === 'positive');
-                negativeActivities = allActivities.filter(activity => activity.type === 'negative');
+                // Separar atividades positivas e negativas pelo campo type e ordenar alfabeticamente
+                positiveActivities = allActivities.filter(activity => activity.type === 'positive')
+                    .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+                negativeActivities = allActivities.filter(activity => activity.type === 'negative')
+                    .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
                 
                 console.log('Atividades positivas:', positiveActivities);
                 console.log('Atividades negativas:', negativeActivities);

@@ -55,7 +55,7 @@ mongodb+srv://deejaymax2010:<db_password>@cluster1.3mduppm.mongodb.net/?retryWri
 |---------|-----------|---------------|
 | `NODE_ENV` | `production` | Ambiente de produção |
 | `PORT` | `10000` | Porta do Render |
-| `MONGODB_URI` | `mongodb+srv://deejaymax2010:SuaSenhaMuitoSegura123!@cluster1.3mduppm.mongodb.net/controle-pontos-familiar?retryWrites=true&w=majority&appName=Cluster1` | **SUA STRING DE CONEXÃO COMPLETA** |
+| `MONGODB_URI` | `mongodb+srv://deejaymax2010:TyCsPlZNsDWOM46N@cluster1.3mduppm.mongodb.net/controle-pontos-familiar?retryWrites=true&w=majority&appName=Cluster1` | **SUA STRING DE CONEXÃO COMPLETA** |
 | `JWT_SECRET` | `sua-chave-secreta-muito-segura-e-longa-123456789` | Chave para JWT |
 | `JWT_EXPIRE` | `24h` | Tempo de expiração do token |
 | `BCRYPT_ROUNDS` | `12` | Rounds de criptografia |
@@ -64,11 +64,11 @@ mongodb+srv://deejaymax2010:<db_password>@cluster1.3mduppm.mongodb.net/?retryWri
 #### 2.3 String de Conexão Correta
 **Substitua a string de conexão por:**
 ```
-mongodb+srv://deejaymax2010:SuaSenhaMuitoSegura123!@cluster1.3mduppm.mongodb.net/controle-pontos-familiar?retryWrites=true&w=majority&appName=Cluster1
+mongodb+srv://deejaymax2010:TyCsPlZNsDWOM46N@cluster1.3mduppm.mongodb.net/controle-pontos-familiar?retryWrites=true&w=majority&appName=Cluster1
 ```
 
 **⚠️ IMPORTANTE:**
-- Substitua `SuaSenhaMuitoSegura123!` pela senha real do usuário
+- A senha atual é: `TyCsPlZNsDWOM46N`
 - Adicione `/controle-pontos-familiar` após `.net/` para especificar o nome do banco
 - Mantenha os parâmetros `?retryWrites=true&w=majority&appName=Cluster1`
 

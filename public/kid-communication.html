@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comunicação da Criança - Controle de Pontos</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/child-view.css">
+    <link rel="icon" type="image/png" href="assets/logo.png">
+</head>
+<body>
+    <!-- Header da Criança -->
+    <header class="kid-header">
+        <div class="kid-header-content">
+            <div class="kid-info">
+                <div class="kid-avatar" id="kid-avatar">👶</div>
+                <div class="kid-details">
+                    <h1 id="kid-name">Carregando...</h1>
+                    <p id="kid-age">Idade: -- anos</p>
+                </div>
+            </div>
+            <div class="kid-actions">
+                <button id="dashboard-btn" class="action-button">
+                    <span class="action-icon">🏠</span>
+                    Dashboard
+                </button>
+                <button id="logout-btn" class="logout-button">
+                    <span class="logout-icon">🚪</span>
+                    Sair
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="kid-main">
+        <!-- Seção de Comunicação -->
+        <section class="communication-section">
+            <div class="communication-card">
+                <div class="communication-header">
+                    <h2>💬 Enviar Comunicado</h2>
+                    <p>Conte aos seus pais o que você fez hoje!</p>
+                </div>
+                
+                <form id="communication-form" class="communication-form">
+                    <div class="form-group">
+                        <label for="message-content" class="form-label">
+                            Digite sua mensagem
+                        </label>
+                        <textarea 
+                            id="message-content" 
+                            name="content" 
+                            required 
+                            class="form-textarea" 
+                            placeholder="Ex: Hoje eu arrumei meu quarto e fiz a lição de casa! 😊"
+                            maxlength="500"
+                            rows="6"
+                        ></textarea>
+                        <div class="char-counter">
+                            <span id="char-count">0</span>/500 caracteres
+                        </div>
+                    </div>
+
+                    <button type="submit" class="send-button">
+                        <span class="loading-spinner hidden"></span>
+                        <span class="button-text">📤 Enviar Mensagem</span>
+                    </button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal de Notificação -->
+    <div id="notification-modal" class="modal hidden">
+        <div class="modal-content">
+            <div style="display: flex; align-items: center; margin-bottom: 16px;">
+                <div id="notification-icon" style="margin-right: 12px; font-size: 24px;"></div>
+                <h3 id="notification-title" class="modal-title"></h3>
+            </div>
+            <p id="notification-message" class="modal-message"></p>
+            <div style="text-align: right;">
+                <button id="notification-close" class="modal-button">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script>
+        // Configuração específica da página de comunicação da criança
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Página de comunicação da criança carregada');
+            
+            // Verificar se há dados da criança
+            const kidData = localStorage.getItem('kidData');
+            if (!kidData) {
+                window.location.href = '/kid-login';
+                return;
+            }
+            
+            // Carregar dados da criança
+            loadKidData();
+            
+            // Event listeners
+            document.getElementById('dashboard-btn').addEventListener('click', function() {
+                window.location.href = '/kid-dashboard';
+            });
+            
+            document.getElementById('logout-btn').addEventListener('click', function() {
+                logout();
+            });
+            
+            // Contador de caracteres
+            const textarea = document.getElementById('message-content');
+            const charCount = document.getElementById('char-count');
+            
+            textarea.addEventListener('input', function() {
+                const count = this.value.length;
+                charCount.textContent = count;
+                
+                if (count > 450) {
+                    charCount.style.color = '#ff6b6b';
+                } else if (count > 400) {
+                    charCount.style.color = '#ffa500';
+                } else {
+                    charCount.style.color = '#666';
+                }
+            });
+            
+            // Envio do formulário
+            document.getElementById('communication-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                sendMessage();
+            });
+        });
+
+        // Carregar dados da criança
+        async function loadKidData() {
+            try {
+                const response = await API.get('/auth/kid/profile');
+                const kid = response.data.kid;
+                
+                // Atualizar interface
+                document.getElementById('kid-avatar').textContent = kid.emoji;
+                document.getElementById('kid-name').textContent = kid.name;
+                document.getElementById('kid-age').textContent = `Idade: ${kid.age} anos`;
+                
+                console.log('Dados da criança carregados:', kid);
+                
+            } catch (error) {
+                console.error('Erro ao carregar dados da criança:', error);
+                showNotification('Erro', 'Erro ao carregar dados', 'error');
+            }
+        }
+
+        // Enviar mensagem
+        async function sendMessage() {
+            const form = document.getElementById('communication-form');
+            const formData = new FormData(form);
+            
+            const content = formData.get('content').trim();
+            
+            if (!content) {
+                showNotification('Erro', 'Digite uma mensagem', 'error');
+                return;
+            }
+            
+            if (content.length > 500) {
+                showNotification('Erro', 'Mensagem muito longa', 'error');
+                return;
+            }
+            
+            try {
+                // Mostrar loading
+                const button = form.querySelector('button[type="submit"]');
+                const spinner = button.querySelector('.loading-spinner');
+                const text = button.querySelector('.button-text');
+                
+                spinner.classList.remove('hidden');
+                text.textContent = 'Enviando...';
+                button.disabled = true;
+                
+                // Enviar mensagem
+                const kidData = JSON.parse(localStorage.getItem('kidData'));
+                const response = await API.post('/messages/kid/send', {
+                    content: content,
+                    kidId: kidData._id
+                });
+                
+                showNotification('Sucesso', 'Mensagem enviada com sucesso!', 'success');
+                
+                // Limpar formulário
+                form.reset();
+                document.getElementById('char-count').textContent = '0';
+                
+                // Restaurar botão
+                spinner.classList.add('hidden');
+                text.textContent = '📤 Enviar Mensagem';
+                button.disabled = false;
+                
+            } catch (error) {
+                console.error('Erro ao enviar mensagem:', error);
+                showNotification('Erro', error.message || 'Erro ao enviar mensagem', 'error');
+                
+                // Restaurar botão
+                const button = form.querySelector('button[type="submit"]');
+                const spinner = button.querySelector('.loading-spinner');
+                const text = button.querySelector('.button-text');
+                
+                spinner.classList.add('hidden');
+                text.textContent = '📤 Enviar Mensagem';
+                button.disabled = false;
+            }
+        }
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('kidData');
+            API.clearToken();
+            window.location.href = '/';
+        }
+
+        // Função para mostrar notificação
+        function showNotification(title, message, type = 'info') {
+            const modal = document.getElementById('notification-modal');
+            const icon = document.getElementById('notification-icon');
+            const titleEl = document.getElementById('notification-title');
+            const messageEl = document.getElementById('notification-message');
+
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+
+            const icons = {
+                success: '✅',
+                error: '❌',
+                warning: '⚠️',
+                info: 'ℹ️'
+            };
+            icon.textContent = icons[type] || icons.info;
+
+            modal.classList.remove('hidden');
+
+            document.getElementById('notification-close').onclick = function() {
+                modal.classList.add('hidden');
+            };
+        }
+    </script>
+</body>
+</html> 
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comunicação da Criança - Controle de Pontos</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/child-view.css">
+    <link rel="icon" type="image/png" href="assets/logo.png">
+</head>
+<body>
+    <!-- Header da Criança -->
+    <header class="kid-header">
+        <div class="kid-header-content">
+            <div class="kid-info">
+                <div class="kid-avatar" id="kid-avatar">👶</div>
+                <div class="kid-details">
+                    <h1 id="kid-name">Carregando...</h1>
+                    <p id="kid-age">Idade: -- anos</p>
+                </div>
+            </div>
+            <div class="kid-actions">
+                <button id="dashboard-btn" class="action-button">
+                    <span class="action-icon">🏠</span>
+                    Dashboard
+                </button>
+                <button id="logout-btn" class="logout-button">
+                    <span class="logout-icon">🚪</span>
+                    Sair
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="kid-main">
+        <!-- Seção de Comunicação -->
+        <section class="communication-section">
+            <div class="communication-card">
+                <div class="communication-header">
+                    <h2>💬 Enviar Comunicado</h2>
+                    <p>Conte aos seus pais o que você fez hoje!</p>
+                </div>
+                
+                <form id="communication-form" class="communication-form">
+                    <div class="form-group">
+                        <label for="message-content" class="form-label">
+                            Digite sua mensagem
+                        </label>
+                        <textarea 
+                            id="message-content" 
+                            name="content" 
+                            required 
+                            class="form-textarea" 
+                            placeholder="Ex: Hoje eu arrumei meu quarto e fiz a lição de casa! 😊"
+                            maxlength="500"
+                            rows="6"
+                        ></textarea>
+                        <div class="char-counter">
+                            <span id="char-count">0</span>/500 caracteres
+                        </div>
+                    </div>
+
+                    <button type="submit" class="send-button">
+                        <span class="loading-spinner hidden"></span>
+                        <span class="button-text">📤 Enviar Mensagem</span>
+                    </button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal de Notificação -->
+    <div id="notification-modal" class="modal hidden">
+        <div class="modal-content">
+            <div style="display: flex; align-items: center; margin-bottom: 16px;">
+                <div id="notification-icon" style="margin-right: 12px; font-size: 24px;"></div>
+                <h3 id="notification-title" class="modal-title"></h3>
+            </div>
+            <p id="notification-message" class="modal-message"></p>
+            <div style="text-align: right;">
+                <button id="notification-close" class="modal-button">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script>
+        // Configuração específica da página de comunicação da criança
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Página de comunicação da criança carregada');
+            
+            // Verificar se há dados da criança
+            const kidData = localStorage.getItem('kidData');
+            if (!kidData) {
+                window.location.href = '/kid-login';
+                return;
+            }
+            
+            // Carregar dados da criança
+            loadKidData();
+            
+            // Event listeners
+            document.getElementById('dashboard-btn').addEventListener('click', function() {
+                window.location.href = '/kid-dashboard';
+            });
+            
+            document.getElementById('logout-btn').addEventListener('click', function() {
+                logout();
+            });
+            
+            // Contador de caracteres
+            const textarea = document.getElementById('message-content');
+            const charCount = document.getElementById('char-count');
+            
+            textarea.addEventListener('input', function() {
+                const count = this.value.length;
+                charCount.textContent = count;
+                
+                if (count > 450) {
+                    charCount.style.color = '#ff6b6b';
+                } else if (count > 400) {
+                    charCount.style.color = '#ffa500';
+                } else {
+                    charCount.style.color = '#666';
+                }
+            });
+            
+            // Envio do formulário
+            document.getElementById('communication-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                sendMessage();
+            });
+        });
+
+        // Carregar dados da criança
+        async function loadKidData() {
+            try {
+                const response = await API.get('/auth/kid/profile');
+                const kid = response.data.kid;
+                
+                // Atualizar interface
+                document.getElementById('kid-avatar').textContent = kid.emoji;
+                document.getElementById('kid-name').textContent = kid.name;
+                document.getElementById('kid-age').textContent = `Idade: ${kid.age} anos`;
+                
+                console.log('Dados da criança carregados:', kid);
+                
+            } catch (error) {
+                console.error('Erro ao carregar dados da criança:', error);
+                showNotification('Erro', 'Erro ao carregar dados', 'error');
+            }
+        }
+
+        // Enviar mensagem
+        async function sendMessage() {
+            const form = document.getElementById('communication-form');
+            const formData = new FormData(form);
+            
+            const content = formData.get('content').trim();
+            
+            if (!content) {
+                showNotification('Erro', 'Digite uma mensagem', 'error');
+                return;
+            }
+            
+            if (content.length > 500) {
+                showNotification('Erro', 'Mensagem muito longa', 'error');
+                return;
+            }
+            
+            try {
+                // Mostrar loading
+                const button = form.querySelector('button[type="submit"]');
+                const spinner = button.querySelector('.loading-spinner');
+                const text = button.querySelector('.button-text');
+                
+                spinner.classList.remove('hidden');
+                text.textContent = 'Enviando...';
+                button.disabled = true;
+                
+                // Enviar mensagem
+                const kidData = JSON.parse(localStorage.getItem('kidData'));
+                const response = await API.post('/messages/kid/send', {
+                    content: content,
+                    kidId: kidData._id
+                });
+                
+                showNotification('Sucesso', 'Mensagem enviada com sucesso!', 'success');
+                
+                // Limpar formulário
+                form.reset();
+                document.getElementById('char-count').textContent = '0';
+                
+                // Restaurar botão
+                spinner.classList.add('hidden');
+                text.textContent = '📤 Enviar Mensagem';
+                button.disabled = false;
+                
+            } catch (error) {
+                console.error('Erro ao enviar mensagem:', error);
+                showNotification('Erro', error.message || 'Erro ao enviar mensagem', 'error');
+                
+                // Restaurar botão
+                const button = form.querySelector('button[type="submit"]');
+                const spinner = button.querySelector('.loading-spinner');
+                const text = button.querySelector('.button-text');
+                
+                spinner.classList.add('hidden');
+                text.textContent = '📤 Enviar Mensagem';
+                button.disabled = false;
+            }
+        }
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('kidData');
+            API.clearToken();
+            window.location.href = '/';
+        }
+
+        // Função para mostrar notificação
+        function showNotification(title, message, type = 'info') {
+            const modal = document.getElementById('notification-modal');
+            const icon = document.getElementById('notification-icon');
+            const titleEl = document.getElementById('notification-title');
+            const messageEl = document.getElementById('notification-message');
+
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+
+            const icons = {
+                success: '✅',
+                error: '❌',
+                warning: '⚠️',
+                info: 'ℹ️'
+            };
+            icon.textContent = icons[type] || icons.info;
+
+            modal.classList.remove('hidden');
+
+            document.getElementById('notification-close').onclick = function() {
+                modal.classList.add('hidden');
+            };
+        }
+    </script>
+</body>
+</html> 
+ 
+ 
+ 

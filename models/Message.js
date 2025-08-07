@@ -4,7 +4,9 @@ const messageSchema = new mongoose.Schema({
     parentId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: [true, 'ID do pai é obrigatório']
+        required: function() {
+            return this.type !== 'kid_to_parent';
+        }
     },
     kidId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -15,13 +17,15 @@ const messageSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Tipo da mensagem é obrigatório'],
         enum: {
-            values: ['motivation', 'reminder', 'praise', 'task'],
-            message: 'Tipo deve ser "motivation", "reminder", "praise" ou "task"'
+                    values: ['motivation', 'praise', 'task', 'kid_to_parent'],
+        message: 'Tipo deve ser "motivation", "praise", "task" ou "kid_to_parent"'
         }
     },
     title: {
         type: String,
-        required: [true, 'Título da mensagem é obrigatório'],
+        required: function() {
+            return this.type !== 'kid_to_parent';
+        },
         trim: true,
         maxlength: [100, 'Título não pode ter mais de 100 caracteres']
     },
