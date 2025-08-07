@@ -299,6 +299,7 @@
     </div>
 
     <script src="js/main.js"></script>
+    <script src="js/toast.js"></script>
     <script>
         // Variáveis globais
         let currentKid = null;
@@ -401,7 +402,7 @@
                                 <span class="text-lg">${point.activityId?.icon || '⭐'}</span>
                             </div>
                             <div>
-                                <h4 class="font-medium text-gray-900">${point.activityId?.name || 'Atividade'}</h4>
+                                <h4 class="font-medium text-gray-900">${point.activityId?.name || (point.reason || 'Ponto Avulso')}</h4>
                                 <p class="text-sm text-gray-500">${formatDate(point.date)}</p>
                                 ${point.notes ? `<p class="text-sm text-gray-600 mt-1">${point.notes}</p>` : ''}
                             </div>
@@ -457,7 +458,7 @@
         }
 
         function showGoalsModal() {
-            showNotification('Info', 'Funcionalidade em desenvolvimento', 'info');
+            showToast('Info', 'Funcionalidade em desenvolvimento', 'info');
         }
 
         // Tabs
@@ -497,11 +498,11 @@
 
             try {
                 await API.post('/points/add', data);
-                showNotification('Sucesso', 'Pontos adicionados com sucesso!', 'success');
+                showToast('Sucesso', 'Pontos adicionados com sucesso!', 'success');
                 hideAddPointsModal();
                 loadKidDetails(currentKid._id);
             } catch (error) {
-                showNotification('Erro', error.message, 'error');
+                showToast('Erro', error.message, 'error');
             }
         });
 
@@ -517,11 +518,11 @@
 
             try {
                 await API.post('/points/remove', data);
-                showNotification('Sucesso', 'Pontos removidos com sucesso!', 'success');
+                showToast('Sucesso', 'Pontos removidos com sucesso!', 'success');
                 hideRemovePointsModal();
                 loadKidDetails(currentKid._id);
             } catch (error) {
-                showNotification('Erro', error.message, 'error');
+                showToast('Erro', error.message, 'error');
             }
         });
 

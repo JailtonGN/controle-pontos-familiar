@@ -336,60 +336,13 @@ class NavigationManager {
     }
 }
 
-// Função para mostrar notificação (compatibilidade)
+// Função para mostrar notificação (mantida para compatibilidade, mas agora usa toasts)
 function showNotification(title, message, type = 'info') {
-    console.log('showNotification chamada:', { title, message, type }); // Debug
-    
-    const modal = document.getElementById('notification-modal');
-    const icon = document.getElementById('notification-icon');
-    const titleEl = document.getElementById('notification-title');
-    const messageEl = document.getElementById('notification-message');
-    const closeBtn = document.getElementById('notification-close');
-
-    console.log('Elementos do modal:', { modal, icon, titleEl, messageEl, closeBtn }); // Debug
-
-    if (modal && icon && titleEl && messageEl && closeBtn) {
-        // Definir ícone baseado no tipo
-        const icons = {
-            success: '✅',
-            error: '❌',
-            warning: '⚠️',
-            info: 'ℹ️'
-        };
-        icon.textContent = icons[type] || icons.info;
-
-        // Definir título e mensagem
-        titleEl.textContent = title;
-        messageEl.textContent = message;
-
-        // Mostrar modal
-        modal.classList.remove('hidden');
-        modal.style.display = 'flex'; // Forçar exibição
-        modal.style.opacity = '1';
-        modal.style.visibility = 'visible';
-        console.log('Modal mostrado, classes:', modal.className); // Debug
-
-        // Configurar botão de fechar
-        closeBtn.onclick = () => {
-            modal.classList.add('hidden');
-            modal.style.display = 'none';
-            modal.style.opacity = '0';
-            modal.style.visibility = 'hidden';
-            console.log('Modal fechado'); // Debug
-        };
-
-        // Auto-fechar após 5 segundos
-        setTimeout(() => {
-            modal.classList.add('hidden');
-            modal.style.display = 'none';
-            modal.style.opacity = '0';
-            modal.style.visibility = 'hidden';
-            console.log('Modal auto-fechado'); // Debug
-        }, 5000);
+    // Redirecionar para o sistema de toast
+    if (typeof showToast === 'function') {
+        showToast(title, message, type);
     } else {
-        console.error('Elementos do modal não encontrados'); // Debug
-        // Fallback para notificação simples
-        NotificationManager.show(message, type);
+        console.log('showNotification chamada:', { title, message, type }); // Debug
     }
 }
 
@@ -481,7 +434,8 @@ async function loadDashboardData() {
             loadUserInfo()
         ]);
     } catch (error) {
-        showNotification('Erro', 'Erro ao carregar dados do dashboard', 'error');
+        console.error('Erro ao carregar dados do dashboard:', error);
+        showToast('Erro', 'Erro ao carregar dados do dashboard', 'error');
     }
 }
 
@@ -700,6 +654,10 @@ function renderHistoryTable() {
             activityName = entry.activityName;
         } else if (entry.reason) {
             activityName = entry.reason;
+            activityIcon = '⭐'; // Ícone para pontos avulsos
+        } else {
+            activityName = 'Ponto Avulso';
+            activityIcon = '⭐'; // Ícone para pontos avulsos
         }
         
         // Determinar pontos com sinal
@@ -780,7 +738,8 @@ async function applyFilters() {
         history = response.data.history;
         renderHistoryTable();
     } catch (error) {
-        showNotification('Erro', 'Erro ao aplicar filtros', 'error');
+        console.error('Erro ao aplicar filtros:', error);
+        showToast('Erro', 'Erro ao aplicar filtros', 'error');
     }
 }
 
@@ -833,11 +792,11 @@ if (window.location.pathname === '/dashboard') {
 
                 try {
                     await API.post('/kids', data);
-                    showNotification('Sucesso', 'Criança adicionada com sucesso!', 'success');
+                    showToast('Sucesso', 'Criança adicionada com sucesso!', 'success');
                     hideAddKidModal();
                     loadKids();
                 } catch (error) {
-                    showNotification('Erro', error.message, 'error');
+                    showToast('Erro', error.message, 'error');
                 }
             });
         }

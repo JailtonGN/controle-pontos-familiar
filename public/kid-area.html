@@ -140,20 +140,45 @@
     </div>
 
     <script src="js/main.js"></script>
+    <script src="js/toast.js"></script>
     <script>
         let currentKid = null;
         let isAuthenticated = false;
 
         // Carregar dados na inicialização
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             const urlParams = new URLSearchParams(window.location.search);
             const kidId = urlParams.get('id');
             
-            if (kidId) {
-                loadKidData(kidId);
-            } else {
-                showNotification('Erro', 'ID da criança não fornecido', 'error');
-                setTimeout(() => goBack(), 2000);
+            if (!kidId) {
+                showToast('Erro', 'ID da criança não fornecido', 'error');
+                return;
+            }
+            
+            try {
+                const response = await API.get(`/kids/${kidId}`);
+                currentKid = response.data.kid;
+                
+                if (!currentKid) {
+                    showToast('Erro', 'Criança não encontrada', 'error');
+                    return;
+                }
+                
+                document.getElementById('kid-name-display').textContent = currentKid.name;
+                const avatarElement = document.getElementById('kid-avatar-large');
+                avatarElement.textContent = currentKid.emoji || currentKid.avatar || currentKid.name.charAt(0).toUpperCase();
+                avatarElement.style.background = currentKid.color || '#3B82F6';
+
+                document.getElementById('kid-name-header').textContent = currentKid.name;
+                const headerAvatar = document.getElementById('kid-avatar-header');
+                headerAvatar.textContent = currentKid.emoji || currentKid.avatar || currentKid.name.charAt(0).toUpperCase();
+                headerAvatar.style.background = currentKid.color || '#3B82F6';
+
+                loadKidAreaData();
+                
+            } catch (error) {
+                console.error('Erro ao carregar dados da criança:', error);
+                showToast('Erro', 'Erro ao carregar dados da criança', 'error');
             }
         });
 

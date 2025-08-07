@@ -279,6 +279,7 @@
     </div>
 
     <script src="js/main.js"></script>
+    <script src="js/toast.js"></script>
     <script>
         // Variáveis globais
         let positiveActivities = [];
@@ -495,11 +496,11 @@
                 const endpoint = action === 'add' ? '/points/add' : '/points/remove';
                 const response = await API.post(endpoint, data);
                 
-                showNotification('Sucesso', `Pontos ${action === 'add' ? 'adicionados' : 'removidos'} com sucesso!`, 'success');
+                showToast('Sucesso', `Pontos ${action === 'add' ? 'adicionados' : 'removidos'} com sucesso!`, 'success');
                 form.reset();
                 loadCurrentSummary();
             } catch (error) {
-                showNotification('Erro', error.message, 'error');
+                showToast('Erro', error.message, 'error');
             }
         }
 
@@ -517,11 +518,11 @@
                 const endpoint = action === 'add' ? '/points/add' : '/points/remove';
                 const response = await API.post(endpoint, data);
                 
-                showNotification('Sucesso', `Pontos ${action === 'add' ? 'adicionados' : 'removidos'} com sucesso!`, 'success');
+                showToast('Sucesso', `Pontos ${action === 'add' ? 'adicionados' : 'removidos'} com sucesso!`, 'success');
                 form.reset();
                 loadCurrentSummary();
             } catch (error) {
-                showNotification('Erro', error.message, 'error');
+                showToast('Erro', error.message, 'error');
             }
         }
 

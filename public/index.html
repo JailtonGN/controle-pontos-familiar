@@ -125,6 +125,7 @@
     </div>
 
     <script src="js/main.js"></script>
+    <script src="js/toast.js"></script>
     <script>
         // Configuração específica da página de login
         document.addEventListener('DOMContentLoaded', function() {
@@ -156,12 +157,12 @@
                 const confirmPassword = document.getElementById('register-confirm-password').value;
                 
                 if (password !== confirmPassword) {
-                    showNotification('Erro', 'As senhas não coincidem', 'error');
+                    showToast('Erro', 'As senhas não coincidem', 'error');
                     return;
                 }
                 
                 if (password.length < 6) {
-                    showNotification('Erro', 'A senha deve ter pelo menos 6 caracteres', 'error');
+                    showToast('Erro', 'A senha deve ter pelo menos 6 caracteres', 'error');
                     return;
                 }
                 
@@ -217,18 +218,26 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    showNotification('Sucesso', 'Conta criada com sucesso! Redirecionando...', 'success');
+                    console.log('🟢 [REGISTRO] Iniciando toast de sucesso...');
+                    const startTime = Date.now();
+                    
+                    showToast('Sucesso', 'Conta criada com sucesso!', 'success');
+                    
+                    console.log('🟢 [REGISTRO] Toast mostrado, aguardando 2.5s para redirecionar...');
+                    
                     localStorage.setItem('token', result.data.token);
                     localStorage.setItem('user', JSON.stringify(result.data.user));
                     
                     setTimeout(() => {
+                        const elapsedTime = Date.now() - startTime;
+                        console.log(`🟢 [REGISTRO] Redirecionando após ${elapsedTime}ms`);
                         window.location.href = '/dashboard';
-                    }, 1500);
+                    }, 2500); // Aumentado de 1500 para 2500ms (2.5 segundos)
                 } else {
-                    showNotification('Erro', result.message, 'error');
+                    showToast('Erro', result.message, 'error');
                 }
             } catch (error) {
-                showNotification('Erro', 'Erro ao conectar com o servidor', 'error');
+                showToast('Erro', 'Erro ao conectar com o servidor', 'error');
             } finally {
                 spinner.classList.add('hidden');
                 buttonText.textContent = 'Registrar';
@@ -260,20 +269,28 @@
                 console.log('Resposta do login:', result); // Debug
                 
                 if (result.success) {
-                    showNotification('Sucesso', 'Login realizado com sucesso! Redirecionando...', 'success');
+                    console.log('🟢 [LOGIN] Iniciando toast de sucesso...');
+                    const startTime = Date.now();
+                    
+                    showToast('Sucesso', 'Login realizado com sucesso!', 'success');
+                    
+                    console.log('🟢 [LOGIN] Toast mostrado, aguardando 2.5s para redirecionar...');
+                    
                     localStorage.setItem('token', result.data.token);
                     localStorage.setItem('user', JSON.stringify(result.data.user));
                     
                     setTimeout(() => {
+                        const elapsedTime = Date.now() - startTime;
+                        console.log(`🟢 [LOGIN] Redirecionando após ${elapsedTime}ms`);
                         window.location.href = '/dashboard';
-                    }, 1500);
+                    }, 2500); // Aumentado de 1500 para 2500ms (2.5 segundos)
                 } else {
-                    console.log('Erro no login:', result.message); // Debug
-                    showNotification('Erro', result.message || 'Usuário ou senha incorretos', 'error');
+                    console.log('🔴 [LOGIN] Erro no login:', result.message); // Debug
+                    showToast('Erro', result.message || 'Usuário ou senha incorretos', 'error');
                 }
             } catch (error) {
                 console.error('Erro na requisição:', error); // Debug
-                showNotification('Erro', 'Erro ao conectar com o servidor', 'error');
+                showToast('Erro', 'Erro ao conectar com o servidor', 'error');
             } finally {
                 spinner.classList.add('hidden');
                 buttonText.textContent = 'Entrar';

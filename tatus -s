@@ -1,0 +1,28 @@
+warning: in the working copy of 'controllers/pointController.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'models/Point.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'public/activities.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'public/communication.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'public/css/style.css', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'public/dashboard.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'public/index.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'public/js/main.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'public/kid-dashboard.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'public/kid-login.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'public/kids.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'public/manage-points.html', LF will be replaced by CRLF the next time Git touches it
+controllers/pointController.js
+models/Point.js
+public/activities.html
+public/child-view.html
+public/communication.html
+public/config.html
+public/css/style.css
+public/dashboard.html
+public/index.html
+public/js/main.js
+public/kid-area.html
+public/kid-communication.html
+public/kid-dashboard.html
+public/kid-login.html
+public/kids.html
+public/manage-points.html

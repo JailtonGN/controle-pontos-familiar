@@ -26,6 +26,11 @@ const pointSchema = new mongoose.Schema({
         trim: true,
         maxlength: [500, 'Observações não podem ter mais de 500 caracteres']
     },
+    reason: {
+        type: String,
+        trim: true,
+        maxlength: [200, 'Motivo não pode ter mais de 200 caracteres']
+    },
     awardedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',

@@ -410,6 +410,7 @@
     </main>
 
     <script src="js/main.js"></script>
+    <script src="js/toast.js"></script>
     <script>
         // Verificar se a API está disponível
         console.log('🔍 [DEBUG] API disponível:', typeof API !== 'undefined');
@@ -610,12 +611,12 @@
                 const content = formData.get('content').trim();
                 
                 if (!content) {
-                    showNotification('Erro', 'Digite uma mensagem', 'error');
+                    showToast('Erro', 'Digite uma mensagem', 'error');
                     return;
                 }
                 
                 if (content.length > 500) {
-                    showNotification('Erro', 'Mensagem muito longa', 'error');
+                    showToast('Erro', 'Mensagem muito longa', 'error');
                     return;
                 }
                 
@@ -633,7 +634,7 @@
                     
             } catch (error) {
                     console.error('Erro ao enviar mensagem:', error);
-                    showNotification('Erro', error.message || 'Erro ao enviar mensagem', 'error');
+                    showToast('Erro', error.message || 'Erro ao enviar mensagem', 'error');
                 }
             });
         }
@@ -740,12 +741,12 @@
         async function markAsRead(messageId) {
             try {
                 await API.put(`/messages/${messageId}/read`);
-                showNotification('Sucesso', 'Mensagem marcada como lida', 'success');
+                showToast('Sucesso', 'Mensagem marcada como lida', 'success');
                 await loadMessages(); // Recarregar mensagens
                 
             } catch (error) {
                 console.error('Erro ao marcar como lida:', error);
-                showNotification('Erro', 'Erro ao marcar como lida', 'error');
+                showToast('Erro', 'Erro ao marcar como lida', 'error');
             }
         }
 
@@ -762,7 +763,7 @@
                 
             } catch (error) {
                 console.error('❌ [DELETE MESSAGE] Erro ao apagar mensagem:', error);
-                showNotification('Erro', 'Erro ao apagar mensagem', 'error');
+                showToast('Erro', 'Erro ao apagar mensagem', 'error');
             }
         }
 

@@ -85,6 +85,7 @@ const addPoints = async (req, res) => {
             activityId: activityId || null,
             points: pointsToAdd,
             notes: notes || reason || `Pontos ${activity ? 'da atividade' : 'avulsos'} adicionados`,
+            reason: reason || null,
             awardedBy: req.user._id,
             type: 'add'
         });
@@ -93,7 +94,8 @@ const addPoints = async (req, res) => {
             kidId,
             activityId: activityId || null,
             points: pointsToAdd,
-            notes: notes || reason || `Pontos ${activity ? 'da atividade' : 'avulsos'} adicionados`,
+            notes: notes || `Pontos ${activity ? 'da atividade' : 'avulsos'} adicionados`,
+            reason: reason || null,
             awardedBy: req.user._id,
             type: 'add'
         });
@@ -213,7 +215,8 @@ const removePoints = async (req, res) => {
             kidId,
             activityId: activityId || null,
             points: pointsToRemove,
-            notes: notes || reason || `Pontos ${activity ? 'da atividade' : 'avulsos'} removidos`,
+            notes: notes || `Pontos ${activity ? 'da atividade' : 'avulsos'} removidos`,
+            reason: reason || null,
             awardedBy: req.user._id,
             type: 'remove'
         });
@@ -222,7 +225,8 @@ const removePoints = async (req, res) => {
             kidId,
             activityId: activityId || null,
             points: pointsToRemove,
-            notes: notes || reason || `Pontos ${activity ? 'da atividade' : 'avulsos'} removidos`,
+            notes: notes || `Pontos ${activity ? 'da atividade' : 'avulsos'} removidos`,
+            reason: reason || null,
             awardedBy: req.user._id,
             type: 'remove'
         });

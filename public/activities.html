@@ -6,6 +6,38 @@
     <title>Configuração de Atividades - Controle de Pontos Familiar</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="icon" type="image/png" href="assets/logo.png">
+    <style>
+        /* Animações para os modais */
+        .modal .professional-card {
+            transform: scale(0.95);
+            opacity: 0;
+            transition: all 0.3s ease-in-out;
+        }
+        
+        .modal.show .professional-card {
+            transform: scale(1);
+            opacity: 1;
+        }
+        
+        /* Melhorias visuais para os modais */
+        .professional-card-header {
+            border-bottom: none;
+        }
+        
+        .professional-card-body {
+            padding: 24px;
+        }
+        
+        /* Estilos específicos para o modal de atividades */
+        #activity-modal-content {
+            max-width: 600px;
+        }
+        
+        /* Estilos para o modal de confirmação */
+        #confirm-modal-content {
+            max-width: 500px;
+        }
+    </style>
 </head>
 <body>
     <!-- Navigation Bar -->
@@ -149,57 +181,106 @@
     <!-- Modal Adicionar/Editar Atividade -->
     <div id="activity-modal" class="modal hidden">
         <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 id="modal-title" class="text-lg font-medium text-gray-900">Adicionar Atividade</h3>
-                    <button onclick="hideActivityModal()" class="text-gray-400 hover:text-gray-600">
-                        <span class="text-2xl">×</span>
-                    </button>
+            <div class="professional-card max-w-lg w-full" id="activity-modal-content">
+                <!-- Header com gradiente azul -->
+                <div class="professional-card-header" style="background: linear-gradient(135deg, #3B82F6, #2563EB); border-radius: 16px 16px 0 0;">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-4">
+                                <span style="font-size: 24px;">🎯</span>
+                            </div>
+                            <div>
+                                <h3 id="modal-title" class="professional-card-title" style="color: white; margin: 0;">Adicionar Atividade</h3>
+                                <p style="color: rgba(255,255,255,0.8); margin: 0; font-size: 14px;">Configurar nova atividade</p>
+                            </div>
+                        </div>
+                        <button onclick="hideActivityModal()" style="color: white; background: none; border: none; font-size: 24px; cursor: pointer;">
+                            ×
+                        </button>
+                    </div>
                 </div>
-                <form id="activity-form" class="space-y-4">
+                
+                <!-- Formulário -->
+                <form id="activity-form" class="professional-card-body">
                     <input type="hidden" id="activity-id" name="id">
-                    <div>
-                        <label for="activity-name" class="block text-sm font-medium text-gray-700">Nome da Atividade</label>
-                        <input type="text" id="activity-name" name="name" required class="professional-input">
+                    
+                    <!-- Nome da Atividade -->
+                    <div class="professional-input-group">
+                        <label for="activity-name" class="professional-label">
+                            🎯 Nome da Atividade
+                        </label>
+                        <input type="text" id="activity-name" name="name" required 
+                               class="professional-input"
+                               placeholder="Digite o nome da atividade">
                     </div>
-                    <div>
-                        <label for="activity-description" class="block text-sm font-medium text-gray-700">Descrição</label>
-                        <textarea id="activity-description" name="description" rows="3" class="professional-input"></textarea>
+                    
+                    <!-- Descrição -->
+                    <div class="professional-input-group">
+                        <label for="activity-description" class="professional-label">
+                            📝 Descrição (opcional)
+                        </label>
+                        <textarea id="activity-description" name="description" rows="3"
+                                  class="professional-input"
+                                  placeholder="Descreva a atividade..."></textarea>
                     </div>
-                    <div>
-                        <label for="activity-type" class="block text-sm font-medium text-gray-700">Tipo</label>
-                        <select id="activity-type" name="type" required class="professional-input">
-                            <option value="">Selecione o tipo</option>
-                            <option value="positive">Positiva</option>
-                            <option value="negative">Negativa</option>
-                        </select>
+                    
+                    <!-- Tipo e Pontos em linha -->
+                    <div class="professional-form-grid">
+                        <div class="professional-input-group">
+                            <label for="activity-type" class="professional-label">
+                                📊 Tipo
+                            </label>
+                            <select id="activity-type" name="type" required class="professional-select">
+                                <option value="">Selecione o tipo</option>
+                                <option value="positive">Positiva</option>
+                                <option value="negative">Negativa</option>
+                            </select>
+                        </div>
+                        
+                        <div class="professional-input-group">
+                            <label for="activity-points" class="professional-label">
+                                ⭐ Pontos
+                            </label>
+                            <input type="number" id="activity-points" name="points" min="1" max="500" required
+                                   class="professional-input"
+                                   placeholder="10">
+                        </div>
                     </div>
-                    <div>
-                        <label for="activity-points" class="block text-sm font-medium text-gray-700">Pontos</label>
-                        <input type="number" id="activity-points" name="points" min="1" max="500" required class="professional-input">
+                    
+                    <!-- Categoria e Ícone em linha -->
+                    <div class="professional-form-grid">
+                        <div class="professional-input-group">
+                            <label for="activity-category" class="professional-label">
+                                📂 Categoria
+                            </label>
+                            <select id="activity-category" name="category" required class="professional-select">
+                                <option value="">Selecione a categoria</option>
+                                <option value="comportamento">Comportamento</option>
+                                <option value="estudos">Estudos</option>
+                                <option value="tarefas">Tarefas Domésticas</option>
+                                <option value="esportes">Esportes</option>
+                                <option value="social">Social</option>
+                                <option value="outros">Outros</option>
+                            </select>
+                        </div>
+                        
+                        <div class="professional-input-group">
+                            <label for="activity-icon" class="professional-label">
+                                🎨 Ícone (emoji)
+                            </label>
+                            <input type="text" id="activity-icon" name="icon" 
+                                   class="professional-input"
+                                   placeholder="⭐">
+                        </div>
                     </div>
-                    <div>
-                        <label for="activity-category" class="block text-sm font-medium text-gray-700">Categoria</label>
-                        <select id="activity-category" name="category" required class="professional-input">
-                            <option value="">Selecione a categoria</option>
-                            <option value="comportamento">Comportamento</option>
-                            <option value="estudos">Estudos</option>
-                            <option value="tarefas">Tarefas Domésticas</option>
-                            <option value="esportes">Esportes</option>
-                            <option value="social">Social</option>
-                            <option value="outros">Outros</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="activity-icon" class="block text-sm font-medium text-gray-700">Ícone (emoji)</label>
-                        <input type="text" id="activity-icon" name="icon" placeholder="⭐" class="professional-input">
-                    </div>
-                    <div class="flex justify-end space-x-3">
-                        <button type="button" onclick="hideActivityModal()" class="btn btn-secondary">
+                    
+                    <!-- Botões -->
+                    <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid #E5E7EB;">
+                        <button type="button" onclick="hideActivityModal()" class="professional-button professional-button-secondary">
                             Cancelar
                         </button>
-                        <button type="submit" class="btn btn-primary">
-                            Salvar
+                        <button type="submit" class="professional-button professional-button-success">
+                            ✅ Salvar Atividade
                         </button>
                     </div>
                 </form>
@@ -207,32 +288,54 @@
         </div>
     </div>
 
-    <!-- Modal de Confirmação -->
+    <!-- Modal de Confirmação de Exclusão -->
     <div id="confirm-modal" class="modal hidden">
         <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-lg shadow-xl max-w-sm w-full p-6">
-                <div class="flex items-center mb-4">
-                    <div class="flex-shrink-0 mr-3">
-                        <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
-                            <span class="text-red-600 font-bold">!</span>
+            <div class="professional-card max-w-md w-full" id="confirm-modal-content">
+                <!-- Header com gradiente vermelho -->
+                <div class="professional-card-header" style="background: linear-gradient(135deg, #EF4444, #DC2626); border-radius: 16px 16px 0 0;">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-4">
+                                <span style="font-size: 24px;">🗑️</span>
+                            </div>
+                            <div>
+                                <h3 class="professional-card-title" style="color: white; margin: 0;">Confirmar Exclusão</h3>
+                                <p style="color: rgba(255,255,255,0.8); margin: 0; font-size: 14px;">Ação irreversível</p>
+                            </div>
                         </div>
+                        <button onclick="hideConfirmModal()" style="color: white; background: none; border: none; font-size: 24px; cursor: pointer;">
+                            ×
+                        </button>
                     </div>
-                    <h3 class="text-lg font-medium text-gray-900">Confirmar Exclusão</h3>
                 </div>
-                <p class="text-sm text-gray-500 mb-4">Tem certeza que deseja excluir esta atividade? Esta ação não pode ser desfeita.</p>
-                <div class="flex justify-end space-x-3">
-                    <button onclick="hideConfirmModal()" class="btn btn-secondary">
-                        Cancelar
-                    </button>
-                    <button onclick="confirmDelete()" class="btn btn-danger">
-                        Excluir
-                    </button>
+                
+                <!-- Conteúdo -->
+                <div class="professional-card-body">
+                    <div class="text-center">
+                        <div class="text-gray-600 mb-4">
+                            <p>Tem certeza que deseja excluir a atividade:</p>
+                            <p class="font-semibold text-gray-900 mt-2" id="confirm-activity-name">Nome da Atividade</p>
+                        </div>
+                        <p class="text-sm text-gray-500">Esta ação não pode ser desfeita.</p>
+                    </div>
+                    
+                    <!-- Botões -->
+                    <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid #E5E7EB;">
+                        <button onclick="hideConfirmModal()" class="professional-button professional-button-secondary">
+                            Cancelar
+                        </button>
+                        <button onclick="confirmDelete()" class="professional-button professional-button-danger">
+                            🗑️ Excluir Atividade
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <script src="js/main.js"></script>
+    <script src="js/toast.js"></script>
     <script>
         let activities = [];
         let currentActivityId = null;
@@ -349,7 +452,17 @@
             document.getElementById('activity-form').reset();
             document.getElementById('activity-id').value = '';
             currentActivityId = null;
-            document.getElementById('activity-modal').classList.remove('hidden');
+            
+            // Mostrar modal com animação
+            const modal = document.getElementById('activity-modal');
+            const modalContent = document.getElementById('activity-modal-content');
+            modal.classList.remove('hidden');
+            
+            // Animar entrada
+            setTimeout(() => {
+                modalContent.style.transform = 'scale(1)';
+                modalContent.style.opacity = '1';
+            }, 10);
         }
 
         // Mostrar modal de editar atividade
@@ -366,37 +479,61 @@
             document.getElementById('activity-category').value = activity.category;
             document.getElementById('activity-icon').value = activity.icon || '';
             currentActivityId = activityId;
-            document.getElementById('activity-modal').classList.remove('hidden');
+            
+            // Mostrar modal com animação
+            const modal = document.getElementById('activity-modal');
+            const modalContent = document.getElementById('activity-modal-content');
+            modal.classList.remove('hidden');
+            
+            // Animar entrada
+            setTimeout(() => {
+                modalContent.style.transform = 'scale(1)';
+                modalContent.style.opacity = '1';
+            }, 10);
         }
 
-        // Esconder modal
+        // Esconder modal com animação
         function hideActivityModal() {
-            document.getElementById('activity-modal').classList.add('hidden');
+            const modal = document.getElementById('activity-modal');
+            const modalContent = document.getElementById('activity-modal-content');
+            
+            // Animar saída
+            modalContent.style.transform = 'scale(0.95)';
+            modalContent.style.opacity = '0';
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
         }
 
-        // Excluir atividade
+        // Excluir atividade com toast
         function deleteActivity(activityId) {
             currentActivityId = activityId;
-            document.getElementById('confirm-modal').classList.remove('hidden');
+            
+            // Buscar dados da atividade para mostrar no toast
+            const activity = activities.find(a => a._id === activityId);
+            if (activity) {
+                showConfirmDelete(
+                    activity.name,
+                    `deleteActivityConfirm()`,
+                    `console.log('Exclusão cancelada')`
+                );
+            }
         }
 
-        // Esconder modal de confirmação
-        function hideConfirmModal() {
-            document.getElementById('confirm-modal').classList.add('hidden');
-            currentActivityId = null;
-        }
-
-        // Confirmar exclusão
-        async function confirmDelete() {
-            if (!currentActivityId) return;
+        // Confirmar exclusão de atividade
+        async function deleteActivityConfirm() {
+            if (!currentActivityId) {
+                showToast('Erro', 'ID da atividade não encontrado', 'error');
+                return;
+            }
 
             try {
                 await API.delete(`/activities/${currentActivityId}`);
-                showNotification('Sucesso', 'Atividade excluída com sucesso!', 'success');
-                hideConfirmModal();
+                showToast('Sucesso', 'Atividade excluída com sucesso!', 'success');
                 loadActivities();
             } catch (error) {
-                showNotification('Erro', error.message, 'error');
+                showToast('Erro', error.message, 'error');
             }
         }
 
@@ -418,7 +555,7 @@
                 if (currentActivityId) {
                     // Editar
                     await API.put(`/activities/${currentActivityId}`, data);
-                    showNotification('Sucesso', 'Atividade atualizada com sucesso!', 'success');
+                    showToast('Sucesso', 'Atividade atualizada com sucesso!', 'success');
                 } else {
                     // Adicionar
                     await API.post('/activities', data);
@@ -427,7 +564,7 @@
                 hideActivityModal();
                 loadActivities();
             } catch (error) {
-                showNotification('Erro', error.message, 'error');
+                showToast('Erro', error.message, 'error');
             }
         });
 

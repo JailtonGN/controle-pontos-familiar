@@ -76,6 +76,8 @@
         </div>
     </div>
 
+    <script src="js/main.js"></script>
+    <script src="js/toast.js"></script>
     <script>
         // API específica para a página de login da criança
         const KidAPI = {
@@ -168,102 +170,63 @@
                 
                 console.log('Crianças carregadas:', kids.length);
             } catch (error) {
-                console.error('Erro ao carregar crianças:', error);
-                showNotification('Erro', 'Erro ao carregar lista de crianças', 'error');
+                console.error('Erro ao carregar lista de crianças:', error);
+                showToast('Erro', 'Erro ao carregar lista de crianças', 'error');
             }
         }
 
-        // Processar login da criança
-        async function handleKidLogin() {
-            const form = document.getElementById('kid-login-form');
-            const formData = new FormData(form);
+        // Função para fazer login
+        async function loginKid() {
+            const selectedKidId = document.getElementById('kid-select').value;
+            const pin = document.getElementById('pin-input').value;
             
-            const kidId = formData.get('kidId');
-            const pin = formData.get('pin');
-            
-            if (!kidId) {
-                showNotification('Erro', 'Selecione uma criança', 'error');
+            if (!selectedKidId) {
+                showToast('Erro', 'Selecione uma criança', 'error');
                 return;
             }
             
             if (!pin || pin.length !== 4) {
-                showNotification('Erro', 'Digite um PIN de 4 dígitos', 'error');
+                showToast('Erro', 'Digite um PIN de 4 dígitos', 'error');
                 return;
             }
             
             try {
-                // Mostrar loading
-                const button = form.querySelector('button[type="submit"]');
-                const spinner = button.querySelector('.loading-spinner');
-                const text = button.querySelector('.button-text');
-                
-                spinner.classList.remove('hidden');
-                text.textContent = 'Entrando...';
-                button.disabled = true;
-                
-                // Fazer login da criança
-                const response = await KidAPI.post('/auth/kid/login', {
-                    kidId: kidId,
-                    pin: pin
+                const response = await fetch('/api/kids/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        kidId: selectedKidId,
+                        pin: pin
+                    })
                 });
                 
-                // Salvar token da criança
-                KidAPI.setToken(response.data.token);
+                const result = await response.json();
                 
-                // Salvar dados da criança
-                localStorage.setItem('kidData', JSON.stringify(response.data.kid));
-                
-                showNotification('Sucesso', 'Login realizado com sucesso!', 'success');
-                
-                // Redirecionar para dashboard da criança
-                setTimeout(() => {
-                    window.location.href = '/kid-dashboard';
-                }, 1000);
-                
+                if (result.success) {
+                    console.log('🟢 [KID-LOGIN] Iniciando toast de sucesso...');
+                    const startTime = Date.now();
+                    
+                    showToast('Sucesso', 'Login realizado com sucesso!', 'success');
+                    
+                    console.log('🟢 [KID-LOGIN] Toast mostrado, aguardando 2.5s para redirecionar...');
+                    
+                    localStorage.setItem('kidToken', result.data.token);
+                    localStorage.setItem('kidData', JSON.stringify(result.data.kid));
+                    
+                    setTimeout(() => {
+                        const elapsedTime = Date.now() - startTime;
+                        console.log(`🟢 [KID-LOGIN] Redirecionando após ${elapsedTime}ms`);
+                        window.location.href = `/kid-dashboard?id=${selectedKidId}`;
+                    }, 2500); // Aumentado de 1500 para 2500ms (2.5 segundos)
+                } else {
+                    showToast('Erro', result.message || 'Erro no login', 'error');
+                }
             } catch (error) {
-                console.error('Erro no login da criança:', error);
-                showNotification('Erro', error.message || 'Erro no login', 'error');
-                
-                // Restaurar botão
-                const button = form.querySelector('button[type="submit"]');
-                const spinner = button.querySelector('.loading-spinner');
-                const text = button.querySelector('.button-text');
-                
-                spinner.classList.add('hidden');
-                text.textContent = 'Entrar';
-                button.disabled = false;
+                console.error('Erro no login:', error);
+                showToast('Erro', 'Erro ao conectar com o servidor', 'error');
             }
-        }
-
-        // Função para mostrar notificação
-        function showNotification(title, message, type = 'info') {
-            const modal = document.getElementById('notification-modal');
-            const icon = document.getElementById('notification-icon');
-            const titleEl = document.getElementById('notification-title');
-            const messageEl = document.getElementById('notification-message');
-            
-            // Definir ícone e cor baseado no tipo
-            switch (type) {
-                case 'success':
-                    icon.textContent = '✅';
-                    icon.style.color = '#10b981';
-                    break;
-                case 'error':
-                    icon.textContent = '❌';
-                    icon.style.color = '#ef4444';
-                    break;
-                case 'warning':
-                    icon.textContent = '⚠️';
-                    icon.style.color = '#f59e0b';
-                    break;
-                default:
-                    icon.textContent = 'ℹ️';
-                    icon.style.color = '#3b82f6';
-            }
-            
-            titleEl.textContent = title;
-            messageEl.textContent = message;
-            modal.classList.remove('hidden');
         }
     </script>
 </body>

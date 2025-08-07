@@ -280,6 +280,7 @@
     </div>
 
     <script src="js/main.js"></script>
+    <script src="js/toast.js"></script>
     <script>
         // Client-side logic for config page
         document.addEventListener('DOMContentLoaded', function() {
@@ -319,7 +320,7 @@
                 }
             } catch (error) {
                 console.error('Erro:', error);
-                showNotification('Erro ao carregar perfil do usuário', 'error');
+                showToast('Erro', 'Erro ao carregar perfil do usuário', 'error');
             }
         }
 
@@ -453,19 +454,19 @@
             const confirmPassword = document.getElementById('confirm-new-password').value;
             
             if (newPassword !== confirmPassword) {
-                showNotification('As senhas não coincidem', 'error');
+                showToast('Erro', 'As senhas não coincidem', 'error');
                 return;
             }
             
             if (newPassword.length < 6) {
-                showNotification('A nova senha deve ter pelo menos 6 caracteres', 'error');
+                showToast('Erro', 'A nova senha deve ter pelo menos 6 caracteres', 'error');
                 return;
             }
             
             try {
                 const token = localStorage.getItem('token');
                 const response = await fetch('/api/auth/change-password', {
-                    method: 'POST',
+                    method: 'PUT', // Corrigido de POST para PUT
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
@@ -479,14 +480,14 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    showNotification('Senha alterada com sucesso!', 'success');
+                    showToast('Sucesso', 'Senha alterada com sucesso!', 'success');
                     document.getElementById('change-password-form').reset();
                 } else {
-                    showNotification(data.message || 'Erro ao alterar senha', 'error');
+                    showToast('Erro', data.message || 'Erro ao alterar senha', 'error');
                 }
             } catch (error) {
                 console.error('Erro:', error);
-                showNotification('Erro ao alterar senha', 'error');
+                showToast('Erro', 'Erro ao alterar senha', 'error');
             }
         });
 
@@ -513,14 +514,14 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    showNotification(data.message, 'success');
+                    showToast('Sucesso', data.message, 'success');
                     loadStats(); // Recarregar estatísticas
                 } else {
-                    showNotification(data.message || 'Erro ao apagar pontos', 'error');
+                    showToast('Erro', data.message || 'Erro ao apagar pontos', 'error');
                 }
             } catch (error) {
                 console.error('Erro:', error);
-                showNotification('Erro ao apagar pontos', 'error');
+                showToast('Erro', 'Erro ao apagar pontos', 'error');
             }
         }
 
@@ -547,14 +548,14 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    showNotification(data.message, 'success');
+                    showToast('Sucesso', data.message, 'success');
                     loadStats(); // Recarregar estatísticas
                 } else {
-                    showNotification(data.message || 'Erro ao apagar histórico', 'error');
+                    showToast('Erro', data.message || 'Erro ao apagar histórico', 'error');
                 }
             } catch (error) {
                 console.error('Erro:', error);
-                showNotification('Erro ao apagar histórico', 'error');
+                showToast('Erro', 'Erro ao apagar histórico', 'error');
             }
         }
 
@@ -564,7 +565,7 @@
             const kidId = document.getElementById('history-kid').value;
             
             if (!month) {
-                showNotification('Selecione um mês para baixar o histórico', 'error');
+                showToast('Erro', 'Selecione um mês para baixar o histórico', 'error');
                 return;
             }
             
@@ -586,11 +587,11 @@
                 if (response.ok) {
                     generateHistoryPDF(data.data, kidId);
                 } else {
-                    showNotification(data.message || 'Erro ao baixar histórico', 'error');
+                    showToast('Erro', data.message || 'Erro ao baixar histórico', 'error');
                 }
             } catch (error) {
                 console.error('Erro:', error);
-                showNotification('Erro ao baixar histórico', 'error');
+                showToast('Erro', 'Erro ao baixar histórico', 'error');
             }
         }
 
@@ -610,11 +611,11 @@
                      const filterType = document.getElementById('activities-filter').value;
                      generateActivitiesPDF(data.data.activities, filterType);
                  } else {
-                     showNotification(data.message || 'Erro ao baixar atividades', 'error');
+                     showToast('Erro', data.message || 'Erro ao baixar atividades', 'error');
                  }
              } catch (error) {
                  console.error('Erro:', error);
-                 showNotification('Erro ao baixar atividades', 'error');
+                 showToast('Erro', 'Erro ao baixar atividades', 'error');
              }
          }
 
@@ -693,7 +694,7 @@
             }
             fileName += '.pdf';
             doc.save(fileName);
-            showNotification('PDF do histórico baixado com sucesso!', 'success');
+            showToast('Sucesso', 'PDF do histórico baixado com sucesso!', 'success');
         }
 
                  // Gerar PDF das atividades
@@ -791,7 +792,7 @@
              }
              fileName += '.pdf';
              doc.save(fileName);
-             showNotification('PDF das atividades baixado com sucesso!', 'success');
+             showToast('Sucesso', 'PDF das atividades baixado com sucesso!', 'success');
          }
 
         // Funções auxiliares para modais
@@ -805,10 +806,44 @@
             document.getElementById('confirm-modal').classList.remove('hidden');
         }
 
-        function showNotification(message, type = 'info') {
-            document.getElementById('notification-title').textContent = type === 'error' ? 'Erro' : 'Sucesso';
-            document.getElementById('notification-message').textContent = message;
-            document.getElementById('notification-modal').classList.remove('hidden');
+        function showToast(title, message, type = 'info') {
+            const toastContainer = document.getElementById('toast-container');
+            if (!toastContainer) {
+                // Create a container if it doesn't exist
+                const newToastContainer = document.createElement('div');
+                newToastContainer.id = 'toast-container';
+                newToastContainer.style.position = 'fixed';
+                newToastContainer.style.top = '20px';
+                newToastContainer.style.right = '20px';
+                newToastContainer.style.zIndex = '10000';
+                document.body.appendChild(newToastContainer);
+            }
+
+            const toast = document.createElement('div');
+            toast.classList.add('toast', `toast-${type}`);
+            toast.innerHTML = `
+                <div class="toast-header">
+                    <strong>${title}</strong>
+                    <button class="toast-close-button" onclick="closeToast(this.parentElement)">&times;</button>
+                </div>
+                <div class="toast-body">
+                    ${message}
+                </div>
+            `;
+            document.getElementById('toast-container').appendChild(toast);
+
+            // Automatically remove the toast after 5 seconds
+            setTimeout(() => {
+                closeToast(toast);
+            }, 5000);
+        }
+
+        function closeToast(toast) {
+            toast.classList.remove('show');
+            toast.classList.add('hide');
+            setTimeout(() => {
+                toast.remove();
+            }, 300); // Remove after transition
         }
 
         function closeModal(modalId) {
