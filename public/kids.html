@@ -660,7 +660,9 @@
 
         // Excluir criança
         function deleteKid(kidId) {
+            console.log('🔍 [DELETE] Função deleteKid chamada com ID:', kidId);
             currentKidId = kidId;
+            console.log('📋 [DELETE] currentKidId definido como:', currentKidId);
             document.getElementById('confirm-modal').classList.remove('hidden');
         }
 
@@ -672,14 +674,32 @@
 
         // Confirmar exclusão
         async function confirmDelete() {
-            if (!currentKidId) return;
+            if (!currentKidId) {
+                console.log('❌ [DELETE] currentKidId não definido');
+                return;
+            }
+
+            console.log('🔍 [DELETE] Iniciando exclusão da criança:', currentKidId);
 
             try {
-                await API.delete(`/kids/${currentKidId}`);
+                console.log('📡 [DELETE] Enviando requisição DELETE para:', `/kids/${currentKidId}`);
+                
+                const response = await API.delete(`/kids/${currentKidId}`);
+                
+                console.log('✅ [DELETE] Resposta do servidor:', response);
+                
                 showNotification('Sucesso', 'Criança excluída com sucesso!', 'success');
                 hideConfirmModal();
                 loadKids();
+                
             } catch (error) {
+                console.error('❌ [DELETE] Erro na exclusão:', error);
+                console.error('❌ [DELETE] Detalhes do erro:', {
+                    message: error.message,
+                    status: error.status,
+                    response: error.response
+                });
+                
                 showNotification('Erro', error.message, 'error');
             }
         }

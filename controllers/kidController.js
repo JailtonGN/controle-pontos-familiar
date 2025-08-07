@@ -179,16 +179,58 @@ const updateKid = async (req, res) => {
 const deleteKid = async (req, res) => {
     try {
         const { kidId } = req.params;
-        const kid = await Kid.findOne({ _id: kidId, parentId: req.user._id });
+        
+        console.log('🔍 [DELETE KID] Iniciando exclusão...');
+        console.log('📋 [DELETE KID] Parâmetros:', { kidId, userId: req.user._id });
+        
+        // Verificar se a criança existe e pertence ao usuário
+        const kid = await Kid.findOne({ 
+            _id: kidId, 
+            parentId: req.user._id,
+            isActive: true 
+        });
+        
         if (!kid) {
-            return res.status(404).json({ success: false, message: 'Criança não encontrada' });
+            console.log('❌ [DELETE KID] Criança não encontrada');
+            console.log('🔍 [DELETE KID] Verificando se a criança existe...');
+            
+            // Verificar se a criança existe (sem verificar parentId)
+            const kidExists = await Kid.findById(kidId);
+            if (kidExists) {
+                console.log('⚠️ [DELETE KID] Criança existe mas não pertence ao usuário');
+                console.log('📋 [DELETE KID] Criança parentId:', kidExists.parentId);
+                console.log('📋 [DELETE KID] Usuário atual:', req.user._id);
+            } else {
+                console.log('❌ [DELETE KID] Criança não existe no banco');
+            }
+            
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Criança não encontrada' 
+            });
         }
+        
+        console.log('✅ [DELETE KID] Criança encontrada:', kid.name);
+        
+        // Deletar a criança
         await Kid.deleteOne({ _id: kidId });
-        await Point.deleteMany({ kidId });
-        res.json({ success: true, message: 'Criança e pontos relacionados removidos com sucesso' });
+        console.log('✅ [DELETE KID] Criança deletada');
+        
+        // Deletar pontos relacionados
+        const deletedPoints = await Point.deleteMany({ kidId });
+        console.log('✅ [DELETE KID] Pontos deletados:', deletedPoints.deletedCount);
+        
+        res.json({ 
+            success: true, 
+            message: 'Criança e pontos relacionados removidos com sucesso' 
+        });
+        
     } catch (error) {
-        console.error('Erro ao remover criança:', error);
-        res.status(500).json({ success: false, message: 'Erro interno do servidor' });
+        console.error('❌ [DELETE KID] Erro ao remover criança:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Erro interno do servidor' 
+        });
     }
 };
 
