@@ -20,13 +20,13 @@ A senha do MongoDB Atlas foi alterada para: `TyCsPlZNsDWOM46N`
 Substitua a string atual pela nova string com a senha atualizada:
 
 ```
-mongodb+srv://seu_usuario:TyCsPlZNsDWOM46N@seu_cluster.mongodb.net/controle-pontos-familiar?retryWrites=true&w=majority
+mongodb+srv://deejaymax2010:TyCsPlZNsDWOM46N@seu_cluster.mongodb.net/controle-pontos-familiar?retryWrites=true&w=majority
 ```
 
 **⚠️ IMPORTANTE**: 
-- Substitua `seu_usuario` pelo seu nome de usuário do MongoDB Atlas
+- Usuário: `deejaymax2010`
+- Senha: `TyCsPlZNsDWOM46N`
 - Substitua `seu_cluster` pelo nome do seu cluster
-- Mantenha `TyCsPlZNsDWOM46N` como a nova senha
 
 ### 4. **Salvar e Deploy**
 1. Clique em **"Save Changes"**
@@ -44,7 +44,7 @@ Se quiser testar a nova senha localmente:
 
 1. **Criar arquivo `.env`** (se não existir):
 ```env
-MONGODB_URI=mongodb+srv://seu_usuario:TyCsPlZNsDWOM46N@seu_cluster.mongodb.net/controle-pontos-familiar?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://deejaymax2010:TyCsPlZNsDWOM46N@seu_cluster.mongodb.net/controle-pontos-familiar?retryWrites=true&w=majority
 JWT_SECRET=sua_chave_secreta_aqui
 NODE_ENV=development
 PORT=3000

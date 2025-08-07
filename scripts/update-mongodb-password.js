@@ -5,12 +5,13 @@ require('dotenv').config();
 const testNewPassword = async () => {
     try {
         console.log('🔍 Testando nova senha do MongoDB...');
+        console.log('📊 Usuário: deejaymax2010');
         console.log('📊 Nova senha: TyCsPlZNsDWOM46N');
         
         if (!process.env.MONGODB_URI) {
             console.error('❌ MONGODB_URI não configurada!');
             console.error('Configure a variável de ambiente MONGODB_URI');
-            console.error('Exemplo: mongodb+srv://seu_usuario:TyCsPlZNsDWOM46N@seu_cluster.mongodb.net/controle-pontos-familiar');
+            console.error('Exemplo: mongodb+srv://deejaymax2010:TyCsPlZNsDWOM46N@seu_cluster.mongodb.net/controle-pontos-familiar');
             process.exit(1);
         }
 
@@ -59,14 +60,14 @@ const testNewPassword = async () => {
 const generateConnectionString = () => {
     console.log('🔧 Gerando string de conexão com nova senha...');
     console.log('');
-    console.log('📋 Substitua os valores abaixo:');
+    console.log('📋 String de conexão completa:');
     console.log('');
-    console.log('mongodb+srv://SEU_USUARIO:TyCsPlZNsDWOM46N@SEU_CLUSTER.mongodb.net/controle-pontos-familiar?retryWrites=true&w=majority');
+    console.log('mongodb+srv://deejaymax2010:TyCsPlZNsDWOM46N@SEU_CLUSTER.mongodb.net/controle-pontos-familiar?retryWrites=true&w=majority');
     console.log('');
     console.log('⚠️  IMPORTANTE:');
-    console.log('   - Substitua SEU_USUARIO pelo seu nome de usuário do MongoDB Atlas');
     console.log('   - Substitua SEU_CLUSTER pelo nome do seu cluster');
-    console.log('   - Mantenha TyCsPlZNsDWOM46N como a nova senha');
+    console.log('   - Usuário: deejaymax2010');
+    console.log('   - Senha: TyCsPlZNsDWOM46N');
     console.log('');
     console.log('🚀 Use esta string no Render:');
     console.log('   1. Vá para o dashboard do Render');
