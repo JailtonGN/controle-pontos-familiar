@@ -469,6 +469,8 @@
          // Variáveis específicas da página de cadastros
          let currentKidId = null;
          let currentActivityId = null;
+         let kids = [];
+         let activities = [];
 
                   // Função para gerenciar abas
          function showTab(tabName) {
@@ -870,6 +872,42 @@
                  showNotification('Erro', error.message, 'error');
              }
          });
+
+         // Função para carregar crianças
+         async function loadKids() {
+             try {
+                 console.log('🔍 [LOAD KIDS] Carregando crianças...');
+                 const response = await API.get('/kids');
+                 console.log('✅ [LOAD KIDS] Resposta:', response);
+                 
+                 kids = response.data.kids || [];
+                 console.log('📋 [LOAD KIDS] Crianças carregadas:', kids.length);
+                 
+                 renderKidsGrid();
+                 
+             } catch (error) {
+                 console.error('❌ [LOAD KIDS] Erro ao carregar crianças:', error);
+                 showNotification('Erro', 'Erro ao carregar crianças', 'error');
+             }
+         }
+
+         // Função para carregar atividades
+         async function loadActivities() {
+             try {
+                 console.log('🔍 [LOAD ACTIVITIES] Carregando atividades...');
+                 const response = await API.get('/activities');
+                 console.log('✅ [LOAD ACTIVITIES] Resposta:', response);
+                 
+                 activities = response.data.activities || [];
+                 console.log('📋 [LOAD ACTIVITIES] Atividades carregadas:', activities.length);
+                 
+                 renderActivitiesList();
+                 
+             } catch (error) {
+                 console.error('❌ [LOAD ACTIVITIES] Erro ao carregar atividades:', error);
+                 showNotification('Erro', 'Erro ao carregar atividades', 'error');
+             }
+         }
 
          // Event listener para o formulário de edição
          document.getElementById('edit-kid-form').addEventListener('submit', async function(e) {
