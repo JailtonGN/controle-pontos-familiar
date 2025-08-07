@@ -10,6 +10,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npm install",
     "test-db": "node scripts/test-mongodb-connection.js",
+    "test-new-password": "node scripts/update-mongodb-password.js",
+    "generate-connection": "node scripts/update-mongodb-password.js --generate",
     "check-config": "node scripts/check-render-config.js"
   },
   "keywords": [
