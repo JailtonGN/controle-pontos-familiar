@@ -324,6 +324,26 @@
             document.getElementById('pin-input').value = '';
             document.getElementById('pin-input').focus();
         }
+
+        // Modal de Notificação
+        const notificationModal = document.createElement('div');
+        notificationModal.id = 'notification-modal';
+        notificationModal.className = 'modal hidden';
+        notificationModal.innerHTML = `
+            <div class="modal-content">
+                <div style="display: flex; align-items: center; margin-bottom: 16px;">
+                    <div id="notification-icon" style="margin-right: 12px; font-size: 24px;"></div>
+                    <h3 id="notification-title" class="modal-title"></h3>
+                </div>
+                <p id="notification-message" class="modal-message"></p>
+                <div style="text-align: right;">
+                    <button id="notification-close" class="modal-button">
+                        OK
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(notificationModal);
     </script>
 </body>
 </html> 

@@ -781,8 +781,51 @@
 
         // Função para mostrar notificação
         function showNotification(title, message, type = 'info') {
-            // Implementar notificação simples
-            alert(`${title}: ${message}`);
+            const modal = document.getElementById('notification-modal');
+            const icon = document.getElementById('notification-icon');
+            const titleEl = document.getElementById('notification-title');
+            const messageEl = document.getElementById('notification-message');
+            const closeBtn = document.getElementById('notification-close');
+
+            if (modal && icon && titleEl && messageEl && closeBtn) {
+                // Definir ícone baseado no tipo
+                const icons = {
+                    success: '✅',
+                    error: '❌',
+                    warning: '⚠️',
+                    info: 'ℹ️'
+                };
+                icon.textContent = icons[type] || icons.info;
+
+                // Definir título e mensagem
+                titleEl.textContent = title;
+                messageEl.textContent = message;
+
+                // Mostrar modal
+                modal.classList.remove('hidden');
+                modal.style.display = 'flex';
+                modal.style.opacity = '1';
+                modal.style.visibility = 'visible';
+
+                // Configurar botão de fechar
+                closeBtn.onclick = () => {
+                    modal.classList.add('hidden');
+                    modal.style.display = 'none';
+                    modal.style.opacity = '0';
+                    modal.style.visibility = 'hidden';
+                };
+
+                // Auto-fechar após 5 segundos
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    modal.style.display = 'none';
+                    modal.style.opacity = '0';
+                    modal.style.visibility = 'hidden';
+                }, 5000);
+            } else {
+                // Fallback para alert
+                alert(`${title}: ${message}`);
+            }
         }
 
         // Funções do modal de confirmação
@@ -834,6 +877,21 @@
         </div>
     </div>
 
+    <!-- Modal de Notificação -->
+    <div id="notification-modal" class="modal hidden">
+        <div class="modal-content">
+            <div style="display: flex; align-items: center; margin-bottom: 16px;">
+                <div id="notification-icon" style="margin-right: 12px; font-size: 24px;"></div>
+                <h3 id="notification-title" class="modal-title"></h3>
+            </div>
+            <p id="notification-message" class="modal-message"></p>
+            <div style="text-align: right;">
+                <button id="notification-close" class="modal-button">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
 
 </body>
 </html> 

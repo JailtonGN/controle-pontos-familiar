@@ -176,7 +176,7 @@
                     </div>
                     <div>
                         <label for="activity-points" class="block text-sm font-medium text-gray-700">Pontos</label>
-                        <input type="number" id="activity-points" name="points" min="1" max="100" required class="professional-input">
+                        <input type="number" id="activity-points" name="points" min="1" max="500" required class="professional-input">
                     </div>
                     <div>
                         <label for="activity-category" class="block text-sm font-medium text-gray-700">Categoria</label>
@@ -430,6 +430,26 @@
                 showNotification('Erro', error.message, 'error');
             }
         });
+
+        // Modal de Notificação
+        const notificationModal = document.createElement('div');
+        notificationModal.id = 'notification-modal';
+        notificationModal.className = 'modal hidden';
+        notificationModal.innerHTML = `
+            <div class="modal-content">
+                <div style="display: flex; align-items: center; margin-bottom: 16px;">
+                    <div id="notification-icon" style="margin-right: 12px; font-size: 24px;"></div>
+                    <h3 id="notification-title" class="modal-title"></h3>
+                </div>
+                <p id="notification-message" class="modal-message"></p>
+                <div style="text-align: right;">
+                    <button id="notification-close" class="modal-button">
+                        OK
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(notificationModal);
     </script>
 </body>
 </html> 

@@ -495,9 +495,14 @@ async function loadKids() {
         const currentPath = window.location.pathname;
         if (currentPath === '/kids') {
             // Página de cadastros - usar renderKidsGrid
-            if (typeof renderKidsGrid === 'function') {
-                renderKidsGrid();
-            }
+            // Aguardar um pouco para garantir que a função esteja disponível
+            setTimeout(() => {
+                if (typeof renderKidsGrid === 'function') {
+                    renderKidsGrid();
+                } else {
+                    console.warn('renderKidsGrid não está disponível ainda');
+                }
+            }, 100);
         } else {
             // Dashboard - usar renderKidsCards
             renderKidsCards();
@@ -518,9 +523,14 @@ async function loadActivities() {
         const currentPath = window.location.pathname;
         if (currentPath === '/kids') {
             // Página de cadastros - usar renderActivitiesList
-            if (typeof renderActivitiesList === 'function') {
-                renderActivitiesList();
-            }
+            // Aguardar um pouco para garantir que a função esteja disponível
+            setTimeout(() => {
+                if (typeof renderActivitiesList === 'function') {
+                    renderActivitiesList();
+                } else {
+                    console.warn('renderActivitiesList não está disponível ainda');
+                }
+            }, 100);
         }
     } catch (error) {
         console.error('Erro ao carregar atividades:', error);

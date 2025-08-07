@@ -529,7 +529,7 @@ const deletePoint = async (req, res) => {
 
         // Atualizar pontos da criança
         kid.totalPoints = newTotalPoints;
-        kid.currentLevel = Math.max(1, Math.floor(newTotalPoints / 100) + 1);
+        kid.currentLevel = Math.max(1, Math.floor(newTotalPoints / 500) + 1);
         await kid.save();
 
         res.json({

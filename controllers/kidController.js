@@ -34,10 +34,10 @@ const getKids = async (req, res) => {
 // @access  Private
 const getKid = async (req, res) => {
     try {
-        const { kidId } = req.params;
+        const { id } = req.params;
 
         const kid = await Kid.findOne({ 
-            _id: kidId, 
+            _id: id, 
             parentId: req.user._id,
             isActive: true 
         });
@@ -128,12 +128,12 @@ const updateKid = async (req, res) => {
             });
         }
 
-        const { kidId } = req.params;
+        const { id } = req.params;
         const { name, age, avatar, emoji, color, pin, preferences } = req.body;
 
         // Verificar se a criança existe e pertence ao usuário
         const kid = await Kid.findOne({ 
-            _id: kidId, 
+            _id: id, 
             parentId: req.user._id,
             isActive: true 
         });
@@ -178,14 +178,14 @@ const updateKid = async (req, res) => {
 // @access  Private
 const deleteKid = async (req, res) => {
     try {
-        const { kidId } = req.params;
+        const { id } = req.params;
         
         console.log('🔍 [DELETE KID] Iniciando exclusão...');
-        console.log('📋 [DELETE KID] Parâmetros:', { kidId, userId: req.user._id });
+        console.log('📋 [DELETE KID] Parâmetros:', { kidId: id, userId: req.user._id });
         
         // Verificar se a criança existe e pertence ao usuário
         const kid = await Kid.findOne({ 
-            _id: kidId, 
+            _id: id, 
             parentId: req.user._id,
             isActive: true 
         });
@@ -195,7 +195,7 @@ const deleteKid = async (req, res) => {
             console.log('🔍 [DELETE KID] Verificando se a criança existe...');
             
             // Verificar se a criança existe (sem verificar parentId)
-            const kidExists = await Kid.findById(kidId);
+            const kidExists = await Kid.findById(id);
             if (kidExists) {
                 console.log('⚠️ [DELETE KID] Criança existe mas não pertence ao usuário');
                 console.log('📋 [DELETE KID] Criança parentId:', kidExists.parentId);
@@ -213,11 +213,11 @@ const deleteKid = async (req, res) => {
         console.log('✅ [DELETE KID] Criança encontrada:', kid.name);
         
         // Deletar a criança
-        await Kid.deleteOne({ _id: kidId });
+        await Kid.deleteOne({ _id: id });
         console.log('✅ [DELETE KID] Criança deletada');
         
         // Deletar pontos relacionados
-        const deletedPoints = await Point.deleteMany({ kidId });
+        const deletedPoints = await Point.deleteMany({ kidId: id });
         console.log('✅ [DELETE KID] Pontos deletados:', deletedPoints.deletedCount);
         
         res.json({ 

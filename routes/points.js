@@ -28,8 +28,8 @@ const addPointsValidation = [
         .withMessage('ID da atividade inválido'),
     body('points')
         .optional()
-        .isInt({ min: 1, max: 100 })
-        .withMessage('Pontos devem ser entre 1 e 100')
+        .isInt({ min: 1, max: 500 })
+        .withMessage('Pontos devem ser entre 1 e 500')
         .custom((value, { req }) => {
             // Se não há activityId (pontos avulsos), points é obrigatório
             if (!req.body.activityId && (!value || value < 1)) {
@@ -60,8 +60,8 @@ const removePointsValidation = [
         .withMessage('ID da atividade inválido'),
     body('points')
         .optional()
-        .isInt({ min: 1, max: 100 })
-        .withMessage('Pontos devem ser entre 1 e 100')
+        .isInt({ min: 1, max: 500 })
+        .withMessage('Pontos devem ser entre 1 e 500')
         .custom((value, { req }) => {
             // Se não há activityId (pontos avulsos), points é obrigatório
             if (!req.body.activityId && (!value || value < 1)) {

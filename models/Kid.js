@@ -120,8 +120,8 @@ const kidSchema = new mongoose.Schema({
 kidSchema.methods.addPoints = async function(points, activityId = null) {
     this.totalPoints += points;
     
-    // Calcular novo nível (a cada 100 pontos = 1 nível)
-    const newLevel = Math.floor(this.totalPoints / 100) + 1;
+    // Calcular novo nível (a cada 500 pontos = 1 nível)
+    const newLevel = Math.floor(this.totalPoints / 500) + 1;
     if (newLevel > this.currentLevel) {
         this.currentLevel = newLevel;
     }
@@ -147,20 +147,20 @@ kidSchema.methods.removePoints = async function(points) {
     this.totalPoints -= points;
     
     // Recalcular nível (permitir nível 1 mesmo com pontos negativos)
-    this.currentLevel = Math.max(1, Math.floor(this.totalPoints / 100) + 1);
+    this.currentLevel = Math.max(1, Math.floor(this.totalPoints / 500) + 1);
     
     return await this.save();
 };
 
 // Método para obter progresso do nível atual
 kidSchema.methods.getLevelProgress = function() {
-    const pointsInCurrentLevel = this.totalPoints % 100;
-    const progressPercentage = (pointsInCurrentLevel / 100) * 100;
+    const pointsInCurrentLevel = this.totalPoints % 500;
+    const progressPercentage = (pointsInCurrentLevel / 500) * 100;
     
     return {
         currentLevel: this.currentLevel,
         pointsInCurrentLevel,
-        pointsForNextLevel: 100 - pointsInCurrentLevel,
+        pointsForNextLevel: 500 - pointsInCurrentLevel,
         progressPercentage: Math.round(progressPercentage)
     };
 };

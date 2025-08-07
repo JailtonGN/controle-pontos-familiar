@@ -249,9 +249,9 @@
             
             cardsContainer.innerHTML = kids.map(kid => {
                 const totalPoints = kid.totalPoints || 0;
-                const level = Math.floor(totalPoints / 100) + 1;
-                const progressInLevel = totalPoints % 100;
-                const progressPercentage = Math.min(100, (progressInLevel / 100) * 100);
+                const level = Math.floor(totalPoints / 500) + 1;
+                const progressInLevel = totalPoints % 500;
+                const progressPercentage = Math.min(100, (progressInLevel / 500) * 100);
                 
                 // Calcular valores em dinheiro
                 const moneyValue = (totalPoints * 0.10).toFixed(2);
