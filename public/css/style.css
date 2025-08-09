@@ -624,6 +624,162 @@ body {
     }
 }
 
+/* ===== MENU MOBILE MÁGICO ===== */
+.navbar-mobile-menu {
+    display: none;
+}
+
+.navbar-mobile-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.navbar-mobile-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5);
+    background: linear-gradient(135deg, #5a67d8, #6b46c1);
+}
+
+.navbar-mobile-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+}
+
+.navbar-mobile-button svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    stroke-width: 2;
+}
+
+.navbar-mobile-menu-content {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    border-radius: 0 0 15px 15px;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-top: none;
+    overflow: hidden;
+    transform: translateY(-10px);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 999;
+    max-height: 0;
+}
+
+.navbar-mobile-menu-content:not(.hidden) {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+    max-height: 400px;
+}
+
+.navbar-mobile-item {
+    display: block;
+    padding: 15px 20px;
+    color: #4a5568;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.navbar-mobile-item:last-child {
+    border-bottom: none;
+}
+
+.navbar-mobile-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+    transition: left 0.5s ease;
+}
+
+.navbar-mobile-item:hover {
+    background: rgba(102, 126, 234, 0.05);
+    color: #667eea;
+    transform: translateX(5px);
+}
+
+.navbar-mobile-item:hover::before {
+    left: 100%;
+}
+
+.navbar-mobile-item.active {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.navbar-mobile-item.active::before {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+}
+
+/* Ajustes específicos para dispositivos móveis */
+@media (max-width: 768px) {
+    .navbar-mobile-menu {
+        display: block;
+    }
+    
+    .navbar-mobile-menu-content {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        max-height: 400px;
+        overflow-y: auto;
+        border-radius: 0 0 15px 15px;
+    }
+    
+    .navbar-mobile-item {
+        padding: 18px 20px;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .navbar-mobile-menu-content {
+        max-height: 350px;
+    }
+    
+    .navbar-mobile-item {
+        padding: 20px 20px;
+        font-size: 1.1rem;
+    }
+    
+    .navbar-mobile-button {
+        width: 44px;
+        height: 44px;
+    }
+    
+    .navbar-mobile-button svg {
+        width: 22px;
+        height: 22px;
+    }
+}
+
 /* ===== BOTÕES DE NAVEGAÇÃO MÁGICOS ===== */
 .btn {
     display: inline-flex;
