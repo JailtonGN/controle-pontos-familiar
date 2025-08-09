@@ -328,13 +328,19 @@
         async function loadHistory() {
             try {
                 const kidData = JSON.parse(localStorage.getItem('kidData'));
-                const response = await KidAPI.get(`/points/kid/${kidData._id}/history`);
+                const url = `/points/kid/${kidData._id}/history`;
+                console.log('🔎 [KID UI] Carregando histórico (sem filtro):', url);
+                const response = await KidAPI.get(url);
                 const points = response.data.points || [];
+                console.log('✅ [KID UI] Histórico carregado:', { qtd: points.length });
                 
                 displayHistoryCards(points);
                 
             } catch (error) {
                 console.error('Erro ao carregar histórico:', error);
+                if (typeof showToast === 'function') {
+                    showToast('Erro', 'Falha ao carregar histórico', 'error');
+                }
             }
         }
 
@@ -430,12 +436,17 @@
                     url += '?' + params.toString();
                 }
 
+                console.log('🔎 [KID UI] Aplicando filtro:', { url, date });
                 const response = await KidAPI.get(url);
                 const points = response.data.points || [];
+                console.log('✅ [KID UI] Resultado do filtro:', { qtd: points.length });
                 displayHistoryCards(points);
                 
             } catch (error) {
-                console.error('Erro ao aplicar filtros:', error);
+                console.error('❌ [KID UI] Erro ao aplicar filtros:', error);
+                if (typeof showToast === 'function') {
+                    showToast('Erro', 'Falha ao aplicar filtros', 'error');
+                }
             }
         }
 

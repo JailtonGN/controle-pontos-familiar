@@ -408,18 +408,16 @@ const getPointsByCategory = async (req, res) => {
     }
 };
 
-// @desc    Obter histórico geral de pontos de todas as crianças do usuário
+// @desc    Obter histórico geral de pontos de todas as crianças do usuário (com filtros opcionais)
 // @route   GET /api/points/history
 // @access  Private
 const getGeneralHistory = async (req, res) => {
     try {
-        const { limit = 50, page = 1 } = req.query;
+        const { limit = 50, page = 1, kidId, date } = req.query;
+        console.log('🔎 [PARENT HISTORY] Requisição recebida:', { kidId, date, page: Number(page), limit: Number(limit) });
 
         // Buscar todas as crianças do usuário
-        const kids = await Kid.find({ 
-            parentId: req.user._id,
-            isActive: true 
-        });
+        const kids = await Kid.find({ parentId: req.user._id, isActive: true });
 
         if (kids.length === 0) {
             return res.json({
@@ -436,17 +434,35 @@ const getGeneralHistory = async (req, res) => {
             });
         }
 
-        // Obter IDs das crianças
-        const kidIds = kids.map(kid => kid._id);
+        // Obter IDs das crianças (ou uma específica, se filtrada e pertencer ao usuário)
+        let kidIds = kids.map(kid => kid._id);
+        if (kidId) {
+            const belongs = kidIds.some(id => id.toString() === kidId);
+            if (!belongs) {
+                return res.status(404).json({ success: false, message: 'Criança não encontrada' });
+            }
+            kidIds = [kidId];
+        }
 
         // Calcular skip para paginação
         const skip = (parseInt(page) - 1) * parseInt(limit);
 
-        // Buscar histórico de pontos de todas as crianças
-        const points = await Point.find({
-            kidId: { $in: kidIds },
-            isActive: true
-        })
+        // Filtro de data (dia específico) se fornecido
+        const query = { kidId: { $in: kidIds }, isActive: true };
+        if (date) {
+            const [y, m, d] = String(date).split('-').map(Number);
+            if (y && m && d) {
+                const start = new Date(y, m - 1, d, 0, 0, 0, 0);
+                const end = new Date(y, m - 1, d, 23, 59, 59, 999);
+                query.date = { $gte: start, $lte: end };
+                console.log('🗓️  [PARENT HISTORY] Filtro de data aplicado:', { start, end });
+            } else {
+                console.log('⚠️  [PARENT HISTORY] Data inválida recebida:', date);
+            }
+        }
+
+        // Buscar histórico de pontos
+        const points = await Point.find(query)
         .populate('kidId', 'name age avatar')
         .populate('activityId', 'name icon color category')
         .populate('awardedBy', 'name')
@@ -455,10 +471,8 @@ const getGeneralHistory = async (req, res) => {
         .limit(parseInt(limit));
 
         // Contar total de registros
-        const total = await Point.countDocuments({ 
-            kidId: { $in: kidIds },
-            isActive: true 
-        });
+        const total = await Point.countDocuments(query);
+        console.log('✅ [PARENT HISTORY] Consulta concluída:', { returned: points.length, total });
 
         res.json({
             success: true,

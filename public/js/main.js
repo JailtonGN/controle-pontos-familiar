@@ -526,10 +526,7 @@ function renderKidsCards() {
             <div class="col-span-full text-center py-12">
                 <div class="text-6xl mb-4">👶</div>
                 <h3 class="text-xl font-semibold text-gray-700 mb-2">Nenhuma criança cadastrada</h3>
-                <p class="text-gray-500 mb-4">Adicione uma criança para começar a acompanhar os pontos</p>
-                <button onclick="showAddKidModal()" class="professional-button professional-button-success">
-                    ➕ Adicionar Criança
-                </button>
+                <p class="text-gray-500">Cadastre crianças na área de Cadastros para começar a acompanhar os pontos</p>
             </div>
         `;
         return;
@@ -733,12 +730,13 @@ async function applyFilters() {
         if (params.toString()) {
             url += '?' + params.toString();
         }
-
+        console.log('🔎 [PARENT UI] Aplicando filtros:', { url, kidId, date });
         const response = await API.get(url);
+        console.log('✅ [PARENT UI] Resposta filtros:', { qtd: response?.data?.history?.length });
         history = response.data.history;
         renderHistoryTable();
     } catch (error) {
-        console.error('Erro ao aplicar filtros:', error);
+        console.error('❌ [PARENT UI] Erro ao aplicar filtros:', error);
         showToast('Erro', 'Erro ao aplicar filtros', 'error');
     }
 }
@@ -776,6 +774,16 @@ if (window.location.pathname === '/dashboard') {
         }
         
         loadDashboardData();
+
+        // Garantir binding do botão Filtrar
+        const filterBtn = document.getElementById('apply-filters-btn');
+        if (filterBtn) {
+            filterBtn.addEventListener('click', function(){
+                console.log('🟡 [PARENT UI] Listener do botão Filtrar ativo');
+            });
+        } else {
+            console.warn('⚠️ [PARENT UI] Botão Filtrar não encontrado no DOM');
+        }
         
         // Event listener para formulário de adicionar criança
         const addKidForm = document.getElementById('add-kid-form');

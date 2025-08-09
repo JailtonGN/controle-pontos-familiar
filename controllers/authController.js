@@ -23,9 +23,9 @@ const generateToken = (userId) => {
     }
 };
 
-// @desc    Registrar novo usuário
+// @desc    Registrar novo usuário (somente admin)
 // @route   POST /api/auth/register
-// @access  Public
+// @access  Private (Admin)
 const register = async (req, res) => {
     try {
         // Verificar erros de validação
@@ -38,7 +38,7 @@ const register = async (req, res) => {
             });
         }
 
-        const { name, email, password } = req.body;
+        const { name, email, password, role } = req.body;
 
         // Verificar se o email já existe
         const existingUser = await User.findOne({ email });
@@ -50,23 +50,23 @@ const register = async (req, res) => {
         }
 
         // Criar novo usuário
-        const user = new User({
-            name,
-            email,
-            password
-        });
+        let userRole = 'parent';
+        // Se a rota estiver protegida por admin, permitir definir o role explicitamente
+        if (req.user && req.user.role === 'admin') {
+            if (role && ['parent', 'admin'].includes(role)) {
+                userRole = role;
+            }
+        }
+
+        const user = new User({ name, email, password, role: userRole });
 
         await user.save();
-
-        // Gerar token
-        const token = generateToken(user._id);
 
         res.status(201).json({
             success: true,
             message: 'Usuário registrado com sucesso',
             data: {
-                user: user.toPublicJSON(),
-                token
+                user: user.toPublicJSON()
             }
         });
 
@@ -346,33 +346,68 @@ const kidLogin = async (req, res) => {
         console.log('🔍 [KID LOGIN] Iniciando login da criança...');
         console.log('📊 [KID LOGIN] Dados recebidos:', {
             kidId: req.body.kidId,
+            name: req.body.name,
             pin: req.body.pin ? '***' : 'undefined'
         });
 
-        const { kidId, pin } = req.body;
+        const { kidId, name, pin } = req.body;
 
-        // Verificar se a criança existe
-        const kid = await Kid.findById(kidId);
-        if (!kid || !kid.isActive) {
-            console.log('❌ [KID LOGIN] Criança não encontrada:', kidId);
-            return res.status(404).json({
+        if (!pin) {
+            return res.status(400).json({
                 success: false,
-                message: 'Criança não encontrada'
+                message: 'PIN é obrigatório'
             });
         }
 
-        console.log('✅ [KID LOGIN] Criança encontrada:', kid.name);
+        let kid = null;
 
-        // Verificar PIN
-        if (kid.pin !== pin) {
-            console.log('❌ [KID LOGIN] PIN incorreto');
-            return res.status(401).json({
+        if (kidId) {
+            // Caminho original: login por ID da criança
+            kid = await Kid.findById(kidId);
+            if (!kid || !kid.isActive) {
+                console.log('❌ [KID LOGIN] Criança não encontrada por ID:', kidId);
+                return res.status(404).json({
+                    success: false,
+                    message: 'Criança não encontrada'
+                });
+            }
+
+            console.log('✅ [KID LOGIN] Criança encontrada por ID:', kid.name);
+
+            // Verificar PIN
+            if (kid.pin !== pin) {
+                console.log('❌ [KID LOGIN] PIN incorreto para ID fornecido');
+                return res.status(401).json({
+                    success: false,
+                    message: 'PIN incorreto'
+                });
+            }
+        } else if (name) {
+            // Novo caminho: login por nome + PIN (case-insensitive)
+            const escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const nameRegex = new RegExp('^' + escapeRegExp(name.trim()) + '$', 'i');
+
+            kid = await Kid.findOne({
+                name: nameRegex,
+                pin: pin,
+                isActive: true
+            });
+
+            if (!kid) {
+                console.log('❌ [KID LOGIN] Criança não encontrada por nome+PIN');
+                return res.status(401).json({
+                    success: false,
+                    message: 'Nome ou PIN incorretos'
+                });
+            }
+
+            console.log('✅ [KID LOGIN] Criança autenticada por nome:', kid.name);
+        } else {
+            return res.status(400).json({
                 success: false,
-                message: 'PIN incorreto'
+                message: 'Informe o nome da criança e PIN, ou o ID e PIN'
             });
         }
-
-        console.log('✅ [KID LOGIN] PIN correto');
 
         // Gerar token para criança
         const token = jwt.sign(

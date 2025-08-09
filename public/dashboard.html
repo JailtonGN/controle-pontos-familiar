@@ -132,7 +132,7 @@
                                 <input type="date" id="filter-date" class="history-filter-input">
                             </div>
                             <div class="history-filter-group">
-                                <button onclick="applyFilters()" class="professional-button professional-button-secondary">
+                                <button id="apply-filters-btn" onclick="applyFilters(); console.log('🔎 [PARENT UI] Clicou Filtrar', {kid: document.getElementById('filter-kid')?.value, date: document.getElementById('filter-date')?.value});" class="professional-button professional-button-secondary">
                                     🔍 Filtrar
                                 </button>
                             </div>

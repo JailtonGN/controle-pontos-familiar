@@ -20,17 +20,16 @@
             <!-- Formulário de Login da Criança -->
             <form id="kid-login-form" class="login-form">
                 <div class="form-group">
-                    <label for="kid-select" class="form-label">
-                        Escolha sua criança
+                    <label for="kid-name" class="form-label">
+                        Seu nome (usuário)
                     </label>
-                    <select id="kid-select" name="kidId" required class="form-input">
-                        <option value="">Selecione uma criança</option>
-                    </select>
+                    <input id="kid-name" name="name" type="text" required 
+                           class="form-input" placeholder="Digite seu nome">
                 </div>
 
                 <div class="form-group">
                     <label for="kid-pin" class="form-label">
-                        Digite seu PIN
+                        PIN (senha)
                     </label>
                     <input id="kid-pin" name="pin" type="password" required 
                            class="form-input" placeholder="Digite seu PIN de 4 dígitos" 
@@ -132,8 +131,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Página de login da criança carregada');
             
-            // Carregar lista de crianças
-            loadKids();
+            // Não é mais necessário carregar lista pública de crianças
             
             // Event listener para o formulário
             document.getElementById('kid-login-form').addEventListener('submit', function(e) {
@@ -152,80 +150,53 @@
             });
         });
 
-        // Carregar lista de crianças
-        async function loadKids() {
-            try {
-                const response = await KidAPI.get('/kids/public');
-                const kids = response.data.kids;
-                
-                const select = document.getElementById('kid-select');
-                select.innerHTML = '<option value="">Selecione uma criança</option>';
-                
-                kids.forEach(kid => {
-                    const option = document.createElement('option');
-                    option.value = kid._id;
-                    option.textContent = `${kid.emoji} ${kid.name} (${kid.age} anos)`;
-                    select.appendChild(option);
-                });
-                
-                console.log('Crianças carregadas:', kids.length);
-            } catch (error) {
-                console.error('Erro ao carregar lista de crianças:', error);
-                showToast('Erro', 'Erro ao carregar lista de crianças', 'error');
-            }
-        }
+        // Handler de login por nome + PIN
+        async function handleKidLogin() {
+            const name = document.getElementById('kid-name').value.trim();
+            const pin = document.getElementById('kid-pin').value.trim();
 
-        // Função para fazer login
-        async function loginKid() {
-            const selectedKidId = document.getElementById('kid-select').value;
-            const pin = document.getElementById('pin-input').value;
-            
-            if (!selectedKidId) {
-                showToast('Erro', 'Selecione uma criança', 'error');
+            if (!name) {
+                showToast('Erro', 'Digite seu nome', 'error');
                 return;
             }
-            
             if (!pin || pin.length !== 4) {
                 showToast('Erro', 'Digite um PIN de 4 dígitos', 'error');
                 return;
             }
-            
+
+            const button = document.querySelector('.login-button');
+            const spinner = document.querySelector('.loading-spinner');
+            const btnText = document.querySelector('.button-text');
+            button.disabled = true;
+            spinner.classList.remove('hidden');
+            btnText.textContent = 'Entrando...';
+
             try {
-                const response = await fetch('/api/kids/login', {
+                const response = await fetch('/api/auth/kid/login', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        kidId: selectedKidId,
-                        pin: pin
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, pin })
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (result.success) {
-                    console.log('🟢 [KID-LOGIN] Iniciando toast de sucesso...');
-                    const startTime = Date.now();
-                    
                     showToast('Sucesso', 'Login realizado com sucesso!', 'success');
-                    
-                    console.log('🟢 [KID-LOGIN] Toast mostrado, aguardando 2.5s para redirecionar...');
-                    
                     localStorage.setItem('kidToken', result.data.token);
                     localStorage.setItem('kidData', JSON.stringify(result.data.kid));
-                    
                     setTimeout(() => {
-                        const elapsedTime = Date.now() - startTime;
-                        console.log(`🟢 [KID-LOGIN] Redirecionando após ${elapsedTime}ms`);
-                        window.location.href = `/kid-dashboard?id=${selectedKidId}`;
-                    }, 2500); // Aumentado de 1500 para 2500ms (2.5 segundos)
+                        window.location.href = `/kid-dashboard?id=${result.data.kid._id}`;
+                    }, 2500);
                 } else {
                     showToast('Erro', result.message || 'Erro no login', 'error');
                 }
             } catch (error) {
                 console.error('Erro no login:', error);
                 showToast('Erro', 'Erro ao conectar com o servidor', 'error');
+            } finally {
+                button.disabled = false;
+                spinner.classList.add('hidden');
+                btnText.textContent = 'Entrar';
             }
         }
     </script>

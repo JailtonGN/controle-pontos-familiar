@@ -155,6 +155,36 @@
                     </div>
                 </div>
                 <div class="professional-card-content">
+                    <!-- Aba de Registro (somente admin) -->
+                    <div id="admin-register-card" class="config-card" style="display:none;">
+                        <h3>👤 Registro de Usuários (Admin)</h3>
+                        <p>Crie novos usuários. Disponível apenas para administradores.</p>
+                        <form id="admin-register-form" class="config-form">
+                            <div class="form-group">
+                                <label for="admin-register-name">Nome</label>
+                                <input type="text" id="admin-register-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="admin-register-email">Email</label>
+                                <input type="email" id="admin-register-email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="admin-register-password">Senha</label>
+                                <input type="password" id="admin-register-password" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="admin-register-role">Perfil</label>
+                                <select id="admin-register-role">
+                                    <option value="parent">Pai/Mãe</option>
+                                    <option value="admin">Administrador</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <span class="loading-spinner hidden"></span>
+                                <span class="button-text">Criar Usuário</span>
+                            </button>
+                        </form>
+                    </div>
                     
                     <!-- Apagar Pontos -->
                     <div class="config-card danger">
@@ -245,36 +275,106 @@
                 </div>
             </div>
         </div>
+
+        <!-- Seção de Gerenciamento de Usuários (Admin) -->
+        <div id="admin-users-section" class="professional-section" style="display:none;">
+            <div class="professional-card">
+                <div class="professional-card-header">
+                    <div class="professional-card-title">
+                        👥 Gerenciamento de Usuários (Admin)
+                    </div>
+                </div>
+                <div class="professional-card-content">
+                    <div class="users-controls">
+                        <button onclick="showAddUserModal()" class="btn btn-primary">
+                            ➕ Novo Usuário
+                        </button>
+                    </div>
+                    
+                    <div class="users-table-container">
+                        <table class="users-table">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Email</th>
+                                    <th>Perfil</th>
+                                    <th>Status</th>
+                                    <th>Último Login</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-table-body">
+                                <!-- Usuários serão carregados aqui -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
 
     <!-- Modals -->
-    <div id="confirm-modal" class="modal hidden">
+    <!-- Modal Adicionar/Editar Usuário -->
+    <div id="user-modal" class="modal hidden">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 id="modal-title">Confirmação</h3>
-                <button onclick="closeModal('confirm-modal')" class="modal-close">&times;</button>
+                <h3 id="user-modal-title">Adicionar Usuário</h3>
+                <button onclick="closeModal('user-modal')" class="modal-close">&times;</button>
             </div>
             <div class="modal-body">
-                <p id="modal-message">Tem certeza que deseja continuar?</p>
+                <form id="user-form" class="config-form">
+                    <div class="form-group">
+                        <label for="user-name">Nome</label>
+                        <input type="text" id="user-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="user-email">Email</label>
+                        <input type="email" id="user-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="user-password">Senha</label>
+                        <input type="password" id="user-password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="user-role">Perfil</label>
+                        <select id="user-role">
+                            <option value="parent">Pai/Mãe</option>
+                            <option value="admin">Administrador</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="user-status">Status</label>
+                        <select id="user-status">
+                            <option value="true">Ativo</option>
+                            <option value="false">Inativo</option>
+                        </select>
+                    </div>
+                </form>
             </div>
             <div class="modal-footer">
-                <button onclick="closeModal('confirm-modal')" class="btn btn-secondary">Cancelar</button>
-                <button id="modal-confirm-btn" class="btn btn-danger">Confirmar</button>
+                <button onclick="closeModal('user-modal')" class="btn btn-secondary">Cancelar</button>
+                <button onclick="saveUser()" class="btn btn-primary">
+                    <span class="loading-spinner hidden"></span>
+                    <span class="button-text">Salvar</span>
+                </button>
             </div>
         </div>
     </div>
 
-    <div id="notification-modal" class="modal hidden">
+    <!-- Modal Confirmar Exclusão -->
+    <div id="delete-user-modal" class="modal hidden">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 id="notification-title">Notificação</h3>
-                <button onclick="closeModal('notification-modal')" class="modal-close">&times;</button>
+                <h3>Confirmar Exclusão</h3>
+                <button onclick="closeModal('delete-user-modal')" class="modal-close">&times;</button>
             </div>
             <div class="modal-body">
-                <p id="notification-message">Operação realizada com sucesso!</p>
+                <p>Tem certeza que deseja excluir o usuário <strong id="delete-user-name"></strong>?</p>
+                <p class="warning-text">⚠️ Esta ação não pode ser desfeita e removerá todos os dados associados.</p>
             </div>
             <div class="modal-footer">
-                <button onclick="closeModal('notification-modal')" class="btn btn-primary">OK</button>
+                <button onclick="closeModal('delete-user-modal')" class="btn btn-secondary">Cancelar</button>
+                <button onclick="confirmDeleteUser()" class="btn btn-danger">Excluir</button>
             </div>
         </div>
     </div>
@@ -283,12 +383,12 @@
     <script src="js/toast.js"></script>
     <script>
         // Client-side logic for config page
+        // Carregar dados da página
         document.addEventListener('DOMContentLoaded', function() {
+            setActiveNav('nav-settings');
+            setupAdminRegisterIfAllowed();
             loadUserProfile();
             loadStats();
-            populateMonthSelect();
-            populateKidsSelect();
-            setActiveNav('nav-settings');
         });
 
         // Carregar perfil do usuário
@@ -312,6 +412,16 @@
                         document.getElementById('user-name').textContent = data.data.user.name;
                         document.getElementById('profile-name').textContent = data.data.user.name;
                         document.getElementById('profile-email').textContent = data.data.user.email;
+                        // Verificar se é admin e mostrar seções específicas
+                        if (data.data.user.role === 'admin') {
+                            const adminCard = document.getElementById('admin-register-card');
+                            if (adminCard) adminCard.style.display = 'block';
+                            const adminUsersSection = document.getElementById('admin-users-section');
+                            if (adminUsersSection) {
+                                adminUsersSection.style.display = 'block';
+                                loadUsers(); // Carregar usuários apenas se for admin
+                            }
+                        }
                     } else {
                         throw new Error('Estrutura de dados inválida');
                     }
@@ -322,6 +432,59 @@
                 console.error('Erro:', error);
                 showToast('Erro', 'Erro ao carregar perfil do usuário', 'error');
             }
+        }
+
+        // Preparar formulário de registro admin
+        function setupAdminRegisterIfAllowed() {
+            const form = document.getElementById('admin-register-form');
+            if (!form) return;
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const name = document.getElementById('admin-register-name').value.trim();
+                const email = document.getElementById('admin-register-email').value.trim();
+                const password = document.getElementById('admin-register-password').value;
+                const role = document.getElementById('admin-register-role').value;
+                if (!name || !email || !password) {
+                    showToast('Erro', 'Preencha todos os campos', 'error');
+                    return;
+                }
+                if (password.length < 6) {
+                    showToast('Erro', 'A senha deve ter pelo menos 6 caracteres', 'error');
+                    return;
+                }
+                const button = form.querySelector('button[type="submit"]');
+                const spinner = button.querySelector('.loading-spinner');
+                const buttonText = button.querySelector('.button-text');
+                try {
+                    spinner.classList.remove('hidden');
+                    button.disabled = true;
+                    buttonText.textContent = 'Criando...';
+                    const token = localStorage.getItem('token');
+                    const resp = await fetch('/api/auth/register', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ name, email, password, role })
+                    });
+                    const result = await resp.json();
+                    if (resp.ok && result.success) {
+                        showToast('Sucesso', 'Usuário criado com sucesso', 'success');
+                        form.reset();
+                        loadUsers(); // Recarregar lista de usuários
+                    } else {
+                        showToast('Erro', result.message || 'Erro ao criar usuário', 'error');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    showToast('Erro', 'Falha na comunicação com o servidor', 'error');
+                } finally {
+                    spinner.classList.add('hidden');
+                    button.disabled = false;
+                    buttonText.textContent = 'Criar Usuário';
+                }
+            });
         }
 
         // Carregar estatísticas
@@ -848,6 +1011,193 @@
 
         function closeModal(modalId) {
             document.getElementById(modalId).classList.add('hidden');
+        }
+
+        // Funções para gerenciamento de usuários (Admin)
+        async function loadUsers() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    console.error('Token não encontrado');
+                    return;
+                }
+
+                const response = await fetch('/api/auth/users', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                if (data.success && data.data && data.data.users) {
+                    const tbody = document.getElementById('users-table-body');
+                    if (!tbody) {
+                        console.error('Elemento users-table-body não encontrado');
+                        return;
+                    }
+                    tbody.innerHTML = ''; // Limpar tabela antes de adicionar
+                    data.data.users.forEach(user => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${user.name || ''}</td>
+                            <td>${user.email || ''}</td>
+                            <td>${user.role === 'admin' ? 'Administrador' : 'Pai/Mãe'}</td>
+                            <td><span class="status-badge ${user.isActive ? 'active' : 'inactive'}">${user.isActive ? 'Ativo' : 'Inativo'}</span></td>
+                            <td>${user.lastLogin ? new Date(user.lastLogin).toLocaleDateString('pt-BR') : '-'}</td>
+                            <td>
+                                <button onclick="showEditUserModal('${user._id}', '${user.name || ''}', '${user.email || ''}', '${user.role || 'parent'}', ${user.isActive || false})" class="btn btn-sm btn-info">
+                                    ✏️ Editar
+                                </button>
+                                <button onclick="showDeleteUserModal('${user._id}', '${user.name || ''}')" class="btn btn-sm btn-danger">
+                                    🗑️ Excluir
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                } else {
+                    console.error('Erro ao carregar usuários:', data.message);
+                    showToast('Erro', data.message || 'Erro ao carregar usuários', 'error');
+                }
+            } catch (error) {
+                console.error('Erro ao carregar usuários:', error);
+                showToast('Erro', 'Erro ao carregar usuários', 'error');
+            }
+        }
+
+        function showAddUserModal() {
+            document.getElementById('user-modal-title').textContent = 'Adicionar Usuário';
+            document.getElementById('user-form').reset();
+            document.getElementById('user-password').required = true;
+            document.getElementById('user-password').placeholder = 'Digite a senha';
+            document.getElementById('user-modal').removeAttribute('data-user-id');
+            document.getElementById('user-modal').classList.remove('hidden');
+        }
+
+        function showEditUserModal(userId, name, email, role, isActive) {
+            document.getElementById('user-modal-title').textContent = 'Editar Usuário';
+            document.getElementById('user-form').reset();
+            document.getElementById('user-name').value = name || '';
+            document.getElementById('user-email').value = email || '';
+            document.getElementById('user-role').value = role || 'parent';
+            document.getElementById('user-status').value = isActive ? 'true' : 'false';
+            document.getElementById('user-password').required = false;
+            document.getElementById('user-password').placeholder = 'Deixe em branco para manter a senha atual';
+            document.getElementById('user-modal').setAttribute('data-user-id', userId);
+            document.getElementById('user-modal').classList.remove('hidden');
+        }
+
+        async function saveUser() {
+            const modal = document.getElementById('user-modal');
+            const userId = modal.getAttribute('data-user-id');
+            const isEdit = !!userId;
+            
+            const name = document.getElementById('user-name').value.trim();
+            const email = document.getElementById('user-email').value.trim();
+            const password = document.getElementById('user-password').value;
+            const role = document.getElementById('user-role').value;
+            const isActive = document.getElementById('user-status').value === 'true';
+
+            if (!name || !email) {
+                showToast('Erro', 'Nome e Email são obrigatórios', 'error');
+                return;
+            }
+
+            if (!isEdit && (!password || password.length < 6)) {
+                showToast('Erro', 'A senha deve ter pelo menos 6 caracteres', 'error');
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('token');
+                const button = modal.querySelector('button[onclick="saveUser()"]');
+                const spinner = button.querySelector('.loading-spinner');
+                const buttonText = button.querySelector('.button-text');
+                
+                spinner.classList.remove('hidden');
+                button.disabled = true;
+                buttonText.textContent = 'Salvando...';
+
+                const url = isEdit ? `/api/auth/users/${userId}` : '/api/auth/register';
+                const method = isEdit ? 'PUT' : 'POST';
+                
+                const body = { name, email, role, isActive };
+                if (password && password.length > 0) body.password = password;
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(body)
+                });
+                
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    showToast('Sucesso', result.message || 'Usuário salvo com sucesso!', 'success');
+                    modal.classList.add('hidden');
+                    modal.removeAttribute('data-user-id');
+                    loadUsers();
+                } else {
+                    showToast('Erro', result.message || 'Erro ao salvar usuário', 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Erro', 'Falha na comunicação com o servidor', 'error');
+            } finally {
+                const button = modal.querySelector('button[onclick="saveUser()"]');
+                const spinner = button.querySelector('.loading-spinner');
+                const buttonText = button.querySelector('.button-text');
+                spinner.classList.add('hidden');
+                button.disabled = false;
+                buttonText.textContent = 'Salvar';
+            }
+        }
+
+        function showDeleteUserModal(userId, userName) {
+            document.getElementById('delete-user-name').textContent = userName || 'este usuário';
+            document.getElementById('delete-user-modal').setAttribute('data-user-id', userId);
+            document.getElementById('delete-user-modal').classList.remove('hidden');
+        }
+
+        async function confirmDeleteUser() {
+            const modal = document.getElementById('delete-user-modal');
+            const userId = modal.getAttribute('data-user-id');
+            
+            if (!userId) {
+                showToast('Erro', 'ID do usuário não encontrado', 'error');
+                return;
+            }
+            
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`/api/auth/users/${userId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    showToast('Sucesso', result.message || 'Usuário excluído com sucesso!', 'success');
+                    modal.classList.add('hidden');
+                    modal.removeAttribute('data-user-id');
+                    loadUsers();
+                } else {
+                    showToast('Erro', result.message || 'Erro ao excluir usuário', 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Erro', 'Falha na comunicação com o servidor', 'error');
+            }
         }
     </script>
 </body>

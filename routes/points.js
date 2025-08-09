@@ -85,7 +85,14 @@ const removePointsValidation = [
 router.get('/kid/:kidId/history', authenticateKidToken, async (req, res) => {
     try {
         const { kidId } = req.params;
-        const { page = 1, limit = 20 } = req.query;
+        const { page = 1, limit = 20, date } = req.query;
+
+        console.log('🔎 [KID HISTORY] Requisição recebida:', {
+            kidId,
+            queryDate: date,
+            page: Number(page),
+            limit: Number(limit)
+        });
 
         // Verificar se a criança está acessando seus próprios dados
         if (req.kid._id.toString() !== kidId) {
@@ -95,14 +102,33 @@ router.get('/kid/:kidId/history', authenticateKidToken, async (req, res) => {
             });
         }
 
-        const points = await Point.find({ kidId })
+        const query = { kidId };
+        if (date) {
+            const [y, m, d] = String(date).split('-').map(Number);
+            if (y && m && d) {
+                const start = new Date(y, m - 1, d, 0, 0, 0, 0);
+                const end = new Date(y, m - 1, d, 23, 59, 59, 999);
+                query.date = { $gte: start, $lte: end };
+                console.log('🗓️  [KID HISTORY] Filtro de data aplicado:', { start, end });
+            } else {
+                console.log('⚠️  [KID HISTORY] Data inválida recebida:', date);
+            }
+        }
+
+        const points = await Point.find(query)
             .sort({ createdAt: -1 })
             .limit(limit * 1)
             .skip((page - 1) * limit)
             .populate('activityId', 'name emoji')
             .populate('awardedBy', 'name');
 
-        const total = await Point.countDocuments({ kidId });
+        const total = await Point.countDocuments(query);
+
+        console.log('✅ [KID HISTORY] Consulta concluída:', {
+            returned: points.length,
+            total,
+            hasNext: page * limit < total
+        });
 
         res.json({
             success: true,
