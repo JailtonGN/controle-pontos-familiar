@@ -17,16 +17,12 @@ app.use(express.json());
 app.use(express.static('public'));
 
 // Conectar ao MongoDB
-console.log('🚀 Iniciando aplicação...');
-console.log('🔍 Configuração MongoDB:');
-console.log('- MONGODB_URI configurada:', !!process.env.MONGODB_URI);
-console.log('- Ambiente:', process.env.NODE_ENV);
-
 // Conectar ao banco de dados
 connectDB();
 
 // Rotas da API
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/families', require('./routes/families'));
 app.use('/api/kids', require('./routes/kids'));
 app.use('/api/activities', require('./routes/activities'));
 app.use('/api/points', require('./routes/points'));
@@ -74,9 +70,7 @@ app.get('/kid-dashboard', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'kid-dashboard.html'));
 });
 
-app.get('/kid-communication', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'kid-communication.html'));
-});
+
 
 app.get('/config', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'config.html'));
@@ -106,8 +100,6 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-    console.log(`🚀 Servidor rodando na porta ${PORT}`);
-    console.log(`📱 Ambiente: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`🌐 URL: http://localhost:${PORT}`);
+    // Servidor iniciado com sucesso
 }); 
 module.exports = app; 

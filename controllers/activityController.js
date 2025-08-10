@@ -15,14 +15,15 @@ const createActivity = async (req, res) => {
             });
         }
 
-        const { name, type, points, description } = req.body;
+        const { name, type, points, description, familyId } = req.body;
 
         const activity = new Activity({
             name,
             type,
             points,
             description,
-            parentId: req.user._id
+            parentId: req.user._id,
+            familyId: familyId || req.user.familyId // Usar família do usuário se não especificada
         });
 
         await activity.save();
@@ -46,10 +47,24 @@ const createActivity = async (req, res) => {
 // @access  Private
 const getActivities = async (req, res) => {
     try {
-        const activities = await Activity.find({ 
-            parentId: req.user._id,
-            isActive: true 
-        }).sort({ createdAt: -1 });
+        let activities;
+        
+        if (req.user.role === 'admin') {
+            // Admin vê todas as atividades
+            activities = await Activity.find({ isActive: true }).sort({ createdAt: -1 });
+        } else if (req.user.familyId) {
+            // Usuário vê atividades da sua família
+            activities = await Activity.find({ 
+                familyId: req.user.familyId,
+                isActive: true 
+            }).sort({ createdAt: -1 });
+        } else {
+            // Usuário sem família vê apenas suas próprias atividades
+            activities = await Activity.find({ 
+                parentId: req.user._id,
+                isActive: true 
+            }).sort({ createdAt: -1 });
+        }
 
         res.json({
             success: true,
@@ -69,11 +84,29 @@ const getActivities = async (req, res) => {
 // @access  Private
 const getActivity = async (req, res) => {
     try {
-        const activity = await Activity.findOne({
-            _id: req.params.id,
-            parentId: req.user._id,
-            isActive: true
-        });
+        let activity;
+        
+        if (req.user.role === 'admin') {
+            // Admin pode ver qualquer atividade
+            activity = await Activity.findOne({
+                _id: req.params.id,
+                isActive: true
+            });
+        } else if (req.user.familyId) {
+            // Usuário pode ver atividades da sua família
+            activity = await Activity.findOne({
+                _id: req.params.id,
+                familyId: req.user.familyId,
+                isActive: true
+            });
+        } else {
+            // Usuário sem família só pode ver suas próprias atividades
+            activity = await Activity.findOne({
+                _id: req.params.id,
+                parentId: req.user._id,
+                isActive: true
+            });
+        }
 
         if (!activity) {
             return res.status(404).json({
@@ -109,13 +142,31 @@ const updateActivity = async (req, res) => {
             });
         }
 
-        const { name, type, points, description } = req.body;
+        const { name, type, points, description, familyId } = req.body;
 
-        const activity = await Activity.findOne({
-            _id: req.params.id,
-            parentId: req.user._id,
-            isActive: true
-        });
+        let activity;
+        
+        if (req.user.role === 'admin') {
+            // Admin pode atualizar qualquer atividade
+            activity = await Activity.findOne({
+                _id: req.params.id,
+                isActive: true
+            });
+        } else if (req.user.familyId) {
+            // Usuário pode atualizar atividades da sua família
+            activity = await Activity.findOne({
+                _id: req.params.id,
+                familyId: req.user.familyId,
+                isActive: true
+            });
+        } else {
+            // Usuário sem família só pode atualizar suas próprias atividades
+            activity = await Activity.findOne({
+                _id: req.params.id,
+                parentId: req.user._id,
+                isActive: true
+            });
+        }
 
         if (!activity) {
             return res.status(404).json({
@@ -151,11 +202,29 @@ const updateActivity = async (req, res) => {
 // @access  Private
 const deleteActivity = async (req, res) => {
     try {
-        const activity = await Activity.findOne({
-            _id: req.params.id,
-            parentId: req.user._id,
-            isActive: true
-        });
+        let activity;
+        
+        if (req.user.role === 'admin') {
+            // Admin pode deletar qualquer atividade
+            activity = await Activity.findOne({
+                _id: req.params.id,
+                isActive: true
+            });
+        } else if (req.user.familyId) {
+            // Usuário pode deletar atividades da sua família
+            activity = await Activity.findOne({
+                _id: req.params.id,
+                familyId: req.user.familyId,
+                isActive: true
+            });
+        } else {
+            // Usuário sem família só pode deletar suas próprias atividades
+            activity = await Activity.findOne({
+                _id: req.params.id,
+                parentId: req.user._id,
+                isActive: true
+            });
+        }
 
         if (!activity) {
             return res.status(404).json({
@@ -195,11 +264,29 @@ const getActivitiesByType = async (req, res) => {
             });
         }
 
-        const activities = await Activity.find({
-            parentId: req.user._id,
-            type,
-            isActive: true
-        }).sort({ name: 1 });
+        let activities;
+        
+        if (req.user.role === 'admin') {
+            // Admin vê todas as atividades do tipo
+            activities = await Activity.find({
+                type,
+                isActive: true
+            }).sort({ name: 1 });
+        } else if (req.user.familyId) {
+            // Usuário vê atividades da sua família do tipo
+            activities = await Activity.find({
+                familyId: req.user.familyId,
+                type,
+                isActive: true
+            }).sort({ name: 1 });
+        } else {
+            // Usuário sem família vê apenas suas próprias atividades do tipo
+            activities = await Activity.find({
+                parentId: req.user._id,
+                type,
+                isActive: true
+            }).sort({ name: 1 });
+        }
 
         res.json({
             success: true,

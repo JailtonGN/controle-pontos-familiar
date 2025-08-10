@@ -341,8 +341,6 @@ function showNotification(title, message, type = 'info') {
     // Redirecionar para o sistema de toast
     if (typeof showToast === 'function') {
         showToast(title, message, type);
-    } else {
-        console.log('showNotification chamada:', { title, message, type }); // Debug
     }
 }
 
@@ -453,8 +451,6 @@ async function loadKids() {
             setTimeout(() => {
                 if (typeof renderKidsGrid === 'function') {
                     renderKidsGrid();
-                } else {
-                    console.warn('renderKidsGrid não está disponível ainda');
                 }
             }, 100);
         } else {
@@ -481,8 +477,6 @@ async function loadActivities() {
             setTimeout(() => {
                 if (typeof renderActivitiesList === 'function') {
                     renderActivitiesList();
-                } else {
-                    console.warn('renderActivitiesList não está disponível ainda');
                 }
             }, 100);
         }
@@ -554,9 +548,9 @@ function renderKidsCards() {
             statusText = 'Bons direitos';
         }
 
-        // Determinar cores baseadas no status
-        let headerColor = '#3B82F6'; // Azul padrão
-        let progressColor = '#3B82F6';
+        // Determinar cores baseadas no status (priorizar cor personalizada da criança)
+        let headerColor = kid.color || '#3B82F6'; // Usar cor personalizada ou azul padrão
+        let progressColor = kid.color || '#3B82F6';
         
         if (totalPoints <= 0) {
             headerColor = '#EF4444'; // Vermelho
@@ -564,6 +558,10 @@ function renderKidsCards() {
         } else if (moneyValue < 5.00) {
             headerColor = '#F59E0B'; // Amarelo
             progressColor = '#F59E0B';
+        } else if (kid.color && moneyValue >= 5.00) {
+            // Usar cor personalizada quando há pontos suficientes
+            headerColor = kid.color;
+            progressColor = kid.color;
         } else if (moneyValue < 10.00) {
             headerColor = '#10B981'; // Verde
             progressColor = '#10B981';
@@ -730,9 +728,7 @@ async function applyFilters() {
         if (params.toString()) {
             url += '?' + params.toString();
         }
-        console.log('🔎 [PARENT UI] Aplicando filtros:', { url, kidId, date });
         const response = await API.get(url);
-        console.log('✅ [PARENT UI] Resposta filtros:', { qtd: response?.data?.history?.length });
         history = response.data.history;
         renderHistoryTable();
     } catch (error) {
@@ -779,10 +775,8 @@ if (window.location.pathname === '/dashboard') {
         const filterBtn = document.getElementById('apply-filters-btn');
         if (filterBtn) {
             filterBtn.addEventListener('click', function(){
-                console.log('🟡 [PARENT UI] Listener do botão Filtrar ativo');
+                // Listener ativo
             });
-        } else {
-            console.warn('⚠️ [PARENT UI] Botão Filtrar não encontrado no DOM');
         }
         
         // Event listener para formulário de adicionar criança

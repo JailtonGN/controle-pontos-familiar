@@ -63,7 +63,6 @@ class ToastSystem {
 
     // Mostrar toast
     show(options) {
-        console.log('🟡 [TOAST] Criando toast:', { title: options.title, message: options.message, type: options.type, duration: options.duration });
         const startTime = Date.now();
         
         const toast = this.createToast(options);
@@ -72,28 +71,21 @@ class ToastSystem {
         // Animar entrada imediatamente
         requestAnimationFrame(() => {
             toast.classList.add('show');
-            console.log('🟡 [TOAST] Toast animado e visível');
         });
 
         // Auto-remover se não for persistente
         if (!options.persistent && options.duration !== 0) {
-            console.log(`🟡 [TOAST] Configurando auto-remover em ${options.duration}ms`);
-            
             let timeoutId = setTimeout(() => {
-                const elapsedTime = Date.now() - startTime;
-                console.log(`🟡 [TOAST] Auto-removendo toast após ${elapsedTime}ms`);
                 this.hide(toast);
             }, options.duration);
 
             // Pausar auto-remover quando mouse passar sobre o toast
             toast.addEventListener('mouseenter', () => {
-                console.log('🟡 [TOAST] Mouse entrou, pausando auto-remover');
                 clearTimeout(timeoutId);
             });
 
             // Retomar auto-remover quando mouse sair do toast
             toast.addEventListener('mouseleave', () => {
-                console.log('🟡 [TOAST] Mouse saiu, retomando auto-remover em 3s');
                 timeoutId = setTimeout(() => {
                     this.hide(toast);
                 }, 3000); // 3 segundos após sair do mouse
@@ -106,14 +98,12 @@ class ToastSystem {
 
     // Esconder toast
     hide(toast) {
-        console.log('🟡 [TOAST] Escondendo toast...');
         toast.classList.remove('show');
         toast.classList.add('slide-out');
         
         setTimeout(() => {
             if (toast.parentElement) {
                 toast.remove();
-                console.log('🟡 [TOAST] Toast removido do DOM');
             }
             this.toasts = this.toasts.filter(t => t !== toast);
         }, 300);
@@ -208,6 +198,9 @@ const toastSystem = new ToastSystem();
 window.showToast = (title, message, type = 'info') => {
     return toastSystem[type](title, message);
 };
+
+// Exportar toastSystem globalmente também
+window.toastSystem = toastSystem;
 
 window.showConfirm = (title, message, onConfirm, onCancel) => {
     return toastSystem.confirm(title, message, onConfirm, onCancel);

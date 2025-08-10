@@ -14,10 +14,7 @@ const connectDB = async () => {
             return; // Não sai do processo, apenas retorna
         }
 
-        console.log('🔍 Tentando conectar ao MongoDB...');
-        console.log('- URI configurada:', !!mongoURI);
-        console.log('- Ambiente:', process.env.NODE_ENV);
-        console.log('- URI (mascarada):', mongoURI.replace(/\/\/[^:]+:[^@]+@/, '//***:***@'));
+
 
         const conn = await mongoose.connect(mongoURI, {
             useNewUrlParser: true,
@@ -26,8 +23,7 @@ const connectDB = async () => {
             socketTimeoutMS: 45000,
         });
 
-        console.log(`✅ MongoDB conectado: ${conn.connection.host}`);
-        console.log(`📊 Database: ${conn.connection.name}`);
+
 
         // Criar índices para melhor performance
         await createIndexes();
@@ -47,7 +43,7 @@ const connectDB = async () => {
 const disconnectDB = async () => {
     try {
         await mongoose.disconnect();
-        console.log('✅ MongoDB desconectado');
+
     } catch (error) {
         console.error('❌ Erro ao desconectar do MongoDB:', error.message);
     }
@@ -58,7 +54,6 @@ const createIndexes = async () => {
     try {
         // Verificar se a conexão está ativa
         if (!mongoose.connection || mongoose.connection.readyState !== 1) {
-            console.log('⚠️ Conexão com MongoDB não está ativa, pulando criação de índices');
             return;
         }
 
@@ -78,7 +73,7 @@ const createIndexes = async () => {
             { kidId: 1, status: 1 }
         );
 
-        console.log('✅ Índices criados com sucesso');
+
     } catch (error) {
         console.error('❌ Erro ao criar índices:', error.message);
     }

@@ -40,6 +40,12 @@ const activitySchema = new mongoose.Schema({
             message: 'Cor deve ser um código hexadecimal válido'
         }
     },
+    familyId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Family',
+        required: false,
+        default: null
+    },
     parentId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',

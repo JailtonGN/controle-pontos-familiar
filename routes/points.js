@@ -87,12 +87,7 @@ router.get('/kid/:kidId/history', authenticateKidToken, async (req, res) => {
         const { kidId } = req.params;
         const { page = 1, limit = 20, date } = req.query;
 
-        console.log('🔎 [KID HISTORY] Requisição recebida:', {
-            kidId,
-            queryDate: date,
-            page: Number(page),
-            limit: Number(limit)
-        });
+
 
         // Verificar se a criança está acessando seus próprios dados
         if (req.kid._id.toString() !== kidId) {
@@ -109,9 +104,6 @@ router.get('/kid/:kidId/history', authenticateKidToken, async (req, res) => {
                 const start = new Date(y, m - 1, d, 0, 0, 0, 0);
                 const end = new Date(y, m - 1, d, 23, 59, 59, 999);
                 query.date = { $gte: start, $lte: end };
-                console.log('🗓️  [KID HISTORY] Filtro de data aplicado:', { start, end });
-            } else {
-                console.log('⚠️  [KID HISTORY] Data inválida recebida:', date);
             }
         }
 
@@ -123,12 +115,6 @@ router.get('/kid/:kidId/history', authenticateKidToken, async (req, res) => {
             .populate('awardedBy', 'name');
 
         const total = await Point.countDocuments(query);
-
-        console.log('✅ [KID HISTORY] Consulta concluída:', {
-            returned: points.length,
-            total,
-            hasNext: page * limit < total
-        });
 
         res.json({
             success: true,
@@ -145,7 +131,6 @@ router.get('/kid/:kidId/history', authenticateKidToken, async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Erro ao buscar histórico de pontos da criança:', error);
         res.status(500).json({
             success: false,
             message: 'Erro interno do servidor'

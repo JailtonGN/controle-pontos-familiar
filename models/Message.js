@@ -13,6 +13,11 @@ const messageSchema = new mongoose.Schema({
         ref: 'Kid',
         required: [true, 'ID da criança é obrigatório']
     },
+    familyId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Family',
+        required: [true, 'ID da família é obrigatório']
+    },
     type: {
         type: String,
         required: [true, 'Tipo da mensagem é obrigatório'],
@@ -50,6 +55,7 @@ const messageSchema = new mongoose.Schema({
 // Índices
 messageSchema.index({ parentId: 1 });
 messageSchema.index({ kidId: 1 });
+messageSchema.index({ familyId: 1 });
 messageSchema.index({ type: 1 });
 messageSchema.index({ isRead: 1 });
 messageSchema.index({ isActive: 1 });

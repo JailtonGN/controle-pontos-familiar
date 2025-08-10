@@ -211,30 +211,19 @@
                 
                 const result = await response.json();
                 
-                console.log('Resposta do login:', result); // Debug
-                
                 if (result.success) {
-                    console.log('🟢 [LOGIN] Iniciando toast de sucesso...');
-                    const startTime = Date.now();
-                    
                     showToast('Sucesso', 'Login realizado com sucesso!', 'success');
-                    
-                    console.log('🟢 [LOGIN] Toast mostrado, aguardando 2.5s para redirecionar...');
                     
                     localStorage.setItem('token', result.data.token);
                     localStorage.setItem('user', JSON.stringify(result.data.user));
                     
                     setTimeout(() => {
-                        const elapsedTime = Date.now() - startTime;
-                        console.log(`🟢 [LOGIN] Redirecionando após ${elapsedTime}ms`);
                         window.location.href = '/dashboard';
                     }, 2500); // Aumentado de 1500 para 2500ms (2.5 segundos)
                 } else {
-                    console.log('🔴 [LOGIN] Erro no login:', result.message); // Debug
                     showToast('Erro', result.message || 'Usuário ou senha incorretos', 'error');
                 }
             } catch (error) {
-                console.error('Erro na requisição:', error); // Debug
                 showToast('Erro', 'Erro ao conectar com o servidor', 'error');
             } finally {
                 spinner.classList.add('hidden');

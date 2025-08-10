@@ -91,6 +91,11 @@ const kidSchema = new mongoose.Schema({
         default: 1,
         min: [1, 'Nível atual deve ser pelo menos 1']
     },
+    familyId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Family',
+        required: [true, 'ID da família é obrigatório']
+    },
     parentId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
@@ -182,5 +187,7 @@ kidSchema.methods.getCompletedGoals = function() {
 kidSchema.index({ parentId: 1 });
 kidSchema.index({ isActive: 1 });
 kidSchema.index({ totalPoints: -1 });
+// Índice único global no nome: não permite nomes duplicados
+kidSchema.index({ name: 1 }, { unique: true });
 
 module.exports = mongoose.model('Kid', kidSchema); 

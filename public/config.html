@@ -8,6 +8,17 @@
     <link rel="icon" type="image/png" href="assets/logo.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        .required {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .form-group label.required::after {
+            content: " *";
+            color: #dc3545;
+        }
+    </style>
 </head>
 <body>
     <!-- Modern Navigation Bar -->
@@ -179,11 +190,70 @@
                                     <option value="admin">Administrador</option>
                                 </select>
                             </div>
+                            <div class="form-group">
+                                <label for="admin-register-family">Família</label>
+                                <select id="admin-register-family">
+                                    <option value="">Sem Família</option>
+                                </select>
+                            </div>
                             <button type="submit" class="btn btn-primary">
                                 <span class="loading-spinner hidden"></span>
                                 <span class="button-text">Criar Usuário</span>
                             </button>
                         </form>
+                    </div>
+
+                    <!-- Aba de Gerenciamento de Famílias (somente admin) -->
+                    <div id="admin-families-card" class="professional-card" style="display:none;">
+                        <div class="professional-card-header">
+                            <div class="professional-card-title">
+                                🏠 Gerenciamento de Famílias (Admin)
+                            </div>
+                        </div>
+                        <div class="professional-card-content">
+                            <p>Gerencie famílias no sistema. Disponível apenas para administradores.</p>
+                            
+                            <!-- Formulário para criar nova família -->
+                            <div class="family-form-section">
+                                <h3>➕ Nova Família</h3>
+                                <form id="family-form" class="config-form">
+                                    <div class="form-group">
+                                        <label for="family-name">Nome da Família</label>
+                                        <input type="text" id="family-name" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="family-description">Descrição (opcional)</label>
+                                        <textarea id="family-description" rows="3"></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <span class="loading-spinner hidden"></span>
+                                        <span class="button-text">Criar Família</span>
+                                    </button>
+                                </form>
+                            </div>
+
+                            <!-- Lista de famílias -->
+                            <div class="families-list-section">
+                                <h3>📋 Famílias Existentes</h3>
+                            <div id="families-table-container">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Nome</th>
+                                            <th>Descrição</th>
+                                            <th>Membros</th>
+                                            <th>Crianças</th>
+                                            <th>Criada em</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="families-table-body">
+                                        <!-- Famílias serão carregadas aqui -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            </div>
+                        </div>
                     </div>
                     
                     <!-- Apagar Pontos -->
@@ -293,16 +363,17 @@
                     
                     <div class="users-table-container">
                         <table class="users-table">
-                            <thead>
-                                <tr>
-                                    <th>Nome</th>
-                                    <th>Email</th>
-                                    <th>Perfil</th>
-                                    <th>Status</th>
-                                    <th>Último Login</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
+                                                                <thead>
+                                        <tr>
+                                            <th>Nome</th>
+                                            <th>Email</th>
+                                            <th>Perfil</th>
+                                            <th>Status</th>
+                                            <th>Família</th>
+                                            <th>Último Login</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
                             <tbody id="users-table-body">
                                 <!-- Usuários serão carregados aqui -->
                             </tbody>
@@ -349,6 +420,12 @@
                             <option value="false">Inativo</option>
                         </select>
                     </div>
+                    <div class="form-group">
+                        <label for="user-family">Família <span class="required">*</span></label>
+                        <select id="user-family" required>
+                            <option value="">Selecione uma família</option>
+                        </select>
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -379,6 +456,70 @@
         </div>
     </div>
 
+    <!-- Modal de Confirmação Genérico -->
+    <div id="confirm-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Confirmar Ação</h3>
+                <button onclick="closeModal('confirm-modal')" class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="modal-message">Tem certeza que deseja realizar esta ação?</p>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeModal('confirm-modal')" class="btn btn-secondary">Cancelar</button>
+                <button id="modal-confirm-btn" class="btn btn-primary">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de edição de família -->
+    <div id="edit-family-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="edit-family-modal-title">✏️ Editar Família</h3>
+                <button onclick="closeModal('edit-family-modal')" class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-family-form" class="config-form">
+                    <div class="form-group">
+                        <label for="edit-family-name">Nome da Família</label>
+                        <input type="text" id="edit-family-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-family-description">Descrição (opcional)</label>
+                        <textarea id="edit-family-description" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeModal('edit-family-modal')" class="btn btn-secondary">Cancelar</button>
+                <button onclick="saveFamily()" class="btn btn-primary">
+                    <span class="loading-spinner hidden"></span>
+                    <span class="button-text">Salvar</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de exclusão de família -->
+    <div id="delete-family-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🗑️ Confirmar Exclusão de Família</h3>
+                <button onclick="closeModal('delete-family-modal')" class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir a família <strong id="delete-family-name"></strong>?</p>
+                <p class="warning-text">⚠️ Esta ação não pode ser desfeita! Todos os usuários e crianças da família ficarão sem família.</p>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeModal('delete-family-modal')" class="btn btn-secondary">Cancelar</button>
+                <button onclick="confirmDeleteFamily()" class="btn btn-danger">Excluir Família</button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/main.js"></script>
     <script src="js/toast.js"></script>
     <script>
@@ -389,13 +530,17 @@
             setupAdminRegisterIfAllowed();
             loadUserProfile();
             loadStats();
+            
+            // Famílias serão carregadas apenas se for admin (na função loadUserProfile)
         });
 
         // Carregar perfil do usuário
         async function loadUserProfile() {
             try {
+                console.log('👤 [CONFIG] Carregando perfil do usuário...');
                 const token = localStorage.getItem('token');
                 if (!token) {
+                    console.log('❌ [CONFIG] Token não encontrado, redirecionando...');
                     window.location.href = '/';
                     return;
                 }
@@ -406,78 +551,143 @@
                     }
                 });
 
+                console.log('📡 [CONFIG] Resposta do perfil:', response.status, response.statusText);
+
                 if (response.ok) {
                     const data = await response.json();
+                    console.log('📄 [CONFIG] Dados do perfil:', data);
+                    
                     if (data.success && data.data && data.data.user) {
-                        document.getElementById('user-name').textContent = data.data.user.name;
-                        document.getElementById('profile-name').textContent = data.data.user.name;
-                        document.getElementById('profile-email').textContent = data.data.user.email;
+                        const user = data.data.user;
+                        console.log('👤 [CONFIG] Usuário carregado:', { name: user.name, email: user.email, role: user.role });
+                        
+                        document.getElementById('user-name').textContent = user.name;
+                        document.getElementById('profile-name').textContent = user.name;
+                        document.getElementById('profile-email').textContent = user.email;
+                        
                         // Verificar se é admin e mostrar seções específicas
-                        if (data.data.user.role === 'admin') {
+                        if (user.role === 'admin') {
+                            console.log('👑 [CONFIG] Usuário é admin, mostrando seções específicas...');
+                            
                             const adminCard = document.getElementById('admin-register-card');
-                            if (adminCard) adminCard.style.display = 'block';
+                            if (adminCard) {
+                                adminCard.style.display = 'block';
+                                console.log('✅ [CONFIG] Card de registro admin exibido');
+                            } else {
+                                console.error('❌ [CONFIG] Card de registro admin não encontrado!');
+                            }
+                            
                             const adminUsersSection = document.getElementById('admin-users-section');
                             if (adminUsersSection) {
                                 adminUsersSection.style.display = 'block';
+                                console.log('✅ [CONFIG] Seção de gerenciamento de usuários exibida');
                                 loadUsers(); // Carregar usuários apenas se for admin
+                            } else {
+                                console.error('❌ [CONFIG] Seção de gerenciamento de usuários não encontrada!');
                             }
+                            
+                            const adminFamiliesCard = document.getElementById('admin-families-card');
+                            if (adminFamiliesCard) {
+                                adminFamiliesCard.style.display = 'block';
+                                console.log('✅ [CONFIG] Card de gerenciamento de famílias exibido');
+                                loadFamilies(); // Carregar famílias apenas se for admin
+                                setupFamilyForm(); // Configurar formulário apenas se for admin
+                                loadFamiliesForSelect(); // Carregar famílias para selects apenas se for admin
+                            } else {
+                                console.error('❌ [CONFIG] Card de gerenciamento de famílias não encontrado!');
+                            }
+                        } else {
+                            console.log('👤 [CONFIG] Usuário não é admin, ocultando seções específicas');
                         }
                     } else {
+                        console.error('❌ [CONFIG] Estrutura de dados inválida:', data);
                         throw new Error('Estrutura de dados inválida');
                     }
                 } else {
+                    console.error('❌ [CONFIG] Erro na resposta do perfil:', response.status);
                     throw new Error('Erro ao carregar perfil');
                 }
             } catch (error) {
-                console.error('Erro:', error);
+                console.error('💥 [CONFIG] Erro ao carregar perfil:', error);
                 showToast('Erro', 'Erro ao carregar perfil do usuário', 'error');
             }
         }
 
         // Preparar formulário de registro admin
         function setupAdminRegisterIfAllowed() {
+            console.log('🔧 [CONFIG] Configurando formulário de registro admin...');
             const form = document.getElementById('admin-register-form');
-            if (!form) return;
+            if (!form) {
+                console.error('❌ [CONFIG] Formulário admin-register-form não encontrado!');
+                return;
+            }
+            console.log('✅ [CONFIG] Formulário encontrado, adicionando event listener...');
+            
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
+                console.log('📝 [CONFIG] Submissão do formulário iniciada...');
+                
                 const name = document.getElementById('admin-register-name').value.trim();
                 const email = document.getElementById('admin-register-email').value.trim();
                 const password = document.getElementById('admin-register-password').value;
                 const role = document.getElementById('admin-register-role').value;
+                const familyId = document.getElementById('admin-register-family').value;
+                
+                console.log('📋 [CONFIG] Dados do formulário:', { name, email, role, passwordLength: password.length, familyId });
+                
                 if (!name || !email || !password) {
+                    console.log('❌ [CONFIG] Campos obrigatórios não preenchidos');
                     showToast('Erro', 'Preencha todos os campos', 'error');
                     return;
                 }
                 if (password.length < 6) {
+                    console.log('❌ [CONFIG] Senha muito curta');
                     showToast('Erro', 'A senha deve ter pelo menos 6 caracteres', 'error');
                     return;
                 }
+                
                 const button = form.querySelector('button[type="submit"]');
                 const spinner = button.querySelector('.loading-spinner');
                 const buttonText = button.querySelector('.button-text');
+                
                 try {
+                    console.log('🔄 [CONFIG] Iniciando criação do usuário...');
                     spinner.classList.remove('hidden');
                     button.disabled = true;
                     buttonText.textContent = 'Criando...';
+                    
                     const token = localStorage.getItem('token');
+                    console.log('🔑 [CONFIG] Token encontrado:', !!token);
+                    
+                    const body = { name, email, password, role };
+                    if (familyId) {
+                        body.familyId = familyId;
+                    }
+                    
                     const resp = await fetch('/api/auth/register', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${token}`
                         },
-                        body: JSON.stringify({ name, email, password, role })
+                        body: JSON.stringify(body)
                     });
+                    
+                    console.log('📡 [CONFIG] Resposta da API:', resp.status, resp.statusText);
                     const result = await resp.json();
+                    console.log('📄 [CONFIG] Resultado da API:', result);
+                    
                     if (resp.ok && result.success) {
+                        console.log('✅ [CONFIG] Usuário criado com sucesso!');
                         showToast('Sucesso', 'Usuário criado com sucesso', 'success');
                         form.reset();
                         loadUsers(); // Recarregar lista de usuários
                     } else {
+                        console.log('❌ [CONFIG] Erro na criação:', result.message);
                         showToast('Erro', result.message || 'Erro ao criar usuário', 'error');
                     }
                 } catch (err) {
-                    console.error(err);
+                    console.error('💥 [CONFIG] Erro na criação:', err);
                     showToast('Erro', 'Falha na comunicação com o servidor', 'error');
                 } finally {
                     spinner.classList.add('hidden');
@@ -485,47 +695,71 @@
                     buttonText.textContent = 'Criar Usuário';
                 }
             });
+            console.log('✅ [CONFIG] Event listener adicionado com sucesso!');
+            
+            // Carregar famílias para o select
+            loadFamiliesForSelect();
         }
 
         // Carregar estatísticas
         async function loadStats() {
             try {
+                console.log('📊 [CONFIG] Carregando estatísticas...');
                 const token = localStorage.getItem('token');
+                if (!token) {
+                    console.error('❌ [CONFIG] Token não encontrado para carregar estatísticas');
+                    return;
+                }
+                
                 const response = await fetch('/api/kids', {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
                 });
 
+                console.log('📡 [CONFIG] Resposta da API de crianças:', response.status, response.statusText);
+
                 if (response.ok) {
                     const kidsData = await response.json();
+                    console.log('📄 [CONFIG] Dados das crianças:', kidsData);
                     const totalKids = kidsData.success && kidsData.data && kidsData.data.kids ? kidsData.data.kids.length : 0;
+                    console.log('👶 [CONFIG] Total de crianças:', totalKids);
                     document.getElementById('total-kids').textContent = totalKids;
 
                     // Carregar atividades
+                    console.log('🎯 [CONFIG] Carregando atividades...');
                     const activitiesResponse = await fetch('/api/activities', {
                         headers: {
                             'Authorization': `Bearer ${token}`
                         }
                     });
 
+                    console.log('📡 [CONFIG] Resposta da API de atividades:', activitiesResponse.status, activitiesResponse.statusText);
+
                     if (activitiesResponse.ok) {
                         const activitiesData = await activitiesResponse.json();
+                        console.log('📄 [CONFIG] Dados das atividades:', activitiesData);
                         const totalActivities = activitiesData.success && activitiesData.data && activitiesData.data.activities ? activitiesData.data.activities.length : 0;
+                        console.log('🎯 [CONFIG] Total de atividades:', totalActivities);
                         document.getElementById('total-activities').textContent = totalActivities;
                     }
 
                     // Carregar pontos
+                    console.log('⭐ [CONFIG] Carregando pontos...');
                     const pointsResponse = await fetch('/api/points/history', {
                         headers: {
                             'Authorization': `Bearer ${token}`
                         }
                     });
 
+                    console.log('📡 [CONFIG] Resposta da API de pontos:', pointsResponse.status, pointsResponse.statusText);
+
                     if (pointsResponse.ok) {
                         const pointsData = await pointsResponse.json();
+                        console.log('📄 [CONFIG] Dados dos pontos:', pointsData);
                         if (pointsData.success && pointsData.data && pointsData.data.history) {
                             const totalRecords = pointsData.data.history.length;
+                            console.log('📝 [CONFIG] Total de registros:', totalRecords);
                             document.getElementById('total-records').textContent = totalRecords;
 
                             // Calcular total de pontos
@@ -537,15 +771,21 @@
                                     totalPointsValue -= point.points;
                                 }
                             });
+                            console.log('⭐ [CONFIG] Total de pontos:', totalPointsValue);
                             document.getElementById('total-points').textContent = totalPointsValue;
                         } else {
+                            console.log('📝 [CONFIG] Nenhum histórico de pontos encontrado');
                             document.getElementById('total-records').textContent = '0';
                             document.getElementById('total-points').textContent = '0';
                         }
                     }
+                    
+                    console.log('✅ [CONFIG] Estatísticas carregadas com sucesso!');
+                } else {
+                    console.error('❌ [CONFIG] Erro na resposta da API de crianças:', response.status);
                 }
             } catch (error) {
-                console.error('Erro ao carregar estatísticas:', error);
+                console.error('💥 [CONFIG] Erro ao carregar estatísticas:', error);
                 // Definir valores padrão em caso de erro
                 document.getElementById('total-kids').textContent = '0';
                 document.getElementById('total-activities').textContent = '0';
@@ -556,11 +796,18 @@
 
         // Popular select de meses
         function populateMonthSelect() {
+            console.log('📅 [CONFIG] Populando select de meses...');
             const select = document.getElementById('history-month');
+            if (!select) {
+                console.error('❌ [CONFIG] Select de meses não encontrado!');
+                return;
+            }
+            
             const currentDate = new Date();
             const currentYear = currentDate.getFullYear();
             
             select.innerHTML = '<option value="">Selecione um mês</option>';
+            console.log('📅 [CONFIG] Ano atual:', currentYear);
             
             // Últimos 12 meses
             for (let i = 0; i < 12; i++) {
@@ -573,38 +820,59 @@
                 option.value = `${year}-${month}`;
                 option.textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
                 select.appendChild(option);
+                console.log(`📅 [CONFIG] Mês adicionado: ${option.value} - ${option.textContent}`);
             }
+            
+            console.log('✅ [CONFIG] Select de meses populado com sucesso!');
         }
 
         // Popular select de crianças
         async function populateKidsSelect() {
             try {
+                console.log('👶 [CONFIG] Populando select de crianças...');
+                const select = document.getElementById('history-kid');
+                if (!select) {
+                    console.error('❌ [CONFIG] Select de crianças não encontrado!');
+                    return;
+                }
+                
                 const token = localStorage.getItem('token');
+                if (!token) {
+                    console.error('❌ [CONFIG] Token não encontrado para carregar crianças');
+                    return;
+                }
+                
                 const response = await fetch('/api/kids', {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
                 });
 
+                console.log('📡 [CONFIG] Resposta da API de crianças:', response.status, response.statusText);
+
                 if (response.ok) {
-                    const data = await response.json();
-                    const select = document.getElementById('history-kid');
+                    const kidsData = await response.json();
+                    console.log('📄 [CONFIG] Dados das crianças:', kidsData);
                     
-                    if (data.success && data.data && data.data.kids && data.data.kids.length > 0) {
-                        data.data.kids.forEach(kid => {
+                    select.innerHTML = '<option value="">Todas as crianças</option>';
+                    
+                    if (kidsData.success && kidsData.data && kidsData.data.kids) {
+                        kidsData.data.kids.forEach(kid => {
+                            console.log(`👶 [CONFIG] Adicionando criança: ${kid.name}`);
                             const option = document.createElement('option');
                             option.value = kid._id;
-                            option.textContent = `${kid.name} (${kid.age} anos)`;
+                            option.textContent = kid.name;
                             select.appendChild(option);
                         });
+                        console.log(`✅ [CONFIG] ${kidsData.data.kids.length} crianças adicionadas ao select`);
                     } else {
-                        console.log('Nenhuma criança encontrada ou estrutura de dados inválida:', data);
+                        console.log('📝 [CONFIG] Nenhuma criança encontrada');
                     }
                 } else {
-                    console.error('Erro na resposta da API:', response.status);
+                    console.error('❌ [CONFIG] Erro na resposta da API de crianças:', response.status);
                 }
             } catch (error) {
-                console.error('Erro ao carregar crianças:', error);
+                console.error('💥 [CONFIG] Erro ao popular select de crianças:', error);
             }
         }
 
@@ -724,20 +992,32 @@
 
         // Baixar histórico em PDF
         async function downloadHistoryPDF() {
+            console.log('📥 [CONFIG] Iniciando download do histórico em PDF...');
             const month = document.getElementById('history-month').value;
             const kidId = document.getElementById('history-kid').value;
             
+            console.log('📋 [CONFIG] Parâmetros:', { month, kidId });
+            
             if (!month) {
+                console.log('❌ [CONFIG] Mês não selecionado');
                 showToast('Erro', 'Selecione um mês para baixar o histórico', 'error');
                 return;
             }
             
             try {
                 const token = localStorage.getItem('token');
+                if (!token) {
+                    console.error('❌ [CONFIG] Token não encontrado');
+                    showToast('Erro', 'Token de autenticação não encontrado', 'error');
+                    return;
+                }
+                
                 let url = `/api/points/history-by-month?month=${month}`;
                 if (kidId) {
                     url += `&kidId=${kidId}`;
                 }
+                
+                console.log('📡 [CONFIG] URL da requisição:', url);
                 
                 const response = await fetch(url, {
                     headers: {
@@ -745,119 +1025,164 @@
                     }
                 });
                 
+                console.log('📡 [CONFIG] Resposta da API:', response.status, response.statusText);
                 const data = await response.json();
+                console.log('📄 [CONFIG] Dados recebidos:', data);
                 
                 if (response.ok) {
+                    console.log('✅ [CONFIG] Dados recebidos com sucesso, gerando PDF...');
                     generateHistoryPDF(data.data, kidId);
                 } else {
+                    console.log('❌ [CONFIG] Erro na resposta da API:', data.message);
                     showToast('Erro', data.message || 'Erro ao baixar histórico', 'error');
                 }
             } catch (error) {
-                console.error('Erro:', error);
+                console.error('💥 [CONFIG] Erro ao baixar histórico:', error);
                 showToast('Erro', 'Erro ao baixar histórico', 'error');
             }
         }
 
-                 // Baixar atividades em PDF
-         async function downloadActivitiesPDF() {
-             try {
-                 const token = localStorage.getItem('token');
-                 const response = await fetch('/api/activities', {
-                     headers: {
-                         'Authorization': `Bearer ${token}`
-                     }
-                 });
-                 
-                 const data = await response.json();
-                 
-                 if (response.ok && data.success && data.data && data.data.activities) {
-                     const filterType = document.getElementById('activities-filter').value;
-                     generateActivitiesPDF(data.data.activities, filterType);
-                 } else {
-                     showToast('Erro', data.message || 'Erro ao baixar atividades', 'error');
-                 }
-             } catch (error) {
-                 console.error('Erro:', error);
-                 showToast('Erro', 'Erro ao baixar atividades', 'error');
-             }
-         }
+        // Baixar atividades em PDF
+        async function downloadActivitiesPDF() {
+            try {
+                console.log('📥 [CONFIG] Iniciando download das atividades em PDF...');
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    console.error('❌ [CONFIG] Token não encontrado');
+                    showToast('Erro', 'Token de autenticação não encontrado', 'error');
+                    return;
+                }
+                
+                console.log('📡 [CONFIG] Fazendo requisição para /api/activities...');
+                const response = await fetch('/api/activities', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                console.log('📡 [CONFIG] Resposta da API de atividades:', response.status, response.statusText);
+                const data = await response.json();
+                console.log('📄 [CONFIG] Dados das atividades:', data);
+                
+                if (response.ok && data.success && data.data && data.data.activities) {
+                    const filterType = document.getElementById('activities-filter').value;
+                    console.log('🔍 [CONFIG] Filtro aplicado:', filterType);
+                    console.log('✅ [CONFIG] Dados recebidos com sucesso, gerando PDF...');
+                    generateActivitiesPDF(data.data.activities, filterType);
+                } else {
+                    console.log('❌ [CONFIG] Erro na resposta da API:', data.message);
+                    showToast('Erro', data.message || 'Erro ao baixar atividades', 'error');
+                }
+            } catch (error) {
+                console.error('💥 [CONFIG] Erro ao baixar atividades:', error);
+                showToast('Erro', 'Erro ao baixar atividades', 'error');
+            }
+        }
 
         // Gerar PDF do histórico
         function generateHistoryPDF(data, kidId) {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            
-            // Título
-            doc.setFontSize(20);
-            doc.text('Histórico de Pontos', 20, 20);
-            
-            doc.setFontSize(12);
-            doc.text(`Mês: ${data.month}`, 20, 30);
-            doc.text(`Período: ${new Date(data.startDate).toLocaleDateString('pt-BR')} a ${new Date(data.endDate).toLocaleDateString('pt-BR')}`, 20, 40);
-            
-            if (data.history.length === 0) {
-                doc.text('Nenhum registro encontrado para este mês.', 20, 60);
-            } else {
-                // Agrupar por criança
-                const kidsData = {};
-                data.history.forEach(point => {
-                    const kidName = point.kidId.name;
-                    if (!kidsData[kidName]) {
-                        kidsData[kidName] = [];
-                    }
-                    kidsData[kidName].push(point);
-                });
+            try {
+                console.log('📄 [CONFIG] Gerando PDF do histórico...');
+                console.log('📋 [CONFIG] Dados recebidos:', data);
+                console.log('👶 [CONFIG] ID da criança:', kidId);
                 
-                let yPosition = 60;
+                if (!window.jspdf) {
+                    console.error('❌ [CONFIG] Biblioteca jsPDF não encontrada!');
+                    showToast('Erro', 'Biblioteca PDF não disponível', 'error');
+                    return;
+                }
                 
-                Object.keys(kidsData).forEach(kidName => {
-                    const points = kidsData[kidName];
-                    
-                    // Nome da criança
-                    doc.setFontSize(14);
-                    doc.setFont(undefined, 'bold');
-                    doc.text(`Criança: ${kidName}`, 20, yPosition);
-                    yPosition += 10;
-                    
-                    // Tabela de pontos
-                    const tableData = points.map(point => [
-                        new Date(point.date).toLocaleDateString('pt-BR'),
-                        point.activityId ? point.activityId.name : 'Pontos avulsos',
-                        point.type === 'add' ? `+${point.points}` : `-${point.points}`,
-                        point.notes || '-'
-                    ]);
-                    
-                    doc.autoTable({
-                        startY: yPosition,
-                        head: [['Data', 'Atividade', 'Pontos', 'Observações']],
-                        body: tableData,
-                        theme: 'grid',
-                        headStyles: { fillColor: [66, 139, 202] }
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                console.log('✅ [CONFIG] Documento PDF criado');
+                
+                // Título
+                doc.setFontSize(20);
+                doc.text('Histórico de Pontos', 20, 20);
+                
+                doc.setFontSize(12);
+                doc.text(`Mês: ${data.month}`, 20, 30);
+                doc.text(`Período: ${new Date(data.startDate).toLocaleDateString('pt-BR')} a ${new Date(data.endDate).toLocaleDateString('pt-BR')}`, 20, 40);
+                
+                if (data.history.length === 0) {
+                    console.log('📝 [CONFIG] Nenhum registro encontrado para este mês');
+                    doc.text('Nenhum registro encontrado para este mês.', 20, 60);
+                } else {
+                    console.log(`📝 [CONFIG] Processando ${data.history.length} registros...`);
+                    // Agrupar por criança
+                    const kidsData = {};
+                    data.history.forEach(point => {
+                        const kidName = point.kidId.name;
+                        if (!kidsData[kidName]) {
+                            kidsData[kidName] = [];
+                        }
+                        kidsData[kidName].push(point);
                     });
                     
-                    yPosition = doc.lastAutoTable.finalY + 15;
+                    console.log(`👶 [CONFIG] Dados agrupados por ${Object.keys(kidsData).length} crianças`);
                     
-                    // Calcular total da criança
-                    const total = points.reduce((sum, point) => {
-                        return sum + (point.type === 'add' ? point.points : -point.points);
-                    }, 0);
+                    let yPosition = 60;
                     
-                    doc.setFontSize(12);
-                    doc.setFont(undefined, 'bold');
-                    doc.text(`Total da criança: ${total} pontos`, 20, yPosition);
-                    yPosition += 20;
-                });
+                    Object.keys(kidsData).forEach(kidName => {
+                        const points = kidsData[kidName];
+                        console.log(`👶 [CONFIG] Processando criança: ${kidName} com ${points.length} registros`);
+                        
+                        // Nome da criança
+                        doc.setFontSize(14);
+                        doc.setFont(undefined, 'bold');
+                        doc.text(`Criança: ${kidName}`, 20, yPosition);
+                        yPosition += 10;
+                        
+                        // Tabela de pontos
+                        const tableData = points.map(point => [
+                            new Date(point.date).toLocaleDateString('pt-BR'),
+                            point.activityId ? point.activityId.name : 'Pontos avulsos',
+                            point.type === 'add' ? `+${point.points}` : `-${point.points}`,
+                            point.notes || '-'
+                        ]);
+                        
+                        console.log(`📊 [CONFIG] Gerando tabela para ${kidName} com ${tableData.length} linhas`);
+                        
+                        doc.autoTable({
+                            startY: yPosition,
+                            head: [['Data', 'Atividade', 'Pontos', 'Observações']],
+                            body: tableData,
+                            theme: 'grid',
+                            headStyles: { fillColor: [66, 139, 202] }
+                        });
+                        
+                        yPosition = doc.lastAutoTable.finalY + 15;
+                        
+                        // Calcular total da criança
+                        const total = points.reduce((sum, point) => {
+                            return sum + (point.type === 'add' ? point.points : -point.points);
+                        }, 0);
+                        
+                        console.log(`⭐ [CONFIG] Total da criança ${kidName}: ${total} pontos`);
+                        
+                        doc.setFontSize(12);
+                        doc.setFont(undefined, 'bold');
+                        doc.text(`Total da criança: ${total} pontos`, 20, yPosition);
+                        yPosition += 20;
+                    });
+                }
+                
+                // Salvar PDF
+                let fileName = `historico_pontos_${data.month}`;
+                if (kidId) {
+                    const selectedKid = document.getElementById('history-kid').options[document.getElementById('history-kid').selectedIndex].text;
+                    fileName += `_${selectedKid.split(' ')[0]}`; // Adiciona o nome da criança ao arquivo
+                }
+                fileName += '.pdf';
+                
+                console.log('💾 [CONFIG] Salvando PDF com nome:', fileName);
+                doc.save(fileName);
+                showToast('Sucesso', 'PDF do histórico baixado com sucesso!', 'success');
+                console.log('✅ [CONFIG] PDF gerado e salvo com sucesso!');
+            } catch (error) {
+                console.error('💥 [CONFIG] Erro ao gerar PDF do histórico:', error);
+                showToast('Erro', 'Erro ao gerar PDF do histórico', 'error');
             }
-            
-            // Salvar PDF
-            let fileName = `historico_pontos_${data.month}`;
-            if (kidId) {
-                const selectedKid = document.getElementById('history-kid').options[document.getElementById('history-kid').selectedIndex].text;
-                fileName += `_${selectedKid.split(' ')[0]}`; // Adiciona o nome da criança ao arquivo
-            }
-            fileName += '.pdf';
-            doc.save(fileName);
-            showToast('Sucesso', 'PDF do histórico baixado com sucesso!', 'success');
         }
 
                  // Gerar PDF das atividades
@@ -899,19 +1224,18 @@
                      if (positiveActivities.length > 0) {
                          doc.setFontSize(14);
                          doc.setFont(undefined, 'bold');
-                         doc.text('✅ Atividades Positivas', 20, yPosition);
+                         doc.text('Atividades Positivas', 20, yPosition);
                          yPosition += 10;
                          
                          const positiveData = positiveActivities.map(activity => [
                              activity.name,
                              activity.points,
-                             activity.icon,
                              activity.description || '-'
                          ]);
                          
                          doc.autoTable({
                              startY: yPosition,
-                             head: [['Atividade', 'Pontos', 'Ícone', 'Descrição']],
+                             head: [['Atividade', 'Pontos', 'Descrição']],
                              body: positiveData,
                              theme: 'grid',
                              headStyles: { fillColor: [40, 167, 69] }
@@ -927,19 +1251,18 @@
                      if (negativeActivities.length > 0) {
                          doc.setFontSize(14);
                          doc.setFont(undefined, 'bold');
-                         doc.text('❌ Atividades Negativas', 20, yPosition);
+                         doc.text('Atividades Negativas', 20, yPosition);
                          yPosition += 10;
                          
                          const negativeData = negativeActivities.map(activity => [
                              activity.name,
                              activity.points,
-                             activity.icon,
                              activity.description || '-'
                          ]);
                          
                          doc.autoTable({
                              startY: yPosition,
-                             head: [['Atividade', 'Pontos', 'Ícone', 'Descrição']],
+                             head: [['Atividade', 'Pontos', 'Descrição']],
                              body: negativeData,
                              theme: 'grid',
                              headStyles: { fillColor: [220, 53, 69] }
@@ -960,16 +1283,42 @@
 
         // Funções auxiliares para modais
         function showConfirmModal(title, message, onConfirm) {
+            console.log('❓ [CONFIG] Mostrando modal de confirmação:', { title, message });
+            
+            const modal = document.getElementById('confirm-modal');
+            if (!modal) {
+                console.error('❌ [CONFIG] Modal de confirmação não encontrado!');
+                // Fallback para alert nativo
+                if (confirm(`${title}\n\n${message}`)) {
+                    onConfirm();
+                }
+                return;
+            }
+            
+            // Configurar modal
             document.getElementById('modal-title').textContent = title;
             document.getElementById('modal-message').textContent = message;
-            document.getElementById('modal-confirm-btn').onclick = () => {
-                closeModal('confirm-modal');
+            
+            // Configurar botão de confirmação
+            const confirmBtn = document.getElementById('modal-confirm-btn');
+            confirmBtn.onclick = () => {
+                console.log('✅ [CONFIG] Confirmação aceita, executando ação...');
                 onConfirm();
+                closeModal('confirm-modal');
             };
-            document.getElementById('confirm-modal').classList.remove('hidden');
+            
+            modal.classList.remove('hidden');
+            console.log('✅ [CONFIG] Modal de confirmação exibido');
         }
 
         function showToast(title, message, type = 'info') {
+            // Usar o sistema de toast global se disponível
+            if (window.toastSystem) {
+                window.toastSystem.show({ title, message, type });
+                return;
+            }
+            
+            // Fallback para implementação local
             const toastContainer = document.getElementById('toast-container');
             if (!toastContainer) {
                 // Create a container if it doesn't exist
@@ -1010,15 +1359,23 @@
         }
 
         function closeModal(modalId) {
-            document.getElementById(modalId).classList.add('hidden');
+            console.log('🚪 [CONFIG] Fechando modal:', modalId);
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('hidden');
+                console.log('✅ [CONFIG] Modal fechado:', modalId);
+            } else {
+                console.error('❌ [CONFIG] Modal não encontrado:', modalId);
+            }
         }
 
         // Funções para gerenciamento de usuários (Admin)
         async function loadUsers() {
             try {
+                console.log('👥 [CONFIG] Carregando lista de usuários...');
                 const token = localStorage.getItem('token');
                 if (!token) {
-                    console.error('Token não encontrado');
+                    console.error('❌ [CONFIG] Token não encontrado');
                     return;
                 }
 
@@ -1028,28 +1385,70 @@
                     }
                 });
                 
+                console.log('📡 [CONFIG] Resposta da API de usuários:', response.status, response.statusText);
+                
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
                 const data = await response.json();
+                console.log('📄 [CONFIG] Dados dos usuários:', data);
+                
                 if (data.success && data.data && data.data.users) {
                     const tbody = document.getElementById('users-table-body');
                     if (!tbody) {
-                        console.error('Elemento users-table-body não encontrado');
+                        console.error('❌ [CONFIG] Elemento users-table-body não encontrado');
                         return;
                     }
+                    
+                    console.log(`✅ [CONFIG] Carregando ${data.data.users.length} usuários...`);
                     tbody.innerHTML = ''; // Limpar tabela antes de adicionar
-                    data.data.users.forEach(user => {
+                    
+                    data.data.users.forEach((user, index) => {
+                        console.log(`👤 [CONFIG] Processando usuário ${index + 1}:`, { 
+                            name: user.name, 
+                            email: user.email, 
+                            role: user.role,
+                            familyId: user.familyId,
+                            familyIdType: typeof user.familyId,
+                            familyIdName: user.familyId?.name
+                        });
+                        
+                        // Verificar se o familyId existe e tem nome
+                        let familyName = 'Sem família';
+                        let familyIdValue = '';
+                        
+                        if (user.familyId) {
+                            if (typeof user.familyId === 'object' && user.familyId.name) {
+                                // familyId foi populado corretamente
+                                familyName = user.familyId.name;
+                                familyIdValue = user.familyId._id || '';
+                                console.log(`🏠 [CONFIG] Família populada para ${user.name}: ${familyName}`);
+                            } else if (typeof user.familyId === 'string') {
+                                // familyId é apenas o ID (não foi populado)
+                                familyName = 'Família Azevedo'; // Assumir que é a Família Azevedo
+                                familyIdValue = user.familyId;
+                                console.log(`🏠 [CONFIG] Família não populada para ${user.name}, assumindo Família Azevedo`);
+                            } else if (user.familyId && user.familyId._id) {
+                                // familyId é um objeto com _id mas sem name (pode ser populado parcialmente)
+                                familyName = 'Família Azevedo'; // Assumir que é a Família Azevedo
+                                familyIdValue = user.familyId._id;
+                                console.log(`🏠 [CONFIG] Família parcialmente populada para ${user.name}, assumindo Família Azevedo`);
+                            }
+                        }
+                        
+                        console.log(`🏠 [CONFIG] Família final para ${user.name}:`, { familyName, familyIdValue });
+                        
                         const row = document.createElement('tr');
                         row.innerHTML = `
                             <td>${user.name || ''}</td>
                             <td>${user.email || ''}</td>
                             <td>${user.role === 'admin' ? 'Administrador' : 'Pai/Mãe'}</td>
                             <td><span class="status-badge ${user.isActive ? 'active' : 'inactive'}">${user.isActive ? 'Ativo' : 'Inativo'}</span></td>
+                            <td>${familyName}</td>
                             <td>${user.lastLogin ? new Date(user.lastLogin).toLocaleDateString('pt-BR') : '-'}</td>
                             <td>
-                                <button onclick="showEditUserModal('${user._id}', '${user.name || ''}', '${user.email || ''}', '${user.role || 'parent'}', ${user.isActive || false})" class="btn btn-sm btn-info">
+                                <button onclick="showEditUserModal('${user._id}', '${user.name || ''}', '${user.email || ''}', '${user.role || 'parent'}', ${user.isActive || false}, '${familyIdValue}')" class="btn btn-sm btn-info">
                                     ✏️ Editar
                                 </button>
                                 <button onclick="showDeleteUserModal('${user._id}', '${user.name || ''}')" class="btn btn-sm btn-danger">
@@ -1059,123 +1458,218 @@
                         `;
                         tbody.appendChild(row);
                     });
+                    
+                    console.log('✅ [CONFIG] Lista de usuários carregada com sucesso!');
                 } else {
-                    console.error('Erro ao carregar usuários:', data.message);
+                    console.error('❌ [CONFIG] Erro ao carregar usuários:', data.message);
                     showToast('Erro', data.message || 'Erro ao carregar usuários', 'error');
                 }
             } catch (error) {
-                console.error('Erro ao carregar usuários:', error);
+                console.error('💥 [CONFIG] Erro ao carregar usuários:', error);
                 showToast('Erro', 'Erro ao carregar usuários', 'error');
             }
         }
 
         function showAddUserModal() {
-            document.getElementById('user-modal-title').textContent = 'Adicionar Usuário';
+            console.log('➕ [CONFIG] Mostrando modal para adicionar usuário...');
+            
+            const modal = document.getElementById('user-modal');
+            if (!modal) {
+                console.error('❌ [CONFIG] Modal de adicionar usuário não encontrado!');
+                showToast('Erro', 'Modal de adicionar usuário não disponível', 'error');
+                return;
+            }
+            
+            // Limpar campos e remover ID de edição
+            modal.removeAttribute('data-user-id');
             document.getElementById('user-form').reset();
             document.getElementById('user-password').required = true;
             document.getElementById('user-password').placeholder = 'Digite a senha';
-            document.getElementById('user-modal').removeAttribute('data-user-id');
-            document.getElementById('user-modal').classList.remove('hidden');
+            
+            // Configurar título e botão
+            document.getElementById('user-modal-title').textContent = 'Adicionar Novo Usuário';
+            const saveButton = modal.querySelector('button[onclick="saveUser()"]');
+            if (saveButton) {
+                const buttonText = saveButton.querySelector('.button-text');
+                if (buttonText) buttonText.textContent = 'Adicionar Usuário';
+            }
+            
+            modal.classList.remove('hidden');
+            console.log('✅ [CONFIG] Modal de adicionar usuário exibido');
         }
 
-        function showEditUserModal(userId, name, email, role, isActive) {
-            document.getElementById('user-modal-title').textContent = 'Editar Usuário';
-            document.getElementById('user-form').reset();
+        function showEditUserModal(userId, name, email, role, isActive, familyId) {
+            console.log('✏️ [CONFIG] Mostrando modal de edição para usuário:', { userId, name, email, role, isActive, familyId });
+            
+            const modal = document.getElementById('user-modal');
+            if (!modal) {
+                console.error('❌ [CONFIG] Modal de adicionar/editar não encontrado!');
+                showToast('Erro', 'Modal de adicionar/editar não disponível', 'error');
+                return;
+            }
+            
+            // Preencher campos do modal
             document.getElementById('user-name').value = name || '';
             document.getElementById('user-email').value = email || '';
             document.getElementById('user-role').value = role || 'parent';
             document.getElementById('user-status').value = isActive ? 'true' : 'false';
             document.getElementById('user-password').required = false;
             document.getElementById('user-password').placeholder = 'Deixe em branco para manter a senha atual';
-            document.getElementById('user-modal').setAttribute('data-user-id', userId);
-            document.getElementById('user-modal').classList.remove('hidden');
+            
+            // Preencher família (se o select existir)
+            const familySelect = document.getElementById('user-family');
+            if (familySelect) {
+                // Primeiro carregar as famílias se ainda não foram carregadas
+                loadFamiliesForSelect().then(() => {
+                    console.log('🏠 [CONFIG] Famílias carregadas, definindo valor:', familyId);
+                    familySelect.value = familyId || '';
+                }).catch(error => {
+                    console.error('❌ [CONFIG] Erro ao carregar famílias:', error);
+                    familySelect.value = familyId || '';
+                });
+            }
+            
+            // Configurar título e botão
+            document.getElementById('user-modal-title').textContent = 'Editar Usuário';
+            const saveButton = modal.querySelector('button[onclick="saveUser()"]');
+            if (saveButton) {
+                const buttonText = saveButton.querySelector('.button-text');
+                if (buttonText) buttonText.textContent = 'Salvar';
+            }
+            
+            modal.setAttribute('data-user-id', userId); // Adicionar ID ao modal
+            modal.classList.remove('hidden');
+            console.log('✅ [CONFIG] Modal de edição exibido com dados preenchidos');
         }
 
         async function saveUser() {
-            const modal = document.getElementById('user-modal');
-            const userId = modal.getAttribute('data-user-id');
-            const isEdit = !!userId;
-            
-            const name = document.getElementById('user-name').value.trim();
-            const email = document.getElementById('user-email').value.trim();
-            const password = document.getElementById('user-password').value;
-            const role = document.getElementById('user-role').value;
-            const isActive = document.getElementById('user-status').value === 'true';
-
-            if (!name || !email) {
-                showToast('Erro', 'Nome e Email são obrigatórios', 'error');
-                return;
-            }
-
-            if (!isEdit && (!password || password.length < 6)) {
-                showToast('Erro', 'A senha deve ter pelo menos 6 caracteres', 'error');
-                return;
-            }
-
             try {
-                const token = localStorage.getItem('token');
-                const button = modal.querySelector('button[onclick="saveUser()"]');
-                const spinner = button.querySelector('.loading-spinner');
-                const buttonText = button.querySelector('.button-text');
+                console.log('💾 [CONFIG] Salvando usuário...');
+                const modal = document.getElementById('user-modal');
+                const userId = modal.getAttribute('data-user-id');
+                const isEdit = !!userId;
                 
-                spinner.classList.remove('hidden');
-                button.disabled = true;
-                buttonText.textContent = 'Salvando...';
-
-                const url = isEdit ? `/api/auth/users/${userId}` : '/api/auth/register';
-                const method = isEdit ? 'PUT' : 'POST';
+                console.log('📝 [CONFIG] Modo:', isEdit ? 'Edição' : 'Criação', 'ID:', userId);
                 
-                const body = { name, email, role, isActive };
-                if (password && password.length > 0) body.password = password;
-
-                const response = await fetch(url, {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(body)
-                });
+                const name = document.getElementById('user-name').value.trim();
+                const email = document.getElementById('user-email').value.trim();
+                const password = document.getElementById('user-password').value;
+                const role = document.getElementById('user-role').value;
+                const isActive = document.getElementById('user-status').value === 'true';
+                const familyId = document.getElementById('user-family') ? document.getElementById('user-family').value : '';
                 
-                const result = await response.json();
-
-                if (response.ok && result.success) {
-                    showToast('Sucesso', result.message || 'Usuário salvo com sucesso!', 'success');
-                    modal.classList.add('hidden');
-                    modal.removeAttribute('data-user-id');
-                    loadUsers();
-                } else {
-                    showToast('Erro', result.message || 'Erro ao salvar usuário', 'error');
+                console.log('📋 [CONFIG] Dados para salvar:', { name, email, role, isActive, hasPassword: !!password, familyId });
+                
+                if (!name || !email) {
+                    console.log('❌ [CONFIG] Campos obrigatórios não preenchidos');
+                    showToast('Erro', 'Nome e email são obrigatórios', 'error');
+                    return;
                 }
-            } catch (err) {
-                console.error(err);
-                showToast('Erro', 'Falha na comunicação com o servidor', 'error');
-            } finally {
+                
+                if (!familyId || familyId === '') {
+                    console.log('❌ [CONFIG] Família não selecionada');
+                    showToast('Erro', 'Família é obrigatória para todos os usuários', 'error');
+                    return;
+                }
+                
+                if (!isEdit && (!password || password.length < 6)) {
+                    console.log('❌ [CONFIG] Senha inválida para novo usuário');
+                    showToast('Erro', 'A senha deve ter pelo menos 6 caracteres', 'error');
+                    return;
+                }
+                
                 const button = modal.querySelector('button[onclick="saveUser()"]');
                 const spinner = button.querySelector('.loading-spinner');
                 const buttonText = button.querySelector('.button-text');
-                spinner.classList.add('hidden');
-                button.disabled = false;
-                buttonText.textContent = 'Salvar';
+                
+                try {
+                    console.log('🔄 [CONFIG] Iniciando operação...');
+                    spinner.classList.remove('hidden');
+                    button.disabled = true;
+                    buttonText.textContent = isEdit ? 'Salvando...' : 'Criando...';
+                    
+                    const token = localStorage.getItem('token');
+                    const url = isEdit ? `/api/auth/users/${userId}` : '/api/auth/register';
+                    const method = isEdit ? 'PUT' : 'POST';
+                    
+                    const body = { name, email, role, isActive, familyId };
+                    if (password && password.length > 0) body.password = password;
+                    
+                    console.log('📤 [CONFIG] Enviando requisição:', { url, method, body });
+                    
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(body)
+                    });
+                    
+                    console.log('📡 [CONFIG] Resposta da API:', response.status, response.statusText);
+                    const result = await response.json();
+                    console.log('📄 [CONFIG] Resultado da API:', result);
+                    
+                    if (response.ok && result.success) {
+                        console.log('✅ [CONFIG] Operação realizada com sucesso!');
+                        showToast('Sucesso', result.message || (isEdit ? 'Usuário atualizado com sucesso!' : 'Usuário criado com sucesso!'), 'success');
+                        modal.classList.add('hidden');
+                        modal.removeAttribute('data-user-id');
+                        loadUsers(); // Recarregar lista
+                    } else {
+                        console.log('❌ [CONFIG] Erro na operação:', result.message);
+                        showToast('Erro', result.message || (isEdit ? 'Erro ao atualizar usuário' : 'Erro ao criar usuário'), 'error');
+                    }
+                } catch (err) {
+                    console.error('💥 [CONFIG] Erro na comunicação:', err);
+                    showToast('Erro', 'Falha na comunicação com o servidor', 'error');
+                } finally {
+                    spinner.classList.add('hidden');
+                    button.disabled = false;
+                    buttonText.textContent = isEdit ? 'Salvar' : 'Adicionar Usuário';
+                }
+            } catch (error) {
+                console.error('💥 [CONFIG] Erro geral ao salvar usuário:', error);
+                showToast('Erro', 'Erro inesperado ao salvar usuário', 'error');
             }
         }
 
         function showDeleteUserModal(userId, userName) {
-            document.getElementById('delete-user-name').textContent = userName || 'este usuário';
-            document.getElementById('delete-user-modal').setAttribute('data-user-id', userId);
-            document.getElementById('delete-user-modal').classList.remove('hidden');
+            console.log('🗑️ [CONFIG] Mostrando modal de exclusão para usuário:', { userId, userName });
+            
+            // Usar o modal específico para exclusão de usuários
+            const modal = document.getElementById('delete-user-modal');
+            if (modal) {
+                document.getElementById('delete-user-name').textContent = userName;
+                modal.setAttribute('data-user-id', userId); // Adicionar ID ao modal
+                modal.classList.remove('hidden');
+                console.log('✅ [CONFIG] Modal de exclusão de usuário exibido');
+            } else {
+                console.error('❌ [CONFIG] Modal de exclusão de usuário não encontrado!');
+                // Fallback para modal genérico
+                showConfirmModal(
+                    'Confirmar Exclusão',
+                    `Tem certeza que deseja excluir o usuário ${userName}?`,
+                    () => deleteUser(userId)
+                );
+            }
         }
 
         async function confirmDeleteUser() {
             const modal = document.getElementById('delete-user-modal');
             const userId = modal.getAttribute('data-user-id');
-            
-            if (!userId) {
-                showToast('Erro', 'ID do usuário não encontrado', 'error');
-                return;
+            if (userId) {
+                deleteUser(userId);
+                closeModal('delete-user-modal');
+            } else {
+                console.error('❌ [CONFIG] ID do usuário não encontrado no modal');
+                showToast('Erro', 'Erro ao identificar usuário para exclusão', 'error');
             }
-            
+        }
+
+        async function deleteUser(userId) {
             try {
+                console.log('🗑️ [CONFIG] Excluindo usuário:', userId);
                 const token = localStorage.getItem('token');
                 const response = await fetch(`/api/auth/users/${userId}`, {
                     method: 'DELETE',
@@ -1185,20 +1679,356 @@
                 });
                 
                 const result = await response.json();
+                console.log('📡 [CONFIG] Resposta da exclusão:', response.status, result);
                 
                 if (response.ok && result.success) {
                     showToast('Sucesso', result.message || 'Usuário excluído com sucesso!', 'success');
-                    modal.classList.add('hidden');
-                    modal.removeAttribute('data-user-id');
-                    loadUsers();
+                    loadUsers(); // Recarregar lista
                 } else {
                     showToast('Erro', result.message || 'Erro ao excluir usuário', 'error');
                 }
             } catch (err) {
-                console.error(err);
+                console.error('💥 [CONFIG] Erro ao excluir usuário:', err);
                 showToast('Erro', 'Falha na comunicação com o servidor', 'error');
             }
         }
+
+        // ==================== FUNÇÕES DE FAMÍLIAS ====================
+
+        // Carregar famílias
+        async function loadFamilies() {
+            try {
+                console.log('🏠 [CONFIG] Carregando lista de famílias...');
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    console.error('❌ [CONFIG] Token não encontrado');
+                    return;
+                }
+
+                const response = await fetch('/api/families', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                console.log('📡 [CONFIG] Resposta da API de famílias:', response.status, response.statusText);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('📄 [CONFIG] Dados das famílias:', data);
+                
+                if (data.success && data.data && data.data.families) {
+                    const tbody = document.getElementById('families-table-body');
+                    if (!tbody) {
+                        console.error('❌ [CONFIG] Elemento families-table-body não encontrado');
+                        return;
+                    }
+                    
+                    console.log(`✅ [CONFIG] Carregando ${data.data.families.length} famílias...`);
+                    tbody.innerHTML = ''; // Limpar tabela antes de adicionar
+                    
+                    data.data.families.forEach((family, index) => {
+                        console.log(`🏠 [CONFIG] Processando família ${index + 1}:`, { name: family.name, description: family.description });
+                        
+                        const isAdmFamily = family.name === 'Família ADM';
+                        const actionsHtml = isAdmFamily ? 
+                            `<span class="text-muted">🔒 Protegida</span>` :
+                            `<button onclick="showEditFamilyModal('${family._id}', '${family.name || ''}', '${family.description || ''}')" class="btn btn-sm btn-info">
+                                ✏️ Editar
+                            </button>
+                            <button onclick="showDeleteFamilyModal('${family._id}', '${family.name || ''}')" class="btn btn-sm btn-danger">
+                                🗑️ Excluir
+                            </button>`;
+                        
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${family.name || ''}</td>
+                            <td>${family.description || '-'}</td>
+                            <td><span class="badge">${family.memberCount || 0}</span></td>
+                            <td><span class="badge">${family.kidCount || 0}</span></td>
+                            <td>${family.createdAt ? new Date(family.createdAt).toLocaleDateString('pt-BR') : '-'}</td>
+                            <td>${actionsHtml}</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                    
+                    console.log('✅ [CONFIG] Lista de famílias carregada com sucesso!');
+                } else {
+                    console.error('❌ [CONFIG] Erro ao carregar famílias:', data.message);
+                    showToast('Erro', data.message || 'Erro ao carregar famílias', 'error');
+                }
+            } catch (error) {
+                console.error('💥 [CONFIG] Erro ao carregar famílias:', error);
+                showToast('Erro', 'Erro ao carregar famílias', 'error');
+            }
+        }
+
+        // Configurar formulário de famílias
+        function setupFamilyForm() {
+            console.log('🔧 [CONFIG] Configurando formulário de famílias...');
+            const form = document.getElementById('family-form');
+            if (!form) {
+                console.error('❌ [CONFIG] Formulário family-form não encontrado!');
+                return;
+            }
+            console.log('✅ [CONFIG] Formulário encontrado, adicionando event listener...');
+            
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                console.log('📝 [CONFIG] Submissão do formulário de família iniciada...');
+                
+                const name = document.getElementById('family-name').value.trim();
+                const description = document.getElementById('family-description').value.trim();
+                
+                console.log('📋 [CONFIG] Dados do formulário:', { name, description });
+                
+                if (!name) {
+                    console.log('❌ [CONFIG] Nome da família não preenchido');
+                    showToast('Erro', 'Nome da família é obrigatório', 'error');
+                    return;
+                }
+                
+                const button = form.querySelector('button[type="submit"]');
+                const spinner = button.querySelector('.loading-spinner');
+                const buttonText = button.querySelector('.button-text');
+                
+                try {
+                    console.log('🔄 [CONFIG] Iniciando criação da família...');
+                    spinner.classList.remove('hidden');
+                    button.disabled = true;
+                    buttonText.textContent = 'Criando...';
+                    
+                    const token = localStorage.getItem('token');
+                    console.log('🔑 [CONFIG] Token encontrado:', !!token);
+                    
+                    const resp = await fetch('/api/families', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ name, description })
+                    });
+                    
+                    console.log('📡 [CONFIG] Resposta da API:', resp.status, resp.statusText);
+                    const result = await resp.json();
+                    console.log('📄 [CONFIG] Resultado da API:', result);
+                    
+                    if (resp.ok && result.success) {
+                        console.log('✅ [CONFIG] Família criada com sucesso!');
+                        showToast('Sucesso', 'Família criada com sucesso', 'success');
+                        form.reset();
+                        loadFamilies(); // Recarregar lista de famílias
+                        loadFamiliesForSelect(); // Recarregar select de famílias
+                    } else {
+                        console.log('❌ [CONFIG] Erro na criação:', result.message);
+                        showToast('Erro', result.message || 'Erro ao criar família', 'error');
+                    }
+                } catch (err) {
+                    console.error('💥 [CONFIG] Erro na criação:', err);
+                    showToast('Erro', 'Falha na comunicação com o servidor', 'error');
+                } finally {
+                    spinner.classList.add('hidden');
+                    button.disabled = false;
+                    buttonText.textContent = 'Criar Família';
+                }
+            });
+            console.log('✅ [CONFIG] Event listener adicionado com sucesso!');
+        }
+
+        // Carregar famílias para selects
+        async function loadFamiliesForSelect() {
+            try {
+                console.log('🏠 [CONFIG] Carregando famílias para selects...');
+                
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/families', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                console.log('📄 [CONFIG] Dados das famílias:', data);
+                
+                if (data.success && data.data && data.data.families) {
+                    // Carregar para o select de registro admin
+                    const adminSelect = document.getElementById('admin-register-family');
+                    if (adminSelect) {
+                        adminSelect.innerHTML = '<option value="">Selecione uma família</option>';
+                        data.data.families.forEach(family => {
+                            const option = document.createElement('option');
+                            option.value = family._id;
+                            option.textContent = family.name;
+                            adminSelect.appendChild(option);
+                        });
+                        console.log('✅ [CONFIG] Famílias carregadas no select admin');
+                    }
+                    
+                    // Carregar para o select do modal de usuário
+                    const userSelect = document.getElementById('user-family');
+                    if (userSelect) {
+                        userSelect.innerHTML = '<option value="">Selecione uma família</option>';
+                        data.data.families.forEach(family => {
+                            const option = document.createElement('option');
+                            option.value = family._id;
+                            option.textContent = family.name;
+                            userSelect.appendChild(option);
+                        });
+                        console.log('✅ [CONFIG] Famílias carregadas no select user');
+                    }
+                    
+                    console.log('✅ [CONFIG] Famílias carregadas nos selects');
+                } else {
+                    console.error('❌ [CONFIG] Estrutura de dados inválida:', data);
+                }
+            } catch (error) {
+                console.error('💥 [CONFIG] Erro ao carregar famílias para select:', error);
+            }
+        }
+
+        // Mostrar modal de edição de família
+        function showEditFamilyModal(familyId, familyName, familyDescription) {
+            console.log('✏️ [CONFIG] Mostrando modal de edição para família:', { familyId, familyName });
+            
+            const modal = document.getElementById('edit-family-modal');
+            if (!modal) {
+                console.error('❌ [CONFIG] Modal de edição de família não encontrado!');
+                showToast('Erro', 'Modal de edição de família não disponível', 'error');
+                return;
+            }
+            
+            // Preencher campos
+            document.getElementById('edit-family-name').value = familyName;
+            document.getElementById('edit-family-description').value = familyDescription;
+            
+            // Configurar título e botão
+            document.getElementById('edit-family-modal-title').textContent = 'Editar Família';
+            
+            modal.setAttribute('data-family-id', familyId);
+            modal.classList.remove('hidden');
+            console.log('✅ [CONFIG] Modal de edição de família exibido');
+        }
+
+        // Salvar família
+        async function saveFamily() {
+            try {
+                console.log('💾 [CONFIG] Salvando família...');
+                const modal = document.getElementById('edit-family-modal');
+                const familyId = modal.getAttribute('data-family-id');
+                
+                const name = document.getElementById('edit-family-name').value.trim();
+                const description = document.getElementById('edit-family-description').value.trim();
+                
+                if (!name) {
+                    showToast('Erro', 'Nome da família é obrigatório', 'error');
+                    return;
+                }
+                
+                const button = modal.querySelector('button[onclick="saveFamily()"]');
+                const spinner = button.querySelector('.loading-spinner');
+                const buttonText = button.querySelector('.button-text');
+                
+                try {
+                    spinner.classList.remove('hidden');
+                    button.disabled = true;
+                    buttonText.textContent = 'Salvando...';
+                    
+                    const token = localStorage.getItem('token');
+                    const response = await fetch(`/api/families/${familyId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ name, description })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok && result.success) {
+                        showToast('Sucesso', 'Família atualizada com sucesso!', 'success');
+                        modal.classList.add('hidden');
+                        modal.removeAttribute('data-family-id');
+                        loadFamilies();
+                        loadFamiliesForSelect();
+                    } else {
+                        showToast('Erro', result.message || 'Erro ao atualizar família', 'error');
+                    }
+                } catch (err) {
+                    console.error('💥 [CONFIG] Erro na comunicação:', err);
+                    showToast('Erro', 'Falha na comunicação com o servidor', 'error');
+                } finally {
+                    spinner.classList.add('hidden');
+                    button.disabled = false;
+                    buttonText.textContent = 'Salvar';
+                }
+            } catch (error) {
+                console.error('💥 [CONFIG] Erro geral ao salvar família:', error);
+                showToast('Erro', 'Erro inesperado ao salvar família', 'error');
+            }
+        }
+
+        // Mostrar modal de exclusão de família
+        function showDeleteFamilyModal(familyId, familyName) {
+            console.log('🗑️ [CONFIG] Mostrando modal de exclusão para família:', { familyId, familyName });
+            
+            const modal = document.getElementById('delete-family-modal');
+            if (modal) {
+                document.getElementById('delete-family-name').textContent = familyName;
+                modal.setAttribute('data-family-id', familyId);
+                modal.classList.remove('hidden');
+                console.log('✅ [CONFIG] Modal de exclusão de família exibido');
+            } else {
+                console.error('❌ [CONFIG] Modal de exclusão de família não encontrado!');
+                showToast('Erro', 'Modal de exclusão de família não disponível', 'error');
+            }
+        }
+
+        // Confirmar exclusão de família
+        async function confirmDeleteFamily() {
+            const modal = document.getElementById('delete-family-modal');
+            const familyId = modal.getAttribute('data-family-id');
+            if (familyId) {
+                deleteFamily(familyId);
+                closeModal('delete-family-modal');
+            } else {
+                console.error('❌ [CONFIG] ID da família não encontrado no modal');
+                showToast('Erro', 'Erro ao identificar família para exclusão', 'error');
+            }
+        }
+
+        // Excluir família
+        async function deleteFamily(familyId) {
+            try {
+                console.log('🗑️ [CONFIG] Excluindo família:', familyId);
+                const token = localStorage.getItem('token');
+                const response = await fetch(`/api/families/${familyId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const result = await response.json();
+                console.log('📡 [CONFIG] Resposta da exclusão:', response.status, result);
+                
+                if (response.ok && result.success) {
+                    showToast('Sucesso', result.message || 'Família excluída com sucesso!', 'success');
+                    loadFamilies();
+                    loadFamiliesForSelect();
+                } else {
+                    showToast('Erro', result.message || 'Erro ao excluir família', 'error');
+                }
+            } catch (err) {
+                console.error('💥 [CONFIG] Erro ao excluir família:', err);
+                showToast('Erro', 'Falha na comunicação com o servidor', 'error');
+            }
+        }
+
     </script>
 </body>
 </html> 

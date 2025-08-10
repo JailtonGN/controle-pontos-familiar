@@ -413,9 +413,59 @@
     <script src="js/toast.js"></script>
     <script>
         // Verificar se a API está disponível
-        console.log('🔍 [DEBUG] API disponível:', typeof API !== 'undefined');
-        if (typeof API !== 'undefined') {
-            console.log('🔍 [DEBUG] API métodos:', Object.getOwnPropertyNames(API));
+        
+        // Função para limpar fundo escuro e modais
+        function clearDarkBackground() {
+            // Remover todos os modais
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                modal.remove();
+            });
+            
+            // Remover elementos com backdrop
+            const backdrops = document.querySelectorAll('[style*="backdrop"], [style*="background: rgba"], [style*="background-color: rgba"]');
+            backdrops.forEach(backdrop => {
+                const style = backdrop.style;
+                if (style.background && style.background.includes('rgba(0, 0, 0')) {
+                    backdrop.style.background = 'transparent';
+                    backdrop.style.backgroundColor = 'transparent';
+                }
+            });
+            
+            // Forçar remoção de qualquer overlay
+            const overlays = document.querySelectorAll('*');
+            overlays.forEach(element => {
+                const computedStyle = window.getComputedStyle(element);
+                if (computedStyle.position === 'fixed' && 
+                    computedStyle.zIndex && parseInt(computedStyle.zIndex) > 1000 &&
+                    (computedStyle.background.includes('rgba(0, 0, 0') || computedStyle.backgroundColor.includes('rgba(0, 0, 0'))) {
+                    element.remove();
+                }
+            });
+            
+            // Limpar body de estilos indesejados
+            document.body.style.background = '';
+            document.body.style.backgroundColor = '';
+        }
+
+        // Função helper para mostrar toast com fallback
+        function safeShowToast(title, message, type = 'info') {
+            // Verificar se o toast system global está disponível
+            if (typeof showToast === 'function') {
+                try {
+                    showToast(title, message, type);
+                } catch (error) {
+                    console.error('Erro ao chamar showToast:', error);
+                }
+            } else if (window.toastSystem) {
+                try {
+                    window.toastSystem[type](title, message);
+                } catch (error) {
+                    console.error('Erro ao chamar toastSystem:', error);
+                }
+            } else {
+                alert(`${title}: ${message}`);
+            }
         }
     </script>
     <script>
@@ -433,31 +483,25 @@
                     ...options
                 };
 
-                const token = localStorage.getItem('kidToken');
-                console.log('🔍 [KID API] Token disponível:', !!token);
-                console.log('🔍 [KID API] Endpoint:', endpoint);
-                
-                if (token) {
-                    config.headers.Authorization = `Bearer ${token}`;
-                }
+                            const token = localStorage.getItem('kidToken');
+            
+            if (token) {
+                config.headers.Authorization = `Bearer ${token}`;
+            }
 
-                try {
-                    console.log('🔍 [KID API] Fazendo requisição para:', url);
-                    const response = await fetch(url, config);
-                    const data = await response.json();
-                    
-                    console.log('🔍 [KID API] Status:', response.status);
-                    console.log('🔍 [KID API] Resposta:', data);
-                    
-                    if (!response.ok) {
-                        throw new Error(data.message || 'Erro na requisição');
-                    }
-                    
-                    return data;
-                } catch (error) {
-                    console.error('❌ [KID API] Erro na API:', error);
-                    throw error;
+            try {
+                const response = await fetch(url, config);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.message || 'Erro na requisição');
                 }
+                
+                return data;
+            } catch (error) {
+                console.error('Erro na API:', error);
+                throw error;
+            }
             },
 
             async get(endpoint) {
@@ -474,6 +518,9 @@
 
         // Verificar tipo de usuário e carregar conteúdo apropriado
         document.addEventListener('DOMContentLoaded', function() {
+            // Limpar fundo escuro ao carregar a página
+            clearDarkBackground();
+            
             const kidData = localStorage.getItem('kidData');
             const kidToken = localStorage.getItem('kidToken');
             
@@ -489,8 +536,6 @@
 
         // Adaptar interface para criança
         function adaptInterfaceForKid() {
-            console.log('Adaptando interface para criança');
-            
             // Modificar a navegação para mostrar apenas Tela Inicial e Comunicação
             const navbarMenu = document.querySelector('.navbar-menu');
             if (navbarMenu) {
@@ -611,12 +656,12 @@
                 const content = formData.get('content').trim();
                 
                 if (!content) {
-                    showToast('Erro', 'Digite uma mensagem', 'error');
+                    safeShowToast('Erro', 'Digite uma mensagem', 'error');
                     return;
                 }
                 
                 if (content.length > 500) {
-                    showToast('Erro', 'Mensagem muito longa', 'error');
+                    safeShowToast('Erro', 'Mensagem muito longa', 'error');
                     return;
                 }
                 
@@ -627,14 +672,20 @@
                         kidId: kidData._id
                     });
                     
-                    // Mostrar modal de sucesso
-                    showSuccessModal();
+                    // Mostrar toast de sucesso
+                    safeShowToast('Sucesso', 'Mensagem enviada com sucesso!', 'success');
+                    
+                    // Limpar fundo escuro após envio
+                    setTimeout(() => {
+                        clearDarkBackground();
+                    }, 100);
+                    
                     this.reset();
                     document.getElementById('char-count').textContent = '0';
                     
             } catch (error) {
                     console.error('Erro ao enviar mensagem:', error);
-                    showToast('Erro', error.message || 'Erro ao enviar mensagem', 'error');
+                    safeShowToast('Erro', error.message || 'Erro ao enviar mensagem', 'error');
                 }
             });
         }
@@ -667,18 +718,13 @@
         // Carregar mensagens para pais
         async function loadMessages() {
             try {
-                console.log('🔍 [LOAD MESSAGES] Carregando mensagens...');
-                
                 const response = await API.get('/messages/kids');
                 const messages = response.data.messages || [];
-                
-                console.log('📊 [LOAD MESSAGES] Mensagens recebidas:', messages);
-                console.log('📊 [LOAD MESSAGES] Quantidade:', messages.length);
                 
                 displayMessages(messages);
                 
             } catch (error) {
-                console.error('❌ [LOAD MESSAGES] Erro ao carregar mensagens:', error);
+                console.error('Erro ao carregar mensagens:', error);
                 document.getElementById('messages-list').innerHTML = `
                     <div class="text-center text-gray-500">
                         Erro ao carregar mensagens
@@ -689,13 +735,9 @@
 
         // Exibir mensagens
         function displayMessages(messages) {
-            console.log('🔍 [DISPLAY MESSAGES] Exibindo mensagens...');
-            console.log('📊 [DISPLAY MESSAGES] Quantidade:', messages.length);
-            
             const messagesContainer = document.getElementById('messages-list');
             
             if (messages.length === 0) {
-                console.log('📊 [DISPLAY MESSAGES] Nenhuma mensagem para exibir');
                 messagesContainer.innerHTML = `
                     <div class="text-center text-gray-500 py-8">
                         <div class="text-4xl mb-4">💬</div>
@@ -829,16 +871,7 @@
             }
         }
 
-        // Funções do modal de confirmação
-        function showSuccessModal() {
-            const modal = document.getElementById('success-modal');
-            modal.classList.add('show');
-        }
-
-        function closeSuccessModal() {
-            const modal = document.getElementById('success-modal');
-            modal.classList.remove('show');
-        }
+        // Funções removidas - agora usando toast system
 
         // Fechar modal ao clicar fora dele
         document.addEventListener('DOMContentLoaded', function() {
@@ -854,7 +887,7 @@
             confirmModals.forEach(modal => {
                 modal.addEventListener('click', function(e) {
                     if (e.target === modal) {
-                        closeConfirmModal();
+                        modal.classList.remove('show');
                     }
                 });
             });

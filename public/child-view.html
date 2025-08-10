@@ -18,7 +18,7 @@
                         <span class="text-2xl">←</span>
                     </button>
                     <div class="flex-shrink-0">
-                        <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                        <div id="kid-avatar-small" class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
                             C
                         </div>
                     </div>
@@ -47,9 +47,7 @@
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <div id="kid-avatar" class="kid-avatar mr-6">
-                            <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                                C
-                            </div>
+                            👶
                         </div>
                         <div>
                             <h2 id="kid-name-header" class="text-2xl font-bold text-gray-900">Nome da Criança</h2>
@@ -345,7 +343,30 @@
             document.getElementById('kid-name').textContent = currentKid.name;
             document.getElementById('kid-name-header').textContent = currentKid.name;
             document.getElementById('kid-age').textContent = `${currentKid.age} anos`;
-            document.getElementById('kid-avatar').textContent = currentKid.avatar || '👶';
+            
+            // Aplicar cor personalizada da criança nos avatares
+            const avatarElement = document.getElementById('kid-avatar');
+            const avatarSmall = document.getElementById('kid-avatar-small');
+            
+            const emoji = currentKid.emoji || currentKid.avatar || '👶';
+            
+            avatarElement.textContent = emoji;
+            avatarSmall.textContent = emoji;
+            
+            if (currentKid.color) {
+                avatarElement.style.setProperty('background', currentKid.color, 'important');
+                avatarElement.style.setProperty('color', 'white', 'important');
+                avatarSmall.style.setProperty('background', currentKid.color, 'important');
+                avatarSmall.style.setProperty('color', 'white', 'important');
+            }
+            
+            // Aplicar cor na badge de pontos
+            const pointsBadge = document.querySelector('.points-badge');
+            if (pointsBadge && currentKid.color) {
+                pointsBadge.style.setProperty('background', currentKid.color, 'important');
+                pointsBadge.style.setProperty('color', 'white', 'important');
+            }
+            
             document.getElementById('kid-total-points').textContent = formatPoints(currentKid.totalPoints);
             document.getElementById('kid-level').textContent = currentKid.currentLevel;
         }

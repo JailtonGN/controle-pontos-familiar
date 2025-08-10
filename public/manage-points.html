@@ -287,12 +287,9 @@
 
         // Inicialização
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Página manage-points carregada');
-            
             // Verificar autenticação
             const token = localStorage.getItem('token');
             if (!token) {
-                console.error('Usuário não autenticado');
                 showNotification('Erro', 'Usuário não autenticado. Redirecionando para login...', 'error');
                 setTimeout(() => {
                     window.location.href = '/';
@@ -300,22 +297,18 @@
                 return;
             }
             
-            console.log('Usuário autenticado, carregando dados...');
             loadData();
         });
 
         // Carregar dados
         async function loadData() {
             try {
-                console.log('Iniciando carregamento de dados...');
                 await Promise.all([
                     loadKids(),
                     loadActivities(),
                     loadCurrentSummary()
                 ]);
-                console.log('Dados carregados com sucesso');
             } catch (error) {
-                console.error('Erro ao carregar dados:', error);
                 showNotification('Erro', 'Erro ao carregar dados: ' + error.message, 'error');
             }
         }
@@ -323,15 +316,10 @@
         // Carregar crianças
         async function loadKids() {
             try {
-                console.log('Carregando crianças...');
-                
                 const response = await API.get('/kids');
-                console.log('Resposta da API via classe API:', response);
                 kids = response.data.kids || [];
-                console.log('Crianças carregadas:', kids);
                 updateKidsSelects();
             } catch (error) {
-                console.error('Erro ao carregar crianças:', error);
                 showNotification('Erro', 'Erro ao carregar crianças: ' + error.message, 'error');
             }
         }
@@ -339,12 +327,9 @@
         // Carregar atividades
         async function loadActivities() {
             try {
-                console.log('Carregando atividades...');
                 const response = await API.get('/activities');
-                console.log('Resposta da API de atividades:', response);
                 
                 const allActivities = response.data.activities || [];
-                console.log('Todas as atividades:', allActivities);
                 
                 // Separar atividades positivas e negativas pelo campo type e ordenar alfabeticamente
                 positiveActivities = allActivities.filter(activity => activity.type === 'positive')
@@ -352,26 +337,18 @@
                 negativeActivities = allActivities.filter(activity => activity.type === 'negative')
                     .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
                 
-                console.log('Atividades positivas:', positiveActivities);
-                console.log('Atividades negativas:', negativeActivities);
-                
                 updateActivitySelects();
             } catch (error) {
-                console.error('Erro ao carregar atividades:', error);
-                showNotification('Erro', 'Erro ao carregar atividades: ' + error.message, 'error');
+                showNotification('Error', 'Erro ao carregar atividades: ' + error.message, 'error');
             }
         }
 
         // Atualizar selects de crianças
         function updateKidsSelects() {
-            console.log('Atualizando selects de crianças...');
-            console.log('Crianças disponíveis:', kids);
-            
             const selects = ['positive-kid', 'negative-kid', 'custom-kid', 'remove-kid'];
             selects.forEach(selectId => {
                 const select = document.getElementById(selectId);
                 if (!select) {
-                    console.error(`Select ${selectId} não encontrado`);
                     return;
                 }
                 
@@ -384,17 +361,12 @@
                         option.textContent = `${kid.name} (${kid.age} anos)`;
                         select.appendChild(option);
                     });
-                    console.log(`Select ${selectId} atualizado com ${kids.length} crianças`);
-                } else {
-                    console.log(`Nenhuma criança disponível para ${selectId}`);
                 }
             });
         }
 
         // Atualizar selects de atividades
         function updateActivitySelects() {
-            console.log('Atualizando selects de atividades...');
-            
             // Atividades positivas
             const positiveSelect = document.getElementById('positive-activity');
             if (positiveSelect) {
@@ -407,12 +379,7 @@
                         option.textContent = `${activity.icon || '🎯'} ${activity.name} (${activity.points} pts)`;
                         positiveSelect.appendChild(option);
                     });
-                    console.log(`Select de atividades positivas atualizado com ${positiveActivities.length} atividades`);
-                } else {
-                    console.log('Nenhuma atividade positiva disponível');
                 }
-            } else {
-                console.error('Select positive-activity não encontrado');
             }
 
             // Atividades negativas
@@ -427,12 +394,7 @@
                         option.textContent = `${activity.icon || '⚠️'} ${activity.name} (${activity.points} pts)`;
                         negativeSelect.appendChild(option);
                     });
-                    console.log(`Select de atividades negativas atualizado com ${negativeActivities.length} atividades`);
-                } else {
-                    console.log('Nenhuma atividade negativa disponível');
                 }
-            } else {
-                console.error('Select negative-activity não encontrado');
             }
         }
 

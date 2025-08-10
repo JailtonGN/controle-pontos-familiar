@@ -7,10 +7,24 @@ const Point = require('../models/Point');
 // @access  Private
 const getKids = async (req, res) => {
     try {
-        const kids = await Kid.find({ 
-            parentId: req.user._id,
-            isActive: true 
-        }).sort({ name: 1 });
+        let kids;
+        
+        if (req.user.role === 'admin') {
+            // Admin vê todas as crianças
+            kids = await Kid.find({ isActive: true }).sort({ name: 1 });
+        } else if (req.user.familyId) {
+            // Usuário vê crianças da sua família
+            kids = await Kid.find({ 
+                familyId: req.user.familyId,
+                isActive: true 
+            }).sort({ name: 1 });
+        } else {
+            // Usuário sem família vê apenas suas próprias crianças
+            kids = await Kid.find({ 
+                parentId: req.user._id,
+                isActive: true 
+            }).sort({ name: 1 });
+        }
 
         res.json({
             success: true,
@@ -36,11 +50,26 @@ const getKid = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const kid = await Kid.findOne({ 
-            _id: id, 
-            parentId: req.user._id,
-            isActive: true 
-        });
+        let kid;
+        
+        if (req.user.role === 'admin') {
+            // Admin pode ver qualquer criança
+            kid = await Kid.findOne({ _id: id, isActive: true });
+        } else if (req.user.familyId) {
+            // Usuário vê crianças da sua família
+            kid = await Kid.findOne({ 
+                _id: id, 
+                familyId: req.user.familyId,
+                isActive: true 
+            });
+        } else {
+            // Usuário sem família vê apenas suas próprias crianças
+            kid = await Kid.findOne({ 
+                _id: id, 
+                parentId: req.user._id,
+                isActive: true 
+            });
+        }
 
         if (!kid) {
             return res.status(404).json({
@@ -80,7 +109,19 @@ const createKid = async (req, res) => {
             });
         }
 
-        const { name, age, avatar, emoji, color, pin, preferences } = req.body;
+        const { name, age, avatar, emoji, color, pin, preferences, familyId } = req.body;
+
+        // Verificar se a família existe
+        if (familyId) {
+            const Family = require('../models/Family');
+            const family = await Family.findById(familyId);
+            if (!family || !family.isActive) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Família não encontrada ou inativa'
+                });
+            }
+        }
 
         // Criar nova criança
         const kid = new Kid({
@@ -91,6 +132,7 @@ const createKid = async (req, res) => {
             color,
             pin,
             parentId: req.user._id,
+            familyId: familyId || req.user.familyId, // Usar família do usuário se não especificada
             preferences
         });
 
@@ -106,6 +148,15 @@ const createKid = async (req, res) => {
 
     } catch (error) {
         console.error('Erro ao criar criança:', error);
+        
+        // Verificar se é erro de duplicação
+        if (error.code === 11000) {
+            return res.status(400).json({
+                success: false,
+                message: 'Já existe uma criança com este nome no sistema. Cada criança deve ter um nome único.'
+            });
+        }
+        
         res.status(500).json({
             success: false,
             message: 'Erro interno do servidor'
@@ -180,9 +231,6 @@ const deleteKid = async (req, res) => {
     try {
         const { id } = req.params;
         
-        console.log('🔍 [DELETE KID] Iniciando exclusão...');
-        console.log('📋 [DELETE KID] Parâmetros:', { kidId: id, userId: req.user._id });
-        
         // Verificar se a criança existe e pertence ao usuário
         const kid = await Kid.findOne({ 
             _id: id, 
@@ -191,34 +239,17 @@ const deleteKid = async (req, res) => {
         });
         
         if (!kid) {
-            console.log('❌ [DELETE KID] Criança não encontrada');
-            console.log('🔍 [DELETE KID] Verificando se a criança existe...');
-            
-            // Verificar se a criança existe (sem verificar parentId)
-            const kidExists = await Kid.findById(id);
-            if (kidExists) {
-                console.log('⚠️ [DELETE KID] Criança existe mas não pertence ao usuário');
-                console.log('📋 [DELETE KID] Criança parentId:', kidExists.parentId);
-                console.log('📋 [DELETE KID] Usuário atual:', req.user._id);
-            } else {
-                console.log('❌ [DELETE KID] Criança não existe no banco');
-            }
-            
             return res.status(404).json({ 
                 success: false, 
                 message: 'Criança não encontrada' 
             });
         }
         
-        console.log('✅ [DELETE KID] Criança encontrada:', kid.name);
-        
         // Deletar a criança
         await Kid.deleteOne({ _id: id });
-        console.log('✅ [DELETE KID] Criança deletada');
         
         // Deletar pontos relacionados
         const deletedPoints = await Point.deleteMany({ kidId: id });
-        console.log('✅ [DELETE KID] Pontos deletados:', deletedPoints.deletedCount);
         
         res.json({ 
             success: true, 

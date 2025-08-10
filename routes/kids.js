@@ -35,7 +35,6 @@ router.get('/public', async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Erro ao buscar crianças públicas:', error);
         res.status(500).json({
             success: false,
             message: 'Erro interno do servidor'
@@ -63,7 +62,6 @@ router.get('/kid/own', authenticateKidToken, async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Erro ao buscar dados da criança:', error);
         res.status(500).json({
             success: false,
             message: 'Erro interno do servidor'

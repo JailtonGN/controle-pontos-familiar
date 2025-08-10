@@ -92,30 +92,22 @@ const requireAdmin = (req, res, next) => {
 // Middleware para autenticar token da criança
 const authenticateKidToken = async (req, res, next) => {
     try {
-        console.log('🔍 [KID AUTH] Iniciando autenticação da criança...');
-        
         // Pegar o token do header Authorization
         const authHeader = req.headers['authorization'];
         const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
         if (!token) {
-            console.log('❌ [KID AUTH] Token não fornecido');
             return res.status(401).json({
                 success: false,
                 message: 'Token de acesso não fornecido'
             });
         }
 
-        console.log('🔍 [KID AUTH] Token recebido, verificando...');
-
         // Verificar o token
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
         
-        console.log('🔍 [KID AUTH] Token decodificado:', { type: decoded.type, kidId: decoded.kidId });
-        
         // Verificar se é um token de criança
         if (decoded.type !== 'kid') {
-            console.log('❌ [KID AUTH] Token não é de criança:', decoded.type);
             return res.status(401).json({
                 success: false,
                 message: 'Token inválido para criança'
@@ -126,14 +118,11 @@ const authenticateKidToken = async (req, res, next) => {
         const kid = await Kid.findById(decoded.kidId);
         
         if (!kid || !kid.isActive) {
-            console.log('❌ [KID AUTH] Criança não encontrada ou inativa:', decoded.kidId);
             return res.status(401).json({
                 success: false,
                 message: 'Criança não encontrada ou inativa'
             });
         }
-
-        console.log('✅ [KID AUTH] Criança autenticada:', kid.name);
 
         // Adicionar a criança ao request
         req.kid = kid;
@@ -141,7 +130,6 @@ const authenticateKidToken = async (req, res, next) => {
 
     } catch (error) {
         if (error.name === 'JsonWebTokenError') {
-            console.log('❌ [KID AUTH] Token inválido');
             return res.status(401).json({
                 success: false,
                 message: 'Token inválido'
@@ -149,7 +137,6 @@ const authenticateKidToken = async (req, res, next) => {
         }
         
         if (error.name === 'TokenExpiredError') {
-            console.log('❌ [KID AUTH] Token expirado');
             return res.status(401).json({
                 success: false,
                 message: 'Token expirado'

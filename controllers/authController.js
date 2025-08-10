@@ -6,16 +6,12 @@ const Kid = require('../models/Kid');
 // Gerar token JWT
 const generateToken = (userId) => {
     try {
-        console.log('Gerando token para userId:', userId); // Debug
-        console.log('JWT_SECRET disponível:', !!process.env.JWT_SECRET); // Debug
-        
         const token = jwt.sign(
             { userId },
             process.env.JWT_SECRET || 'fallback_secret',
             { expiresIn: process.env.JWT_EXPIRE || '24h' }
         );
         
-        console.log('Token gerado com sucesso'); // Debug
         return token;
     } catch (error) {
         console.error('Erro ao gerar token:', error);
@@ -38,7 +34,7 @@ const register = async (req, res) => {
             });
         }
 
-        const { name, email, password, role } = req.body;
+        const { name, email, password, role, familyId } = req.body;
 
         // Verificar se o email já existe
         const existingUser = await User.findOne({ email });
@@ -46,6 +42,24 @@ const register = async (req, res) => {
             return res.status(400).json({
                 success: false,
                 message: 'Email já está em uso'
+            });
+        }
+
+        // Verificar se a família foi fornecida
+        if (!familyId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Família é obrigatória para todos os usuários'
+            });
+        }
+
+        // Verificar se a família existe
+        const Family = require('../models/Family');
+        const family = await Family.findById(familyId);
+        if (!family || !family.isActive) {
+            return res.status(400).json({
+                success: false,
+                message: 'Família não encontrada ou inativa'
             });
         }
 
@@ -58,7 +72,21 @@ const register = async (req, res) => {
             }
         }
 
-        const user = new User({ name, email, password, role: userRole });
+        // Validar Família ADM: apenas admins podem ser atribuídos a ela
+        if (family.name === 'Família ADM' && userRole !== 'admin') {
+            return res.status(400).json({
+                success: false,
+                message: 'Apenas usuários com perfil Administrador podem ser atribuídos à Família ADM. Para usuários com perfil Pai/Mãe, crie uma nova família ou selecione uma família existente.'
+            });
+        }
+
+        const user = new User({ 
+            name, 
+            email, 
+            password, 
+            role: userRole,
+            familyId: familyId
+        });
 
         await user.save();
 
@@ -84,12 +112,9 @@ const register = async (req, res) => {
 // @access  Public
 const login = async (req, res) => {
     try {
-        console.log('Login iniciado:', { email: req.body.email }); // Debug
-        
         // Verificar erros de validação
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            console.log('Erros de validação:', errors.array()); // Debug
             return res.status(400).json({
                 success: false,
                 message: 'Dados inválidos',
@@ -98,15 +123,11 @@ const login = async (req, res) => {
         }
 
         const { email, password } = req.body;
-        console.log('Dados recebidos:', { email, password: password ? '***' : 'undefined' }); // Debug
 
         // Buscar usuário por email
-        console.log('Buscando usuário por email:', email); // Debug
         const user = await User.findOne({ email });
-        console.log('Usuário encontrado:', user ? 'Sim' : 'Não'); // Debug
         
         if (!user) {
-            console.log('Usuário não encontrado'); // Debug
             return res.status(401).json({
                 success: false,
                 message: 'Email ou senha inválidos'
@@ -122,12 +143,9 @@ const login = async (req, res) => {
         }
 
         // Verificar senha
-        console.log('Verificando senha...'); // Debug
         const isPasswordValid = await user.comparePassword(password);
-        console.log('Senha válida:', isPasswordValid); // Debug
         
         if (!isPasswordValid) {
-            console.log('Senha inválida'); // Debug
             return res.status(401).json({
                 success: false,
                 message: 'Email ou senha inválidos'
@@ -143,11 +161,7 @@ const login = async (req, res) => {
         }
 
         // Gerar token
-        console.log('Gerando token...'); // Debug
         const token = generateToken(user._id);
-        console.log('Token gerado com sucesso'); // Debug
-
-        console.log('Enviando resposta de sucesso...'); // Debug
         res.json({
             success: true,
             message: 'Login realizado com sucesso',
@@ -343,13 +357,6 @@ const verifyToken = async (req, res) => {
 // @access  Public
 const kidLogin = async (req, res) => {
     try {
-        console.log('🔍 [KID LOGIN] Iniciando login da criança...');
-        console.log('📊 [KID LOGIN] Dados recebidos:', {
-            kidId: req.body.kidId,
-            name: req.body.name,
-            pin: req.body.pin ? '***' : 'undefined'
-        });
-
         const { kidId, name, pin } = req.body;
 
         if (!pin) {
@@ -365,18 +372,14 @@ const kidLogin = async (req, res) => {
             // Caminho original: login por ID da criança
             kid = await Kid.findById(kidId);
             if (!kid || !kid.isActive) {
-                console.log('❌ [KID LOGIN] Criança não encontrada por ID:', kidId);
                 return res.status(404).json({
                     success: false,
                     message: 'Criança não encontrada'
                 });
             }
 
-            console.log('✅ [KID LOGIN] Criança encontrada por ID:', kid.name);
-
             // Verificar PIN
             if (kid.pin !== pin) {
-                console.log('❌ [KID LOGIN] PIN incorreto para ID fornecido');
                 return res.status(401).json({
                     success: false,
                     message: 'PIN incorreto'
@@ -394,14 +397,11 @@ const kidLogin = async (req, res) => {
             });
 
             if (!kid) {
-                console.log('❌ [KID LOGIN] Criança não encontrada por nome+PIN');
                 return res.status(401).json({
                     success: false,
                     message: 'Nome ou PIN incorretos'
                 });
             }
-
-            console.log('✅ [KID LOGIN] Criança autenticada por nome:', kid.name);
         } else {
             return res.status(400).json({
                 success: false,
@@ -418,8 +418,6 @@ const kidLogin = async (req, res) => {
             process.env.JWT_SECRET || 'fallback_secret',
             { expiresIn: process.env.JWT_EXPIRE || '24h' }
         );
-
-        console.log('✅ [KID LOGIN] Token gerado com sucesso');
 
         res.json({
             success: true,

@@ -269,9 +269,19 @@
                     statusColor = 'color: #d97706;'; // Amarelo
                 }
                 
+                // Usar a cor personalizada da criança ou cor baseada nos pontos
+                let headerColor = kid.color || '#3B82F6'; // Usar cor personalizada ou azul padrão
+                if (totalPoints <= 0) {
+                    headerColor = '#EF4444'; // Vermelho para pontos negativos/zero
+                } else if (totalPoints < 50) {
+                    headerColor = '#F59E0B'; // Amarelo para poucos pontos
+                } else {
+                    headerColor = kid.color || '#10B981'; // Verde ou cor personalizada para pontos normais
+                }
+                
                 return `
                     <div class="kid-card">
-                        <div class="kid-card-header" style="background: linear-gradient(135deg, #ff6b6b, #ff8e8e) !important;">
+                        <div class="kid-card-header" style="background: ${headerColor} !important;">
             <div class="kid-info">
                                 <div class="kid-avatar">
                                     ${kid.emoji || '👶'}
@@ -308,7 +318,7 @@
                                         <span>${Math.round(progressPercentage)}%</span>
                     </div>
                                     <div class="progress-bar">
-                                        <div class="progress-fill" style="width: ${progressPercentage}%"></div>
+                                        <div class="progress-fill" style="width: ${progressPercentage}%; background-color: ${headerColor};"></div>
                     </div>
                 </div>
             </div>
@@ -329,10 +339,8 @@
             try {
                 const kidData = JSON.parse(localStorage.getItem('kidData'));
                 const url = `/points/kid/${kidData._id}/history`;
-                console.log('🔎 [KID UI] Carregando histórico (sem filtro):', url);
                 const response = await KidAPI.get(url);
                 const points = response.data.points || [];
-                console.log('✅ [KID UI] Histórico carregado:', { qtd: points.length });
                 
                 displayHistoryCards(points);
                 
@@ -436,10 +444,8 @@
                     url += '?' + params.toString();
                 }
 
-                console.log('🔎 [KID UI] Aplicando filtro:', { url, date });
                 const response = await KidAPI.get(url);
                 const points = response.data.points || [];
-                console.log('✅ [KID UI] Resultado do filtro:', { qtd: points.length });
                 displayHistoryCards(points);
                 
             } catch (error) {

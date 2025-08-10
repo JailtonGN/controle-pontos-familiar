@@ -25,7 +25,13 @@ router.get('/kids', authenticateToken, async (req, res) => {
         console.log('🔍 [PARENT MESSAGES] Buscando mensagens das crianças...');
         console.log('🔍 [PARENT MESSAGES] User ID:', req.user._id);
         
-        const messages = await Message.find({ type: 'kid_to_parent' })
+        // Filtrar mensagens por família (admin vê todas, outros apenas da sua família)
+        let messageFilter = { type: 'kid_to_parent' };
+        if (req.user.role !== 'admin') {
+            messageFilter.familyId = req.user.familyId;
+        }
+        
+        const messages = await Message.find(messageFilter)
             .sort({ createdAt: -1 })
             .populate('kidId', 'name emoji');
 
@@ -51,8 +57,6 @@ router.get('/kids', authenticateToken, async (req, res) => {
         });
 
     } catch (error) {
-        console.error('❌ [PARENT MESSAGES] Erro ao buscar mensagens das crianças:', error);
-        console.error('❌ [PARENT MESSAGES] Stack trace:', error.stack);
         res.status(500).json({
             success: false,
             message: 'Erro interno do servidor'
@@ -63,70 +67,40 @@ router.get('/kids', authenticateToken, async (req, res) => {
 // Rota para apagar mensagem das crianças
 router.delete('/kids/:id', async (req, res) => {
     try {
-        console.log('🔍 [DELETE MESSAGE] Iniciando exclusão da mensagem...');
-        console.log('🔍 [DELETE MESSAGE] URL da requisição:', req.url);
-        console.log('🔍 [DELETE MESSAGE] Parâmetros:', req.params);
-        
         const { id } = req.params;
-        
-        console.log('📊 [DELETE MESSAGE] ID da mensagem:', id);
-        console.log('📊 [DELETE MESSAGE] Tipo de ID:', typeof id);
         
         // Verificar se o ID é válido
         if (!id || id === 'undefined') {
-            console.log('❌ [DELETE MESSAGE] ID inválido');
             return res.status(400).json({
                 success: false,
                 message: 'ID inválido'
             });
         }
         
-        console.log('📊 [DELETE MESSAGE] Buscando mensagem com ID:', id);
-        
         const message = await Message.findOne({ _id: id, type: 'kid_to_parent' });
 
         if (!message) {
-            console.log('❌ [DELETE MESSAGE] Mensagem não encontrada');
             return res.status(404).json({
                 success: false,
                 message: 'Mensagem não encontrada'
             });
         }
-
-        console.log('📊 [DELETE MESSAGE] Mensagem encontrada:', {
-            _id: message._id,
-            content: message.content,
-            type: message.type
-        });
-        console.log('📊 [DELETE MESSAGE] Deletando...');
 
         // Deletar a mensagem do banco de dados
-        console.log('📊 [DELETE MESSAGE] Executando findByIdAndDelete com ID:', id);
         const deleteResult = await Message.findByIdAndDelete(id);
         
-        console.log('📊 [DELETE MESSAGE] Resultado da exclusão:', deleteResult);
-
         if (!deleteResult) {
-            console.log('❌ [DELETE MESSAGE] Mensagem não foi encontrada para deletar');
             return res.status(404).json({
                 success: false,
                 message: 'Mensagem não encontrada'
             });
         }
-
-        console.log('✅ [DELETE MESSAGE] Mensagem deletada com sucesso');
-        
-        // Verificar se realmente foi deletada
-        const remainingMessage = await Message.findById(id);
-        console.log('📊 [DELETE MESSAGE] Mensagem ainda existe após delete?', !!remainingMessage);
 
         res.json({
             success: true,
             message: 'Mensagem apagada com sucesso'
         });
     } catch (error) {
-        console.error('❌ [DELETE MESSAGE] Erro ao apagar mensagem:', error);
-        console.error('❌ [DELETE MESSAGE] Stack trace:', error.stack);
         res.status(500).json({
             success: false,
             message: 'Erro interno do servidor'
@@ -170,18 +144,25 @@ router.post('/kid/send', authenticateKidToken, async (req, res) => {
             });
         }
 
+        // Buscar dados da criança para obter familyId
+        const Kid = require('../models/Kid');
+        const kidData = await Kid.findById(req.kid._id);
+        if (!kidData) {
+            return res.status(404).json({
+                success: false,
+                message: 'Criança não encontrada'
+            });
+        }
+
         // Criar mensagem
         const message = new Message({
             kidId: req.kid._id,
+            familyId: kidData.familyId,
             content: content.trim(),
             type: 'kid_to_parent'
         });
 
-        console.log('📊 [KID MESSAGE] Mensagem a ser salva:', message);
-
         await message.save();
-
-        console.log('✅ [KID MESSAGE] Mensagem enviada com sucesso');
 
         res.json({
             success: true,
@@ -197,8 +178,6 @@ router.post('/kid/send', authenticateKidToken, async (req, res) => {
         });
 
     } catch (error) {
-        console.error('❌ [KID MESSAGE] Erro ao enviar mensagem:', error);
-        console.error('❌ [KID MESSAGE] Stack trace:', error.stack);
         res.status(500).json({
             success: false,
             message: 'Erro interno do servidor'
@@ -242,7 +221,6 @@ router.put('/:id/read', async (req, res) => {
             message: 'Mensagem marcada como lida'
         });
     } catch (error) {
-        console.error('Erro ao marcar mensagem como lida:', error);
         res.status(500).json({
             success: false,
             message: 'Erro interno do servidor'

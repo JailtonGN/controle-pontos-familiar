@@ -34,6 +34,11 @@ const userSchema = new mongoose.Schema({
         type: Date,
         default: null
     },
+    familyId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Family',
+        required: [true, 'Família é obrigatória para todos os usuários']
+    },
     preferences: {
         notifications: {
             type: Boolean,
@@ -80,8 +85,7 @@ userSchema.methods.updateLastLogin = async function() {
         await this.save();
         return true;
     } catch (error) {
-        console.error('Erro ao atualizar último login:', error);
-        // Não falhar o login por causa deste erro
+        // Erro ao atualizar último login - não falhar o login
         return false;
     }
 };
@@ -93,8 +97,7 @@ userSchema.methods.toPublicJSON = function() {
         delete user.password;
         return user;
     } catch (error) {
-        console.error('Erro ao converter usuário para JSON:', error);
-        // Retornar objeto básico em caso de erro
+        // Erro ao converter usuário para JSON - retornar objeto básico
         return {
             _id: this._id,
             name: this.name,

@@ -17,18 +17,22 @@ const createMessage = async (req, res) => {
         const { kidId, type, title, content } = req.body;
         const parentId = req.user._id;
 
-        // Verificar se a criança existe e pertence ao pai
-        const kid = await Kid.findOne({ _id: kidId, parentId });
+        // Verificar se a criança existe e pertence à mesma família do usuário
+        const kid = await Kid.findOne({ 
+            _id: kidId, 
+            familyId: req.user.familyId 
+        });
         if (!kid) {
             return res.status(404).json({
                 success: false,
-                message: 'Criança não encontrada'
+                message: 'Criança não encontrada ou não pertence à sua família'
             });
         }
 
         const message = new Message({
             parentId,
             kidId,
+            familyId: req.user.familyId,
             type,
             title,
             content
@@ -50,12 +54,20 @@ const createMessage = async (req, res) => {
     }
 };
 
-// Obter todas as mensagens do pai
+// Obter todas as mensagens da família
 const getMessages = async (req, res) => {
     try {
-        const parentId = req.user._id;
+        const userFamilyId = req.user.familyId;
         
-        const messages = await Message.find({ parentId, isActive: true })
+        // Filtrar mensagens por família (admin vê todas, outros apenas da sua família)
+        let messageFilter = { isActive: true };
+        if (req.user.role === 'admin') {
+            // Admin vê todas as mensagens se não especificar família
+        } else {
+            messageFilter.familyId = userFamilyId;
+        }
+        
+        const messages = await Message.find(messageFilter)
             .populate('kidId', 'name emoji color')
             .sort({ createdAt: -1 });
 
@@ -89,9 +101,15 @@ const getMessages = async (req, res) => {
 const getMessage = async (req, res) => {
     try {
         const { id } = req.params;
-        const parentId = req.user._id;
+        const userFamilyId = req.user.familyId;
 
-        const message = await Message.findOne({ _id: id, parentId, isActive: true })
+        // Filtrar por família (admin vê todas, outros apenas da sua família)
+        let messageFilter = { _id: id, isActive: true };
+        if (req.user.role !== 'admin') {
+            messageFilter.familyId = userFamilyId;
+        }
+
+        const message = await Message.findOne(messageFilter)
             .populate('kidId', 'name emoji color');
 
         if (!message) {
@@ -225,13 +243,15 @@ const markAsRead = async (req, res) => {
 const getMessagesByType = async (req, res) => {
     try {
         const { type } = req.params;
-        const parentId = req.user._id;
+        const userFamilyId = req.user.familyId;
 
-        const messages = await Message.find({ 
-            parentId, 
-            type, 
-            isActive: true 
-        })
+        // Filtrar por família (admin vê todas, outros apenas da sua família)
+        let messageFilter = { type, isActive: true };
+        if (req.user.role !== 'admin') {
+            messageFilter.familyId = userFamilyId;
+        }
+
+        const messages = await Message.find(messageFilter)
         .populate('kidId', 'name emoji color')
         .sort({ createdAt: -1 });
 
