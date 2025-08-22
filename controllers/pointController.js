@@ -773,7 +773,7 @@ const getHistoryByMonth = async (req, res) => {
         .populate('kidId', 'name age avatar emoji color')
         .populate('activityId', 'name icon color category')
         .populate('awardedBy', 'name')
-        .sort({ date: -1 });
+        .sort({ date: 1 }); // Ordenação crescente: do início para o fim do mês
 
         res.json({
             success: true,
