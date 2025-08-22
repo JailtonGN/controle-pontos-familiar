@@ -129,7 +129,7 @@ const createKid = async (req, res) => {
             age,
             avatar,
             emoji,
-            color,
+            color: '#3B82F6', // Cor padrão - as cores serão controladas automaticamente pelo frontend
             pin,
             parentId: req.user._id,
             familyId: familyId || req.user.familyId, // Usar família do usuário se não especificada

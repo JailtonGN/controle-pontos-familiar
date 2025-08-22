@@ -204,21 +204,6 @@
                         </div>
                         
                         <div class="professional-input-group">
-                            <label for="kid-color" class="professional-label">Cor</label>
-                            <select id="kid-color" name="color" required class="professional-input">
-                                <option value="">Escolha uma cor</option>
-                                <option value="#3B82F6">Azul</option>
-                                <option value="#EF4444">Vermelho</option>
-                                <option value="#10B981">Verde</option>
-                                <option value="#F59E0B">Amarelo</option>
-                                <option value="#8B5CF6">Roxo</option>
-                                <option value="#F97316">Laranja</option>
-                                <option value="#EC4899">Rosa</option>
-                                <option value="#06B6D4">Ciano</option>
-                            </select>
-                        </div>
-                        
-                        <div class="professional-input-group">
                             <label for="kid-pin" class="professional-label">PIN de Acesso</label>
                             <input type="password" id="kid-pin" name="pin" required class="professional-input" placeholder="Digite um PIN de 4 dígitos" minlength="4" maxlength="4" pattern="[0-9]{4}">
                         </div>
@@ -381,39 +366,21 @@
                                placeholder="Digite o nome da criança">
                     </div>
                     
-                    <!-- Emoji e Cor em linha -->
-                    <div class="professional-form-grid">
-                        <div class="professional-input-group">
-                            <label class="professional-label">
-                                😊 Emoji
-                            </label>
-                            <div class="emoji-selector">
-                                <div class="emoji-options" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                                    <button type="button" class="emoji-option" data-emoji="👦" onclick="selectEditEmoji(this, '👦')">
-                                        👦 Menino
-                                    </button>
-                                    <button type="button" class="emoji-option" data-emoji="👧" onclick="selectEditEmoji(this, '👧')">
-                                        👧 Menina
-                                    </button>
-                                </div>
-                                <input type="hidden" id="edit-kid-emoji" name="emoji" required>
+                    <!-- Emoji -->
+                    <div class="professional-input-group">
+                        <label class="professional-label">
+                            😊 Emoji
+                        </label>
+                        <div class="emoji-selector">
+                            <div class="emoji-options" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                <button type="button" class="emoji-option" data-emoji="👦" onclick="selectEditEmoji(this, '👦')">
+                                    👦 Menino
+                                </button>
+                                <button type="button" class="emoji-option" data-emoji="👧" onclick="selectEditEmoji(this, '👧')">
+                                    👧 Menina
+                                </button>
                             </div>
-                        </div>
-                        
-                        <div class="professional-input-group">
-                            <label for="edit-kid-color" class="professional-label">
-                                🎨 Cor
-                            </label>
-                            <select id="edit-kid-color" name="color" required class="professional-input">
-                                <option value="#3B82F6">🔵 Azul</option>
-                                <option value="#EF4444">🔴 Vermelho</option>
-                                <option value="#10B981">🟢 Verde</option>
-                                <option value="#F59E0B">🟡 Amarelo</option>
-                                <option value="#8B5CF6">🟣 Roxo</option>
-                                <option value="#F97316">🟠 Laranja</option>
-                                <option value="#EC4899">🩷 Rosa</option>
-                                <option value="#06B6D4">🔵 Ciano</option>
-                            </select>
+                            <input type="hidden" id="edit-kid-emoji" name="emoji" required>
                         </div>
                     </div>
                     
@@ -822,7 +789,6 @@
             document.getElementById('edit-kid-id').value = kid._id;
             document.getElementById('edit-kid-name').value = kid.name;
             document.getElementById('edit-kid-emoji').value = kid.emoji || '';
-            document.getElementById('edit-kid-color').value = kid.color || '#3B82F6';
             document.getElementById('edit-kid-pin').value = kid.pin || '';
             document.getElementById('edit-kid-age').value = kid.age;
             currentKidId = kidId;
@@ -949,7 +915,6 @@
             const data = {
                 name: formData.get('name'),
                 emoji: formData.get('emoji'),
-                color: formData.get('color'),
                 pin: formData.get('pin'),
                 age: parseInt(formData.get('age'))
             };
@@ -1063,7 +1028,6 @@
              const data = {
                  name: formData.get('name'),
                  emoji: formData.get('emoji'),
-                 color: formData.get('color'),
                  pin: formData.get('pin'),
                  age: parseInt(formData.get('age'))
              };

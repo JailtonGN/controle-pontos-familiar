@@ -269,21 +269,60 @@
                     statusColor = 'color: #d97706;'; // Amarelo
                 }
                 
-                // Usar a cor personalizada da criança ou cor baseada nos pontos
-                let headerColor = kid.color || '#3B82F6'; // Usar cor personalizada ou azul padrão
-                if (totalPoints <= 0) {
-                    headerColor = '#EF4444'; // Vermelho para pontos negativos/zero
-                } else if (totalPoints < 50) {
-                    headerColor = '#F59E0B'; // Amarelo para poucos pontos
-                } else {
-                    headerColor = kid.color || '#10B981'; // Verde ou cor personalizada para pontos normais
+                // Função para gerar cores progressivas baseadas nos pontos (0-500)
+                function getProgressiveColor(points) {
+                    const clampedPoints = Math.max(0, Math.min(500, points));
+                    
+                    if (points <= 0) {
+                        return '#DC2626'; // Vermelho forte
+                    }
+                    
+                    if (clampedPoints <= 100) {
+                        // Vermelho (#DC2626) para Laranja (#EA580C)
+                        const localPercentage = clampedPoints / 100;
+                        const r = Math.round(220 + (234 - 220) * localPercentage);
+                        const g = Math.round(38 + (88 - 38) * localPercentage);
+                        const b = Math.round(38 + (12 - 38) * localPercentage);
+                        return `rgb(${r}, ${g}, ${b})`;
+                    } else if (clampedPoints <= 200) {
+                        // Laranja (#EA580C) para Amarelo (#F59E0B)
+                        const localPercentage = (clampedPoints - 100) / 100;
+                        const r = Math.round(234 + (245 - 234) * localPercentage);
+                        const g = Math.round(88 + (158 - 88) * localPercentage);
+                        const b = Math.round(12 + (11 - 12) * localPercentage);
+                        return `rgb(${r}, ${g}, ${b})`;
+                    } else if (clampedPoints <= 300) {
+                        // Amarelo (#F59E0B) para Verde Claro (#84CC16)
+                        const localPercentage = (clampedPoints - 200) / 100;
+                        const r = Math.round(245 + (132 - 245) * localPercentage);
+                        const g = Math.round(158 + (204 - 158) * localPercentage);
+                        const b = Math.round(11 + (22 - 11) * localPercentage);
+                        return `rgb(${r}, ${g}, ${b})`;
+                    } else if (clampedPoints <= 400) {
+                        // Verde Claro (#84CC16) para Verde (#10B981)
+                        const localPercentage = (clampedPoints - 300) / 100;
+                        const r = Math.round(132 + (16 - 132) * localPercentage);
+                        const g = Math.round(204 + (185 - 204) * localPercentage);
+                        const b = Math.round(22 + (129 - 22) * localPercentage);
+                        return `rgb(${r}, ${g}, ${b})`;
+                    } else {
+                        // Verde (#10B981) para Verde Escuro (#059669)
+                        const localPercentage = (clampedPoints - 400) / 100;
+                        const r = Math.round(16 + (5 - 16) * localPercentage);
+                        const g = Math.round(185 + (150 - 185) * localPercentage);
+                        const b = Math.round(129 + (105 - 129) * localPercentage);
+                        return `rgb(${r}, ${g}, ${b})`;
+                    }
                 }
+                
+                // Usar o sistema de cores progressivo baseado nos pontos
+                const headerColor = getProgressiveColor(totalPoints);
                 
                 return `
                     <div class="kid-card">
                         <div class="kid-card-header" style="background: ${headerColor} !important;">
             <div class="kid-info">
-                                <div class="kid-avatar">
+                                <div class="kid-avatar" style="background: ${headerColor} !important; border-color: rgba(255,255,255,0.3);">
                                     ${kid.emoji || '👶'}
                                 </div>
                 <div class="kid-details">
@@ -291,8 +330,8 @@
                                     <p>${kid.age} anos</p>
                 </div>
                                 <div class="kid-points">
-                                    <div class="points-number">${totalPoints}</div>
-                                    <div class="points-label">pontos</div>
+                                    <div class="points-number" style="color: white;">${totalPoints}</div>
+                                    <div class="points-label" style="color: white;">pontos</div>
                     </div>
                             </div>
                         </div>

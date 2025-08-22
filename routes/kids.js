@@ -16,7 +16,6 @@ const kidValidation = [
     body('name').trim().isLength({ min: 2, max: 50 }).withMessage('Nome deve ter entre 2 e 50 caracteres'),
     body('age').isInt({ min: 1, max: 18 }).withMessage('Idade deve ser entre 1 e 18 anos'),
     body('emoji').trim().isLength({ min: 1, max: 10 }).withMessage('Emoji é obrigatório'),
-    body('color').trim().isLength({ min: 3, max: 7 }).withMessage('Cor é obrigatória'),
     body('pin').optional().isLength({ min: 4, max: 4 }).isNumeric().withMessage('PIN deve ter 4 dígitos numéricos')
 ];
 

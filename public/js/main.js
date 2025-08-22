@@ -533,39 +533,92 @@ function renderKidsCards() {
         const progressInLevel = totalPoints % 100;
         const progressPercentage = Math.min(100, (progressInLevel / 100) * 100);
         
-        // Determinar status baseado no valor em dinheiro
-        let statusColor = 'bg-green-100 text-green-800';
-        let statusText = 'Excelente!';
+        // Determinar status baseado na progressão de pontos (0-500)
+        let statusColor, statusText;
         
         if (totalPoints <= 0) {
             statusColor = 'bg-red-100 text-red-800';
             statusText = 'Perda de todos os direitos';
-        } else if (moneyValue < 5.00) {
+        } else if (totalPoints < 50) {
+            statusColor = 'bg-red-100 text-red-800';
+            statusText = 'Crítico - Pouquíssimos direitos';
+        } else if (totalPoints < 100) {
+            statusColor = 'bg-orange-100 text-orange-800';
+            statusText = 'Baixo - Direitos limitados';
+        } else if (totalPoints < 200) {
             statusColor = 'bg-yellow-100 text-yellow-800';
-            statusText = 'Poucos direitos';
-        } else if (moneyValue < 10.00) {
+            statusText = 'Regular - Alguns direitos';
+        } else if (totalPoints < 300) {
+            statusColor = 'bg-lime-100 text-lime-800';
+            statusText = 'Bom - Bons direitos';
+        } else if (totalPoints < 400) {
             statusColor = 'bg-green-100 text-green-800';
-            statusText = 'Bons direitos';
+            statusText = 'Ótimo - Muitos direitos';
+        } else {
+            statusColor = 'bg-emerald-100 text-emerald-800';
+            statusText = 'Excelente - Todos os direitos!';
         }
 
-        // Determinar cores baseadas no status (priorizar cor personalizada da criança)
-        let headerColor = kid.color || '#3B82F6'; // Usar cor personalizada ou azul padrão
-        let progressColor = kid.color || '#3B82F6';
-        
-        if (totalPoints <= 0) {
-            headerColor = '#EF4444'; // Vermelho
-            progressColor = '#EF4444';
-        } else if (moneyValue < 5.00) {
-            headerColor = '#F59E0B'; // Amarelo
-            progressColor = '#F59E0B';
-        } else if (kid.color && moneyValue >= 5.00) {
-            // Usar cor personalizada quando há pontos suficientes
-            headerColor = kid.color;
-            progressColor = kid.color;
-        } else if (moneyValue < 10.00) {
-            headerColor = '#10B981'; // Verde
-            progressColor = '#10B981';
+        // Sistema de cores progressivo de 0 a 500 pontos
+        function getProgressiveColor(points) {
+            // Garantir que pontos estejam no range 0-500
+            const clampedPoints = Math.max(0, Math.min(500, points));
+            const percentage = clampedPoints / 500; // 0 a 1
+            
+            if (points <= 0) {
+                // Vermelho para pontos negativos ou zero
+                return '#DC2626'; // Vermelho forte
+            }
+            
+            // Progressão de cores:
+            // 0-100 pontos: Vermelho para Laranja
+            // 100-200 pontos: Laranja para Amarelo
+            // 200-300 pontos: Amarelo para Verde Claro
+            // 300-400 pontos: Verde Claro para Verde
+            // 400-500 pontos: Verde para Verde Escuro
+            
+            if (clampedPoints <= 100) {
+                // Vermelho (#DC2626) para Laranja (#EA580C)
+                const localPercentage = clampedPoints / 100;
+                const r = Math.round(220 + (234 - 220) * localPercentage);
+                const g = Math.round(38 + (88 - 38) * localPercentage);
+                const b = Math.round(38 + (12 - 38) * localPercentage);
+                return `rgb(${r}, ${g}, ${b})`;
+            } else if (clampedPoints <= 200) {
+                // Laranja (#EA580C) para Amarelo (#F59E0B)
+                const localPercentage = (clampedPoints - 100) / 100;
+                const r = Math.round(234 + (245 - 234) * localPercentage);
+                const g = Math.round(88 + (158 - 88) * localPercentage);
+                const b = Math.round(12 + (11 - 12) * localPercentage);
+                return `rgb(${r}, ${g}, ${b})`;
+            } else if (clampedPoints <= 300) {
+                // Amarelo (#F59E0B) para Verde Claro (#84CC16)
+                const localPercentage = (clampedPoints - 200) / 100;
+                const r = Math.round(245 + (132 - 245) * localPercentage);
+                const g = Math.round(158 + (204 - 158) * localPercentage);
+                const b = Math.round(11 + (22 - 11) * localPercentage);
+                return `rgb(${r}, ${g}, ${b})`;
+            } else if (clampedPoints <= 400) {
+                // Verde Claro (#84CC16) para Verde (#10B981)
+                const localPercentage = (clampedPoints - 300) / 100;
+                const r = Math.round(132 + (16 - 132) * localPercentage);
+                const g = Math.round(204 + (185 - 204) * localPercentage);
+                const b = Math.round(22 + (129 - 22) * localPercentage);
+                return `rgb(${r}, ${g}, ${b})`;
+            } else {
+                // Verde (#10B981) para Verde Escuro (#059669)
+                const localPercentage = (clampedPoints - 400) / 100;
+                const r = Math.round(16 + (5 - 16) * localPercentage);
+                const g = Math.round(185 + (150 - 185) * localPercentage);
+                const b = Math.round(129 + (105 - 129) * localPercentage);
+                return `rgb(${r}, ${g}, ${b})`;
+            }
         }
+
+        // Usar sistema de progresão de cores sempre (cores automáticas baseadas nos pontos)
+        const baseColor = getProgressiveColor(totalPoints);
+        const headerColor = baseColor;
+        const progressColor = baseColor;
         
         return `
             <div class="kid-card">
@@ -579,8 +632,8 @@ function renderKidsCards() {
                             <p>${kid.age} anos</p>
                         </div>
                         <div class="kid-points">
-                            <div class="points-number">${totalPoints}</div>
-                            <div class="points-label">pontos</div>
+                            <div class="points-number" style="color: white;">${totalPoints}</div>
+                            <div class="points-label" style="color: white;">pontos</div>
                         </div>
                     </div>
                 </div>
