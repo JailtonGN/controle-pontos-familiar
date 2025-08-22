@@ -781,11 +781,14 @@
                     }
                     
                     console.log('✅ [CONFIG] Estatísticas carregadas com sucesso!');
+<<<<<<< HEAD
                     
                     // Carregar dados dos filtros para download de PDF
                     console.log('📋 [CONFIG] Carregando dados dos filtros...');
                     populateMonthSelect();
                     populateKidsSelect();
+=======
+>>>>>>> 5a6d2c7718d304abcf4facf7bef6affb378fe402
                 } else {
                     console.error('❌ [CONFIG] Erro na resposta da API de crianças:', response.status);
                 }
@@ -1138,9 +1141,12 @@
                         doc.text(`Criança: ${kidName}`, 20, yPosition);
                         yPosition += 10;
                         
+<<<<<<< HEAD
                         // Ordenar pontos por data (do início para o fim do mês)
                         points.sort((a, b) => new Date(a.date) - new Date(b.date));
                         
+=======
+>>>>>>> 5a6d2c7718d304abcf4facf7bef6affb378fe402
                         // Tabela de pontos
                         const tableData = points.map(point => [
                             new Date(point.date).toLocaleDateString('pt-BR'),
