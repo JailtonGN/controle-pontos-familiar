@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard da Criança - Controle de Pontos Familiar</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/child-view.css">
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    <style>
+        /* Garantir que a barra vermelha apareça */
+        .kid-card-header {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e) !important;
+        }
+        .kid-card-header::before {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Modern Navigation Bar -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-content">
+                <!-- Brand -->
+                <div class="navbar-brand">
+                    <div class="navbar-logo"></div>
+                    <div>
+                        <div class="navbar-title">Dashboard</div>
+                        <div class="navbar-subtitle">Sistema de Pontos</div>
+                    </div>
+                </div>
+
+                <!-- Desktop Menu - Apenas Tela Inicial e Comunicação -->
+                <div class="navbar-menu">
+                    <div class="navbar-item">
+                        <a href="/kid-dashboard" class="navbar-button active" id="nav-dashboard">
+                            <span class="navbar-button-text">Tela Inicial</span>
+                        </a>
+                    </div>
+                    <div class="navbar-item">
+                        <a href="/communication" class="navbar-button" id="nav-communication">
+                            <span class="navbar-button-text">Comunicação</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- User Menu -->
+                <div class="navbar-user">
+                    <span id="user-name" class="navbar-user-name"></span>
+                    <button onclick="logout()" class="navbar-button navbar-button-logout">
+                        Sair
+                    </button>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="navbar-mobile-menu">
+                    <button class="navbar-mobile-button" onclick="toggleMobileMenu()">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Menu - Apenas Tela Inicial e Comunicação -->
+            <div id="mobile-menu" class="navbar-mobile-menu-content hidden">
+                <a href="/kid-dashboard" class="navbar-mobile-item active" onclick="setActiveNav('nav-dashboard')">
+                    Tela Inicial
+                </a>
+                <a href="/communication" class="navbar-mobile-item" onclick="setActiveNav('nav-communication')">
+                    Comunicação
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container" style="padding-top: 32px; padding-bottom: 32px;">
+        <!-- Cards de Pontos das Crianças -->
+        <div class="professional-section">
+            <div class="professional-card">
+                <div class="professional-card-header">
+                    <div class="professional-card-title">
+                        🏆 Pontuação das Crianças
+                    </div>
+                    <div class="professional-card-subtitle">Acompanhe o progresso de cada criança</div>
+                            </div>
+                <div class="professional-card-body">
+                    <div id="kids-points-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Cards das crianças serão carregados aqui -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Histórico de Atividades -->
+        <div class="professional-section">
+            <div class="professional-card">
+                <div class="professional-card-header">
+                    <div class="professional-card-title">
+                        📊 Histórico de Atividades
+                    </div>
+                    <div class="professional-card-subtitle">Acompanhe todas as atividades registradas</div>
+                </div>
+                <div class="professional-card-body">
+                    <!-- Filtros -->
+                    <div class="history-filters">
+                        <div class="history-filters-grid">
+                            <div class="history-filter-group">
+                                <label for="filter-date" class="history-filter-label">Data</label>
+                                <input type="date" id="filter-date" class="history-filter-input">
+                            </div>
+                            <div class="history-filter-group">
+                                <button onclick="applyFilters()" class="professional-button professional-button-secondary">
+                                    🔍 Filtrar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Cards de Histórico -->
+                    <div id="history-cards" class="space-y-4">
+                        <!-- Cards serão carregados aqui -->
+                </div>
+                    
+                    <!-- Estado vazio -->
+                    <div id="history-empty" class="history-empty hidden">
+                        <div class="history-empty-icon">📝</div>
+                        <h3>Nenhuma atividade registrada</h3>
+                        <p>Comece a registrar atividades para ver o histórico aqui</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/main.js"></script>
+    <script src="js/toast.js"></script>
+    <script>
+        // API específica para crianças
+        const KidAPI = {
+            baseURL: '/api',
+            
+            async request(endpoint, options = {}) {
+                const url = this.baseURL + endpoint;
+                const config = {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                };
+
+                const token = localStorage.getItem('kidToken');
+                if (token) {
+                    config.headers.Authorization = `Bearer ${token}`;
+                }
+
+                try {
+                    const response = await fetch(url, config);
+                    const data = await response.json();
+                    
+                    if (!response.ok) {
+                        throw new Error(data.message || 'Erro na requisição');
+                    }
+                    
+                    return data;
+                } catch (error) {
+                    console.error('Erro na API:', error);
+                    throw error;
+                }
+            },
+
+            async get(endpoint) {
+                return this.request(endpoint, { method: 'GET' });
+            },
+
+            async post(endpoint, data) {
+                return this.request(endpoint, {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+            }
+        };
+
+        // Verificar se é uma criança logada
+        document.addEventListener('DOMContentLoaded', function() {
+            const kidData = localStorage.getItem('kidData');
+            const kidToken = localStorage.getItem('kidToken');
+            
+            if (!kidData || !kidToken) {
+                window.location.href = '/kid-login';
+                return;
+            }
+            
+            // Sobrescrever a função loadUserInfo para evitar erro
+            window.loadUserInfo = function() {
+                // Não fazer nada na página da criança
+                return;
+            };
+            
+            // Carregar dados do dashboard
+            loadDashboardData();
+            
+            // Configurar navegação ativa
+            setActiveNav('nav-dashboard');
+        });
+
+        // Carregar dados do dashboard
+        async function loadDashboardData() {
+            try {
+                // Carregar crianças
+                await loadKids();
+                
+                // Carregar histórico
+                await loadHistory();
+                
+            } catch (error) {
+                console.error('Erro ao carregar dados do dashboard:', error);
+            }
+        }
+
+        // Carregar crianças
+        async function loadKids() {
+            try {
+                const response = await KidAPI.get('/kids/kid/own');
+                const kids = response.data.kids || [];
+                
+                displayKidsCards(kids);
+                
+            } catch (error) {
+                console.error('Erro ao carregar crianças:', error);
+            }
+        }
+
+        // Exibir cards das crianças
+        function displayKidsCards(kids) {
+            const cardsContainer = document.getElementById('kids-points-cards');
+            
+            if (kids.length === 0) {
+                cardsContainer.innerHTML = `
+                    <div class="col-span-full text-center py-8">
+                        <div class="text-gray-500 text-lg">Nenhuma criança cadastrada</div>
+                        <p class="text-gray-400 mt-2">Adicione crianças para começar a usar o sistema</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            cardsContainer.innerHTML = kids.map(kid => {
+                const totalPoints = kid.totalPoints || 0;
+                const level = Math.floor(totalPoints / 500) + 1;
+                const progressInLevel = totalPoints % 500;
+                const progressPercentage = Math.min(100, (progressInLevel / 500) * 100);
+                
+                // Calcular valores em dinheiro
+                const moneyValue = (totalPoints * 0.10).toFixed(2);
+                const accumulatedValue = (totalPoints * 0.10).toFixed(2);
+                
+                // Determinar status
+                let status = 'Normal';
+                let statusColor = 'color: #059669;'; // Verde
+                if (totalPoints < 0) {
+                    status = 'Perda de todos os direitos';
+                    statusColor = 'color: #dc2626;'; // Vermelho
+                } else if (totalPoints === 0) {
+                    status = 'Sem pontos';
+                    statusColor = 'color: #d97706;'; // Amarelo
+                }
+                
+                // Usar a cor personalizada da criança ou cor baseada nos pontos
+                let headerColor = kid.color || '#3B82F6'; // Usar cor personalizada ou azul padrão
+                if (totalPoints <= 0) {
+                    headerColor = '#EF4444'; // Vermelho para pontos negativos/zero
+                } else if (totalPoints < 50) {
+                    headerColor = '#F59E0B'; // Amarelo para poucos pontos
+                } else {
+                    headerColor = kid.color || '#10B981'; // Verde ou cor personalizada para pontos normais
+                }
+                
+                return `
+                    <div class="kid-card">
+                        <div class="kid-card-header" style="background: ${headerColor} !important;">
+            <div class="kid-info">
+                                <div class="kid-avatar">
+                                    ${kid.emoji || '👶'}
+                                </div>
+                <div class="kid-details">
+                                    <h3>${kid.name}</h3>
+                                    <p>${kid.age} anos</p>
+                </div>
+                                <div class="kid-points">
+                                    <div class="points-number">${totalPoints}</div>
+                                    <div class="points-label">pontos</div>
+                    </div>
+                            </div>
+                        </div>
+                        
+                        <div class="kid-card-content">
+                            <div class="kid-stats">
+                                <div class="kid-level">
+                                    <div class="level-label">Valor em Dinheiro</div>
+                                    <div class="level-number">R$ ${moneyValue}</div>
+                    </div>
+                                <div class="kid-status">
+                                    <div class="status-label">Status</div>
+                                    <span class="status-badge" style="${statusColor}">
+                                        ${status}
+                                    </span>
+                </div>
+            </div>
+                            
+                            <div class="kid-progress">
+                                <div class="progress-info">
+                                    <div class="progress-text">
+                                        <span>Nível ${level}</span>
+                                        <span>${Math.round(progressPercentage)}%</span>
+                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: ${progressPercentage}%; background-color: ${headerColor};"></div>
+                    </div>
+                </div>
+            </div>
+                            
+                            <div class="text-center text-xs text-gray-400 mt-3">
+                                ${totalPoints} pontos = R$ ${moneyValue} (R$ 0,10 por ponto)
+            </div>
+        </div>
+    </div>
+                `;
+            }).join('');
+        }
+
+
+            
+            // Carregar histórico
+        async function loadHistory() {
+            try {
+                const kidData = JSON.parse(localStorage.getItem('kidData'));
+                const url = `/points/kid/${kidData._id}/history`;
+                const response = await KidAPI.get(url);
+                const points = response.data.points || [];
+                
+                displayHistoryCards(points);
+                
+            } catch (error) {
+                console.error('Erro ao carregar histórico:', error);
+                if (typeof showToast === 'function') {
+                    showToast('Erro', 'Falha ao carregar histórico', 'error');
+                }
+            }
+        }
+
+        // Exibir cards de histórico
+        function displayHistoryCards(points) {
+            const cardsContainer = document.getElementById('history-cards');
+            const emptyContainer = document.getElementById('history-empty');
+            
+            if (points.length === 0) {
+                cardsContainer.innerHTML = '';
+                emptyContainer.classList.remove('hidden');
+                return;
+            }
+            
+            emptyContainer.classList.add('hidden');
+            
+            cardsContainer.innerHTML = points.map(entry => {
+                // Determinar nome da atividade
+                let activityName = 'N/A';
+                let activityIcon = '🎯';
+                if (entry.activityId && entry.activityId.name) {
+                    activityName = entry.activityId.name;
+                    activityIcon = entry.activityId.icon || '🎯';
+                } else if (entry.activityName) {
+                    activityName = entry.activityName;
+                } else if (entry.reason) {
+                    activityName = entry.reason;
+                    activityIcon = '⭐'; // Ícone para pontos avulsos
+                } else {
+                    activityName = 'Ponto Avulso';
+                    activityIcon = '⭐'; // Ícone para pontos avulsos
+                }
+                
+                // Determinar pontos com sinal
+                const points = entry.points || 0;
+                const pointsDisplay = entry.type === 'remove' ? -points : points;
+                const isPositive = pointsDisplay >= 0;
+                
+                // Determinar data
+                const date = entry.date ? formatDate(new Date(entry.date)) : 'N/A';
+                
+                // Determinar observações
+                const notes = entry.notes || '-';
+                
+                return `
+                    <div class="history-card ${isPositive ? 'positive' : 'negative'}">
+                        <div class="history-card-content">
+                            <div class="history-card-header">
+                                <div class="history-activity-info">
+                                    <div class="history-activity-icon">
+                                        ${activityIcon}
+                                    </div>
+                                    <div class="history-activity-details">
+                                        <h3>${activityName}</h3>
+                                        <p>Atividade registrada pelos pais</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="history-points-badge ${isPositive ? 'positive' : 'negative'}">
+                                    <span>${entry.type === 'add' ? 'Ganhou' : 'Perdeu'}</span>
+                                    <span>${pointsDisplay >= 0 ? '+' : ''}${pointsDisplay} pts</span>
+                                </div>
+                            </div>
+                            
+                            <div class="history-meta">
+                                <div class="history-meta-item">
+                                    <span>📅</span>
+                                    <span>${date}</span>
+                                </div>
+                                <div class="history-meta-item">
+                                    <span>📝</span>
+                                    <span>${notes}</span>
+                                </div>
+                    </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Aplicar filtros
+        async function applyFilters() {
+            const date = document.getElementById('filter-date')?.value;
+
+            try {
+                const kidData = JSON.parse(localStorage.getItem('kidData'));
+                let url = `/points/kid/${kidData._id}/history`;
+                const params = new URLSearchParams();
+                
+                if (date) params.append('date', date);
+                
+                if (params.toString()) {
+                    url += '?' + params.toString();
+                }
+
+                const response = await KidAPI.get(url);
+                const points = response.data.points || [];
+                displayHistoryCards(points);
+                
+            } catch (error) {
+                console.error('❌ [KID UI] Erro ao aplicar filtros:', error);
+                if (typeof showToast === 'function') {
+                    showToast('Erro', 'Falha ao aplicar filtros', 'error');
+                }
+            }
+        }
+
+        // Formatar data
+        function formatDate(date) {
+            return date.toLocaleDateString('pt-BR');
+        }
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('kidData');
+            localStorage.removeItem('kidToken');
+            window.location.href = '/';
+        }
+    </script>
+</body>
+</html> 

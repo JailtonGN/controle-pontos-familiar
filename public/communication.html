@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comunicação - Controle de Pontos Familiar</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/child-view.css">
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    <style>
+        /* Modal de confirmação */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            transform: scale(0.7);
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.show .modal-content {
+            transform: scale(1);
+        }
+        
+        .modal-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            animation: bounce 0.6s ease;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        
+        .modal-message {
+            color: #6b7280;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .modal-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .modal-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+        
+        .modal-button:active {
+            transform: translateY(0);
+        }
+        
+        /* Modal de confirmação para ações */
+        .confirm-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .confirm-modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .confirm-modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            transform: scale(0.7);
+            transition: all 0.3s ease;
+        }
+        
+        .confirm-modal-overlay.show .confirm-modal-content {
+            transform: scale(1);
+        }
+        
+        .confirm-modal-icon {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            animation: pulse 0.6s ease;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        
+        .confirm-modal-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 15px;
+        }
+        
+        .confirm-modal-message {
+            color: #6b7280;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .confirm-modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        
+        .confirm-modal-btn {
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            font-size: 0.9rem;
+        }
+        
+        .confirm-modal-btn-cancel {
+            background: #f3f4f6;
+            color: #6b7280;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .confirm-modal-btn-cancel:hover {
+            background: #e5e7eb;
+            color: #374151;
+        }
+        
+        .confirm-modal-btn-confirm {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        }
+        
+        .confirm-modal-btn-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.6);
+        }
+        
+        .confirm-modal-btn-read {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+        
+
+        /* Garantir que a interface das crianças seja consistente */
+        .char-counter {
+            text-align: right;
+            font-size: 0.875rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+        
+        /* Estilo para o formulário de mensagens das crianças */
+        #kid-message-form {
+            max-width: 100%;
+        }
+        
+        #kid-message-content {
+            resize: vertical;
+            min-height: 120px;
+        }
+        
+        /* Estilo para mensagens */
+        .message-card {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .message-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        
+        .message-info {
+            flex: 1;
+        }
+        
+        .message-author {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+        
+        .message-date {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        
+        .message-content {
+            color: #374151;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+        
+        .message-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+        
+        .message-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .message-btn-read {
+            background: #10b981;
+            color: white;
+        }
+        
+        .message-btn-read:hover {
+            background: #059669;
+        }
+        
+        .message-btn-delete {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .message-btn-delete:hover {
+            background: #dc2626;
+        }
+        
+        .message-read {
+            opacity: 0.6;
+        }
+        
+        .message-read .message-content {
+            text-decoration: line-through;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-content">
+                <!-- Brand -->
+                <div class="navbar-brand">
+                    <div class="navbar-logo"></div>
+                    <div>
+                        <div class="navbar-title">Comunicação</div>
+                        <div class="navbar-subtitle">Sistema de Pontos</div>
+                    </div>
+                </div>
+
+                <!-- Desktop Menu -->
+                <div class="navbar-menu">
+                    <div class="navbar-item">
+                        <a href="/dashboard" class="navbar-button" id="nav-dashboard">
+                            <span class="navbar-button-text">Tela Inicial</span>
+                        </a>
+                    </div>
+                    <div class="navbar-item">
+                        <a href="/manage-points" class="navbar-button" id="nav-activities">
+                            <span class="navbar-button-text">Atividades</span>
+                        </a>
+                    </div>
+                    <div class="navbar-item">
+                        <a href="/kids" class="navbar-button" id="nav-kids">
+                            <span class="navbar-button-text">Cadastros</span>
+                        </a>
+                    </div>
+                    
+                    <div class="navbar-item">
+                        <a href="/communication" class="navbar-button active" id="nav-communication">
+                            <span class="navbar-button-text">Comunicação</span>
+                        </a>
+                    </div>
+                    <div class="navbar-item">
+                        <a href="/config" class="navbar-button" id="nav-settings">
+                            <span class="navbar-button-text">Configuração</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- User Menu -->
+                <div class="navbar-user">
+                    <span id="user-name" class="navbar-user-name"></span>
+                    <button onclick="logout()" class="navbar-button navbar-button-logout">
+                        Sair
+                    </button>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="navbar-mobile-menu">
+                    <button class="navbar-mobile-button" onclick="toggleMobileMenu()">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="navbar-mobile-menu-content hidden">
+                <a href="/dashboard" class="navbar-mobile-item" onclick="setActiveNav('nav-dashboard')">
+                    Tela Inicial
+                </a>
+                <a href="/manage-points" class="navbar-mobile-item" onclick="setActiveNav('nav-activities')">
+                    Atividades
+                </a>
+                <a href="/kids" class="navbar-mobile-item" onclick="setActiveNav('nav-kids')">
+                    Cadastros
+                </a>
+                
+                <a href="/communication" class="navbar-mobile-item active" onclick="setActiveNav('nav-communication')">
+                    Comunicação
+                </a>
+                <a href="/config" class="navbar-mobile-item" onclick="setActiveNav('nav-settings')">
+                    Configuração
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container" style="padding-top: 32px; padding-bottom: 32px;">
+        <!-- Conteúdo será carregado dinamicamente baseado no tipo de usuário -->
+        <div id="communication-content">
+            <!-- Conteúdo será inserido aqui -->
+                    </div>
+    </main>
+
+    <script src="js/main.js"></script>
+    <script src="js/toast.js"></script>
+    <script>
+        // Verificar se a API está disponível
+        
+        // Função para limpar fundo escuro e modais
+        function clearDarkBackground() {
+            // Remover todos os modais
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                modal.remove();
+            });
+            
+            // Remover elementos com backdrop
+            const backdrops = document.querySelectorAll('[style*="backdrop"], [style*="background: rgba"], [style*="background-color: rgba"]');
+            backdrops.forEach(backdrop => {
+                const style = backdrop.style;
+                if (style.background && style.background.includes('rgba(0, 0, 0')) {
+                    backdrop.style.background = 'transparent';
+                    backdrop.style.backgroundColor = 'transparent';
+                }
+            });
+            
+            // Forçar remoção de qualquer overlay
+            const overlays = document.querySelectorAll('*');
+            overlays.forEach(element => {
+                const computedStyle = window.getComputedStyle(element);
+                if (computedStyle.position === 'fixed' && 
+                    computedStyle.zIndex && parseInt(computedStyle.zIndex) > 1000 &&
+                    (computedStyle.background.includes('rgba(0, 0, 0') || computedStyle.backgroundColor.includes('rgba(0, 0, 0'))) {
+                    element.remove();
+                }
+            });
+            
+            // Limpar body de estilos indesejados
+            document.body.style.background = '';
+            document.body.style.backgroundColor = '';
+        }
+
+        // Função helper para mostrar toast com fallback
+        function safeShowToast(title, message, type = 'info') {
+            // Verificar se o toast system global está disponível
+            if (typeof showToast === 'function') {
+                try {
+                    showToast(title, message, type);
+                } catch (error) {
+                    console.error('Erro ao chamar showToast:', error);
+                }
+            } else if (window.toastSystem) {
+                try {
+                    window.toastSystem[type](title, message);
+                } catch (error) {
+                    console.error('Erro ao chamar toastSystem:', error);
+                }
+            } else {
+                alert(`${title}: ${message}`);
+            }
+        }
+    </script>
+    <script>
+        // API específica para crianças
+        const KidAPI = {
+            baseURL: '/api',
+            
+            async request(endpoint, options = {}) {
+                const url = this.baseURL + endpoint;
+                const config = {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                };
+
+                            const token = localStorage.getItem('kidToken');
+            
+            if (token) {
+                config.headers.Authorization = `Bearer ${token}`;
+            }
+
+            try {
+                const response = await fetch(url, config);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.message || 'Erro na requisição');
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('Erro na API:', error);
+                throw error;
+            }
+            },
+
+            async get(endpoint) {
+                return this.request(endpoint, { method: 'GET' });
+            },
+
+            async post(endpoint, data) {
+                return this.request(endpoint, {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+            }
+        };
+
+        // Verificar tipo de usuário e carregar conteúdo apropriado
+        document.addEventListener('DOMContentLoaded', function() {
+            // Limpar fundo escuro ao carregar a página
+            clearDarkBackground();
+            
+            const kidData = localStorage.getItem('kidData');
+            const kidToken = localStorage.getItem('kidToken');
+            
+            if (kidData && kidToken) {
+                // É uma criança - mostrar formulário de envio
+                adaptInterfaceForKid();
+                loadKidContent();
+            } else {
+                // É um pai - mostrar lista de comunicados
+                loadParentContent();
+            }
+        });
+
+        // Adaptar interface para criança
+        function adaptInterfaceForKid() {
+            // Modificar a navegação para mostrar apenas Tela Inicial e Comunicação
+            const navbarMenu = document.querySelector('.navbar-menu');
+            if (navbarMenu) {
+                navbarMenu.innerHTML = `
+                    <div class="navbar-item">
+                        <a href="/kid-dashboard" class="navbar-button" id="nav-dashboard">
+                            <span class="navbar-button-text">Tela Inicial</span>
+                        </a>
+                            </div>
+                    <div class="navbar-item">
+                        <a href="/communication" class="navbar-button active" id="nav-communication">
+                            <span class="navbar-button-text">Comunicação</span>
+                        </a>
+                    </div>
+                `;
+            }
+            
+            // Modificar o menu mobile
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (mobileMenu) {
+                mobileMenu.innerHTML = `
+                    <a href="/kid-dashboard" class="navbar-mobile-item" onclick="setActiveNav('nav-dashboard')">
+                        Tela Inicial
+                    </a>
+                    <a href="/communication" class="navbar-mobile-item active" onclick="setActiveNav('nav-communication')">
+                        Comunicação
+                    </a>
+                `;
+            }
+            
+            // Carregar dados da criança
+            loadKidData();
+        }
+
+        // Carregar dados da criança
+        async function loadKidData() {
+            try {
+                const kidData = JSON.parse(localStorage.getItem('kidData'));
+                const response = await KidAPI.get(`/auth/kid/profile`);
+                const kid = response.data.kid;
+                
+                // Atualizar o nome do usuário na navbar
+                const userNameElement = document.getElementById('user-name');
+                if (userNameElement) {
+                    userNameElement.textContent = kid.name;
+                }
+                
+            } catch (error) {
+                console.error('Erro ao carregar dados da criança:', error);
+            }
+        }
+
+        // Carregar conteúdo para crianças
+        function loadKidContent() {
+            const contentDiv = document.getElementById('communication-content');
+            contentDiv.innerHTML = `
+            <div class="professional-section">
+                <div class="professional-card">
+                    <div class="professional-card-header">
+                        <div class="professional-card-title">
+                                💬 Enviar Comunicado
+                        </div>
+                            <div class="professional-card-subtitle">Conte aos seus pais o que você fez hoje!</div>
+                    </div>
+                    <div class="professional-card-body">
+                            <form id="kid-message-form" class="professional-form-grid">
+                                <div class="professional-input-group" style="grid-column: 1 / -1;">
+                                    <label for="kid-message-content" class="professional-label">
+                                        Digite sua mensagem
+                                    </label>
+                                    <textarea 
+                                        id="kid-message-content" 
+                                        name="content" 
+                                        required 
+                                        class="professional-input" 
+                                        placeholder="Ex: Hoje eu arrumei meu quarto e fiz a lição de casa! 😊"
+                                        maxlength="500"
+                                        rows="6"
+                                    ></textarea>
+                                    <div class="char-counter">
+                                        <span id="char-count">0</span>/500 caracteres
+                                    </div>
+                            </div>
+                            
+                            <div class="professional-input-group" style="grid-column: 1 / -1;">
+                                <button type="submit" class="professional-button professional-button-success" style="width: 100%;">
+                                        📤 Enviar Mensagem
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            `;
+            
+            // Event listener para contador de caracteres
+            const textarea = document.getElementById('kid-message-content');
+            const charCount = document.getElementById('char-count');
+            
+            textarea.addEventListener('input', function() {
+                const count = this.value.length;
+                charCount.textContent = count;
+                
+                if (count > 450) {
+                    charCount.style.color = '#ff6b6b';
+                } else if (count > 400) {
+                    charCount.style.color = '#ffa500';
+                } else {
+                    charCount.style.color = '#666';
+                }
+            });
+            
+            // Event listener para envio da mensagem
+            document.getElementById('kid-message-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                const content = formData.get('content').trim();
+                
+                if (!content) {
+                    safeShowToast('Erro', 'Digite uma mensagem', 'error');
+                    return;
+                }
+                
+                if (content.length > 500) {
+                    safeShowToast('Erro', 'Mensagem muito longa', 'error');
+                    return;
+                }
+                
+                try {
+                    const kidData = JSON.parse(localStorage.getItem('kidData'));
+                    const response = await KidAPI.post('/messages/kid/send', {
+                        content: content,
+                        kidId: kidData._id
+                    });
+                    
+                    // Mostrar toast de sucesso
+                    safeShowToast('Sucesso', 'Mensagem enviada com sucesso!', 'success');
+                    
+                    // Limpar fundo escuro após envio
+                    setTimeout(() => {
+                        clearDarkBackground();
+                    }, 100);
+                    
+                    this.reset();
+                    document.getElementById('char-count').textContent = '0';
+                    
+            } catch (error) {
+                    console.error('Erro ao enviar mensagem:', error);
+                    safeShowToast('Erro', error.message || 'Erro ao enviar mensagem', 'error');
+                }
+            });
+        }
+
+        // Carregar conteúdo para pais
+        async function loadParentContent() {
+            const contentDiv = document.getElementById('communication-content');
+            contentDiv.innerHTML = `
+            <div class="professional-section">
+                <div class="professional-card">
+                    <div class="professional-card-header">
+                        <div class="professional-card-title">
+                                👶 Comunicados das Crianças
+                    </div>
+                            <div class="professional-card-subtitle">Mensagens enviadas pelos seus filhos</div>
+                                </div>
+                        <div class="professional-card-body">
+                            <div id="messages-list" class="space-y-4">
+                                <div class="loading-message">Carregando comunicados...</div>
+                                </div>
+                            </div>
+                            </div>
+                    </div>
+                `;
+            
+            // Carregar mensagens
+            await loadMessages();
+        }
+
+        // Carregar mensagens para pais
+        async function loadMessages() {
+            try {
+                const response = await API.get('/messages/kids');
+                const messages = response.data.messages || [];
+                
+                displayMessages(messages);
+                
+            } catch (error) {
+                console.error('Erro ao carregar mensagens:', error);
+                document.getElementById('messages-list').innerHTML = `
+                    <div class="text-center text-gray-500">
+                        Erro ao carregar mensagens
+                    </div>
+                `;
+            }
+        }
+
+        // Exibir mensagens
+        function displayMessages(messages) {
+            const messagesContainer = document.getElementById('messages-list');
+            
+            if (messages.length === 0) {
+                messagesContainer.innerHTML = `
+                    <div class="text-center text-gray-500 py-8">
+                        <div class="text-4xl mb-4">💬</div>
+                        <h3 class="text-lg font-semibold mb-2">Nenhum comunicado</h3>
+                        <p>As crianças ainda não enviaram nenhuma mensagem</p>
+                    </div>
+                `;
+                return;
+            }
+
+            messagesContainer.innerHTML = messages.map(message => {
+                const date = new Date(message.createdAt).toLocaleDateString('pt-BR');
+                const time = new Date(message.createdAt).toLocaleTimeString('pt-BR', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                
+                return `
+                    <div class="message-card ${message.isRead ? 'message-read' : ''}" data-message-id="${message._id}">
+                        <div class="message-header">
+                            <div class="message-info">
+                                <div class="message-author">${message.kidName}</div>
+                                <div class="message-date">${date} às ${time}</div>
+                                </div>
+                                </div>
+                        <div class="message-content">${message.content}</div>
+                        <div class="message-actions">
+                            ${!message.isRead ? `
+                                <button onclick="markAsRead('${message._id}')" class="message-btn message-btn-read">
+                                    ✅ Marcar como lido
+                                </button>
+                            ` : ''}
+                            <button onclick="deleteMessage('${message._id}')" class="message-btn message-btn-delete">
+                                🗑️ Apagar
+                            </button>
+                            </div>
+                            </div>
+                `;
+            }).join('');
+        }
+
+        // Marcar mensagem como lida
+        async function markAsRead(messageId) {
+            try {
+                await API.put(`/messages/${messageId}/read`);
+                showToast('Sucesso', 'Mensagem marcada como lida', 'success');
+                await loadMessages(); // Recarregar mensagens
+                
+            } catch (error) {
+                console.error('Erro ao marcar como lida:', error);
+                showToast('Erro', 'Erro ao marcar como lida', 'error');
+            }
+        }
+
+        // Apagar mensagem
+        async function deleteMessage(messageId) {
+            try {
+                console.log('🔍 [DELETE MESSAGE] Iniciando exclusão da mensagem:', messageId);
+                
+                const response = await API.delete(`/messages/kids/${messageId}`);
+                console.log('✅ [DELETE MESSAGE] Resposta da API:', response);
+                
+                await loadMessages(); // Recarregar mensagens (a mensagem desaparece automaticamente)
+                console.log('✅ [DELETE MESSAGE] Mensagens recarregadas');
+                
+            } catch (error) {
+                console.error('❌ [DELETE MESSAGE] Erro ao apagar mensagem:', error);
+                showToast('Erro', 'Erro ao apagar mensagem', 'error');
+            }
+        }
+
+        // Logout para criança
+        function logout() {
+            localStorage.removeItem('kidData');
+            localStorage.removeItem('kidToken');
+            window.location.href = '/';
+        }
+        
+        // Sobrescrever a função loadUserInfo para evitar erro
+        window.loadUserInfo = function() {
+            // Não fazer nada na página da criança
+            return;
+        };
+
+        // Função para mostrar notificação
+        function showNotification(title, message, type = 'info') {
+            const modal = document.getElementById('notification-modal');
+            const icon = document.getElementById('notification-icon');
+            const titleEl = document.getElementById('notification-title');
+            const messageEl = document.getElementById('notification-message');
+            const closeBtn = document.getElementById('notification-close');
+
+            if (modal && icon && titleEl && messageEl && closeBtn) {
+                // Definir ícone baseado no tipo
+                const icons = {
+                    success: '✅',
+                    error: '❌',
+                    warning: '⚠️',
+                    info: 'ℹ️'
+                };
+                icon.textContent = icons[type] || icons.info;
+
+                // Definir título e mensagem
+                titleEl.textContent = title;
+                messageEl.textContent = message;
+
+                // Mostrar modal
+                modal.classList.remove('hidden');
+                modal.style.display = 'flex';
+                modal.style.opacity = '1';
+                modal.style.visibility = 'visible';
+
+                // Configurar botão de fechar
+                closeBtn.onclick = () => {
+                    modal.classList.add('hidden');
+                    modal.style.display = 'none';
+                    modal.style.opacity = '0';
+                    modal.style.visibility = 'hidden';
+                };
+
+                // Auto-fechar após 5 segundos
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    modal.style.display = 'none';
+                    modal.style.opacity = '0';
+                    modal.style.visibility = 'hidden';
+                }, 5000);
+            } else {
+                // Fallback para alert
+                alert(`${title}: ${message}`);
+            }
+        }
+
+        // Funções removidas - agora usando toast system
+
+        // Fechar modal ao clicar fora dele
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('success-modal');
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeSuccessModal();
+                }
+            });
+            
+            // Fechar modais de confirmação ao clicar fora
+            const confirmModals = document.querySelectorAll('.confirm-modal-overlay');
+            confirmModals.forEach(modal => {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        modal.classList.remove('show');
+                    }
+                });
+            });
+        });
+
+
+    </script>
+
+    <!-- Modal de confirmação -->
+    <div id="success-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-icon">✅</div>
+            <div class="modal-title">Mensagem Enviada!</div>
+            <div class="modal-message">
+                Sua mensagem foi enviada com sucesso para os pais. 
+                Eles receberão sua comunicação em breve!
+            </div>
+            <button class="modal-button" onclick="closeSuccessModal()">
+                Entendi!
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal de Notificação -->
+    <div id="notification-modal" class="modal hidden">
+        <div class="modal-content">
+            <div style="display: flex; align-items: center; margin-bottom: 16px;">
+                <div id="notification-icon" style="margin-right: 12px; font-size: 24px;"></div>
+                <h3 id="notification-title" class="modal-title"></h3>
+            </div>
+            <p id="notification-message" class="modal-message"></p>
+            <div style="text-align: right;">
+                <button id="notification-close" class="modal-button">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html> 

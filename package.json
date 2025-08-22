@@ -1,0 +1,53 @@
+{
+  "name": "controle-pontos-familiar",
+  "version": "1.0.0",
+  "description": "Sistema web completo para gerenciar pontos e recompensas de crianças",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "seed": "node scripts/seed-activities.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npm install",
+    "test-db": "node scripts/test-mongodb-connection.js",
+    "test-new-password": "node scripts/update-mongodb-password.js",
+    "generate-connection": "node scripts/update-mongodb-password.js --generate",
+    "find-cluster": "node scripts/find-mongodb-connection.js",
+    "check-config": "node scripts/check-render-config.js"
+  },
+  "keywords": [
+    "pontos",
+    "crianças",
+    "família",
+    "controle",
+    "recompensas",
+    "educação",
+    "comportamento",
+    "nodejs",
+    "express",
+    "mongodb"
+  ],
+  "author": "JailtonGN <jailton.gn@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JailtonGN/controle-pontos-familiar.git"
+  },
+  "bugs": {
+    "url": "https://github.com/JailtonGN/controle-pontos-familiar/issues"
+  },
+  "homepage": "https://github.com/JailtonGN/controle-pontos-familiar#readme",
+  "dependencies": {
+    "axios": "^1.11.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.18.2",
+    "express-validator": "^7.0.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^7.5.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

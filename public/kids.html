@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastros - Controle de Pontos Familiar</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    <style>
+        /* Animações para os modais */
+        .modal .professional-card {
+            transform: scale(0.95);
+            opacity: 0;
+            transition: all 0.3s ease-in-out;
+        }
+        
+        .modal.show .professional-card {
+            transform: scale(1);
+            opacity: 1;
+        }
+        
+        /* Melhorias visuais para os modais */
+        .professional-card-header {
+            border-bottom: none;
+        }
+        
+        .professional-card-body {
+            padding: 24px;
+        }
+        
+        /* Estilos específicos para os modais de atividades */
+        #edit-activity-modal-content {
+            max-width: 600px;
+        }
+        
+        #delete-activity-modal-content {
+            max-width: 500px;
+        }
+        
+        /* Garantir que o modal funcione corretamente */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.hidden {
+            display: none !important;
+        }
+        
+        /* Garantir que o conteúdo do modal seja visível */
+        .modal .professional-card {
+            position: relative;
+            z-index: 1001;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-content">
+                <!-- Brand -->
+                <div class="navbar-brand">
+                    <div class="navbar-logo"></div>
+                    <div>
+                        <div class="navbar-title">Cadastros</div>
+                        <div class="navbar-subtitle">Sistema de Pontos</div>
+                    </div>
+                </div>
+
+                <!-- Desktop Menu -->
+                <div class="navbar-menu">
+                    <div class="navbar-item">
+                        <a href="/dashboard" class="navbar-button" id="nav-dashboard">
+                            <span class="navbar-button-text">Tela Inicial</span>
+                        </a>
+                    </div>
+                    <div class="navbar-item">
+                        <a href="/manage-points" class="navbar-button" id="nav-activities">
+                            <span class="navbar-button-text">Atividades</span>
+                        </a>
+                    </div>
+                    <div class="navbar-item">
+                        <a href="/kids" class="navbar-button active" id="nav-kids">
+                            <span class="navbar-button-text">Cadastros</span>
+                        </a>
+                    </div>
+                    
+                    <div class="navbar-item">
+                        <a href="/communication" class="navbar-button" id="nav-communication">
+                            <span class="navbar-button-text">Comunicação</span>
+                        </a>
+                    </div>
+                    <div class="navbar-item">
+                        <a href="/config" class="navbar-button" id="nav-settings">
+                            <span class="navbar-button-text">Configuração</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- User Menu -->
+                <div class="navbar-user">
+                    <span id="user-name" class="navbar-user-name"></span>
+                    <button onclick="logout()" class="navbar-button navbar-button-logout">
+                        Sair
+                    </button>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="navbar-mobile-menu">
+                    <button class="navbar-mobile-button" onclick="toggleMobileMenu()">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="navbar-mobile-menu-content hidden">
+                <a href="/dashboard" class="navbar-mobile-item" onclick="setActiveNav('nav-dashboard')">
+                    Tela Inicial
+                </a>
+                <a href="/manage-points" class="navbar-mobile-item" onclick="setActiveNav('nav-activities')">
+                    Atividades
+                </a>
+                <a href="/kids" class="navbar-mobile-item active" onclick="setActiveNav('nav-kids')">
+                    Cadastros
+                </a>
+                
+                <a href="/communication" class="navbar-mobile-item" onclick="setActiveNav('nav-communication')">
+                    Comunicação
+                </a>
+                <a href="/config" class="navbar-mobile-item" onclick="setActiveNav('nav-settings')">
+                    Configuração
+                </a>
+            </div>
+        </div>
+    </nav>
+
+         <!-- Main Content -->
+     <main class="container" style="padding-top: 32px; padding-bottom: 32px;">
+         <!-- Abas de Navegação -->
+         <div class="professional-section">
+             <div class="professional-card">
+                 <div class="professional-card-header">
+                     <div class="professional-card-title">
+                         Cadastros
+                     </div>
+                     <div class="professional-card-subtitle">Gerencie crianças e atividades</div>
+                 </div>
+                 <div class="professional-card-body">
+                     <div class="tab-navigation">
+                         <button class="tab-button active" onclick="showTab('kids')" id="tab-kids">
+                             Crianças
+                         </button>
+                         <button class="tab-button" onclick="showTab('activities')" id="tab-activities">
+                             Atividades
+                         </button>
+                     </div>
+                 </div>
+             </div>
+         </div>
+
+         <!-- Aba Crianças -->
+         <div id="kids-tab" class="tab-content active">
+             <!-- Formulário de Criação -->
+             <div class="professional-section">
+                 <div class="professional-card">
+                     <div class="professional-card-header">
+                         <div class="professional-card-title">
+                             Criar Nova Criança
+                         </div>
+                         <div class="professional-card-subtitle">Adicione uma nova criança ao sistema</div>
+                     </div>
+                <div class="professional-card-body">
+                    <form id="create-kid-form" class="professional-form-grid">
+                        <div class="professional-input-group">
+                            <label for="kid-name" class="professional-label">Nome da Criança</label>
+                            <input type="text" id="kid-name" name="name" required class="professional-input" placeholder="Digite o nome">
+                        </div>
+                        
+                        <div class="professional-input-group">
+                            <label class="professional-label">Emoji</label>
+                            <div class="emoji-selector">
+                                <div class="emoji-options">
+                                    <button type="button" class="emoji-option" data-emoji="👦" onclick="selectEmoji(this, '👦')">
+                                        👦 Menino
+                                    </button>
+                                    <button type="button" class="emoji-option" data-emoji="👧" onclick="selectEmoji(this, '👧')">
+                                        👧 Menina
+                                    </button>
+                                </div>
+                                <input type="hidden" id="kid-emoji" name="emoji" required>
+                            </div>
+                        </div>
+                        
+                        <div class="professional-input-group">
+                            <label for="kid-color" class="professional-label">Cor</label>
+                            <select id="kid-color" name="color" required class="professional-input">
+                                <option value="">Escolha uma cor</option>
+                                <option value="#3B82F6">Azul</option>
+                                <option value="#EF4444">Vermelho</option>
+                                <option value="#10B981">Verde</option>
+                                <option value="#F59E0B">Amarelo</option>
+                                <option value="#8B5CF6">Roxo</option>
+                                <option value="#F97316">Laranja</option>
+                                <option value="#EC4899">Rosa</option>
+                                <option value="#06B6D4">Ciano</option>
+                            </select>
+                        </div>
+                        
+                        <div class="professional-input-group">
+                            <label for="kid-pin" class="professional-label">PIN de Acesso</label>
+                            <input type="password" id="kid-pin" name="pin" required class="professional-input" placeholder="Digite um PIN de 4 dígitos" minlength="4" maxlength="4" pattern="[0-9]{4}">
+                        </div>
+                        
+                        <div class="professional-input-group">
+                            <label for="kid-age" class="professional-label">Idade</label>
+                            <input type="number" id="kid-age" name="age" min="1" max="18" required class="professional-input" placeholder="Idade">
+                        </div>
+                        
+                        <div class="professional-input-group" style="grid-column: 1 / -1;">
+                            <button type="submit" class="professional-button professional-button-success" style="width: 100%;">
+                                Criar Criança
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Crianças Criadas -->
+        <div class="professional-section">
+            <div class="professional-card">
+                <div class="professional-card-header">
+                    <div class="professional-card-title">
+                        Crianças Criadas
+                    </div>
+                    <div class="professional-card-subtitle">Gerencie as crianças do sistema</div>
+                </div>
+                <div class="professional-card-body">
+                    <div id="kids-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Cards das crianças serão carregados aqui -->
+                    </div>
+                                 </div>
+             </div>
+         </div>
+         </div>
+
+         <!-- Aba Atividades -->
+         <div id="activities-tab" class="tab-content">
+             <!-- Formulário de Criação de Atividade -->
+             <div class="professional-section">
+                 <div class="professional-card">
+                     <div class="professional-card-header">
+                         <div class="professional-card-title">
+                             Criar Nova Atividade
+                         </div>
+                         <div class="professional-card-subtitle">Adicione uma nova atividade ao sistema</div>
+                     </div>
+                     <div class="professional-card-body">
+                         <form id="create-activity-form" class="professional-form-grid">
+                             <div class="professional-input-group">
+                                 <label for="activity-name" class="professional-label">Nome da Atividade</label>
+                                 <input type="text" id="activity-name" name="name" required class="professional-input" placeholder="Ex: Arrumar o quarto">
+                             </div>
+                             
+                             <div class="professional-input-group">
+                                 <label for="activity-type" class="professional-label">Tipo</label>
+                                 <select id="activity-type" name="type" required class="professional-input">
+                                     <option value="">Escolha o tipo</option>
+                                     <option value="positive">Positiva (+ pontos)</option>
+                                     <option value="negative">Negativa (- pontos)</option>
+                                 </select>
+                             </div>
+                             
+                             <div class="professional-input-group">
+                                 <label for="activity-points" class="professional-label">Pontos</label>
+                                 <input type="number" id="activity-points" name="points" required class="professional-input" placeholder="Quantidade de pontos" min="1">
+                             </div>
+                             
+                             <div class="professional-input-group">
+                                 <label for="activity-description" class="professional-label">Descrição (opcional)</label>
+                                 <textarea id="activity-description" name="description" class="professional-input" placeholder="Descrição da atividade" rows="3"></textarea>
+                             </div>
+                             
+                             <div class="professional-input-group" style="grid-column: 1 / -1;">
+                                 <button type="submit" class="professional-button professional-button-success" style="width: 100%;">
+                                     Criar Atividade
+                                 </button>
+                             </div>
+                         </form>
+                     </div>
+                 </div>
+             </div>
+
+             <!-- Atividades Criadas -->
+             <div class="professional-section">
+                 <div class="professional-card">
+                     <div class="professional-card-header">
+                         <div class="professional-card-title">
+                             Atividades Cadastradas
+                         </div>
+                         <div class="professional-card-subtitle">Gerencie as atividades do sistema</div>
+                     </div>
+                     <div class="professional-card-body">
+                         <!-- Nova seção com caixas separadas -->
+                         <div class="activities-grid">
+                             <!-- Caixa de Atividades Positivas -->
+                             <div class="activities-box activities-positive">
+                                 <div class="activities-box-header">
+                                     <div class="activities-box-icon positive-icon">⭐</div>
+                                     <div class="activities-box-title">Atividades Positivas</div>
+                                     <div class="activities-box-subtitle">Comportamentos que geram pontos</div>
+                                 </div>
+                                 <div class="activities-box-content" id="positive-activities">
+                                     <!-- Atividades positivas serão carregadas aqui -->
+                                 </div>
+                             </div>
+
+                             <!-- Caixa de Atividades Negativas -->
+                             <div class="activities-box activities-negative">
+                                 <div class="activities-box-header">
+                                     <div class="activities-box-icon negative-icon">⚠️</div>
+                                     <div class="activities-box-title">Atividades Negativas</div>
+                                     <div class="activities-box-subtitle">Comportamentos que removem pontos</div>
+                                 </div>
+                                 <div class="activities-box-content" id="negative-activities">
+                                     <!-- Atividades negativas serão carregadas aqui -->
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+         </div>
+     </main>
+
+    <!-- Modal Editar Criança Melhorado -->
+    <div id="edit-kid-modal" class="modal hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="professional-card max-w-lg w-full" id="edit-kid-modal-content">
+                <!-- Header com gradiente azul -->
+                <div class="professional-card-header" style="background: linear-gradient(135deg, #3B82F6, #2563EB); border-radius: 16px 16px 0 0;">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-4">
+                                <span style="font-size: 24px;">✏️</span>
+                            </div>
+                            <div>
+                                <h3 class="professional-card-title" style="color: white; margin: 0;">Editar Criança</h3>
+                                <p style="color: rgba(255,255,255,0.8); margin: 0; font-size: 14px;">Atualizar informações</p>
+                            </div>
+                        </div>
+                        <button onclick="hideEditKidModal()" style="color: white; background: none; border: none; font-size: 24px; cursor: pointer;">
+                            ×
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Formulário -->
+                <form id="edit-kid-form" class="professional-card-body">
+                    <input type="hidden" id="edit-kid-id" name="id">
+                    
+                    <!-- Nome -->
+                    <div class="professional-input-group">
+                        <label for="edit-kid-name" class="professional-label">
+                            👤 Nome da Criança
+                        </label>
+                        <input type="text" id="edit-kid-name" name="name" required 
+                               class="professional-input"
+                               placeholder="Digite o nome da criança">
+                    </div>
+                    
+                    <!-- Emoji e Cor em linha -->
+                    <div class="professional-form-grid">
+                        <div class="professional-input-group">
+                            <label class="professional-label">
+                                😊 Emoji
+                            </label>
+                            <div class="emoji-selector">
+                                <div class="emoji-options" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                    <button type="button" class="emoji-option" data-emoji="👦" onclick="selectEditEmoji(this, '👦')">
+                                        👦 Menino
+                                    </button>
+                                    <button type="button" class="emoji-option" data-emoji="👧" onclick="selectEditEmoji(this, '👧')">
+                                        👧 Menina
+                                    </button>
+                                </div>
+                                <input type="hidden" id="edit-kid-emoji" name="emoji" required>
+                            </div>
+                        </div>
+                        
+                        <div class="professional-input-group">
+                            <label for="edit-kid-color" class="professional-label">
+                                🎨 Cor
+                            </label>
+                            <select id="edit-kid-color" name="color" required class="professional-input">
+                                <option value="#3B82F6">🔵 Azul</option>
+                                <option value="#EF4444">🔴 Vermelho</option>
+                                <option value="#10B981">🟢 Verde</option>
+                                <option value="#F59E0B">🟡 Amarelo</option>
+                                <option value="#8B5CF6">🟣 Roxo</option>
+                                <option value="#F97316">🟠 Laranja</option>
+                                <option value="#EC4899">🩷 Rosa</option>
+                                <option value="#06B6D4">🔵 Ciano</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- PIN e Idade em linha -->
+                    <div class="professional-form-grid">
+                        <div class="professional-input-group">
+                            <label for="edit-kid-pin" class="professional-label">
+                                🔐 PIN de Acesso
+                            </label>
+                            <input type="password" id="edit-kid-pin" name="pin" required 
+                                   class="professional-input" style="text-align: center; font-size: 18px; letter-spacing: 4px;"
+                                   placeholder="****" minlength="4" maxlength="4" pattern="[0-9]{4}">
+                            <p style="font-size: 12px; color: #6B7280; margin-top: 4px;">4 dígitos numéricos</p>
+                        </div>
+                        
+                        <div class="professional-input-group">
+                            <label for="edit-kid-age" class="professional-label">
+                                🎂 Idade
+                            </label>
+                            <input type="number" id="edit-kid-age" name="age" min="1" max="18" required 
+                                   class="professional-input"
+                                   placeholder="Idade">
+                            <p style="font-size: 12px; color: #6B7280; margin-top: 4px;">Entre 1 e 18 anos</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Botões -->
+                    <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid #E5E7EB;">
+                        <button type="button" onclick="hideEditKidModal()" class="professional-button professional-button-secondary">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="professional-button professional-button-success">
+                            ✅ Salvar Alterações
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Editar Atividade -->
+    <div id="edit-activity-modal" class="modal hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="professional-card max-w-lg w-full" id="edit-activity-modal-content">
+                <!-- Header com gradiente azul -->
+                <div class="professional-card-header" style="background: linear-gradient(135deg, #3B82F6, #2563EB); border-radius: 16px 16px 0 0;">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-4">
+                                <span style="font-size: 24px;">✏️</span>
+                            </div>
+                            <div>
+                                <h3 class="professional-card-title" style="color: white; margin: 0;">Editar Atividade</h3>
+                                <p style="color: rgba(255,255,255,0.8); margin: 0; font-size: 14px;">Atualizar informações</p>
+                            </div>
+                        </div>
+                        <button onclick="hideEditActivityModal()" style="color: white; background: none; border: none; font-size: 24px; cursor: pointer;">
+                            ×
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Formulário -->
+                <form id="edit-activity-form" class="professional-card-body">
+                    <input type="hidden" id="edit-activity-id">
+                    
+                    <!-- Nome da Atividade -->
+                    <div class="professional-input-group">
+                        <label for="edit-activity-name" class="professional-label">
+                            🎯 Nome da Atividade
+                        </label>
+                        <input type="text" id="edit-activity-name" name="name" required 
+                               class="professional-input"
+                               placeholder="Digite o nome da atividade">
+                    </div>
+                    
+                    <!-- Descrição -->
+                    <div class="professional-input-group">
+                        <label for="edit-activity-description" class="professional-label">
+                            📝 Descrição (opcional)
+                        </label>
+                        <textarea id="edit-activity-description" name="description" rows="3"
+                                  class="professional-input"
+                                  placeholder="Descreva a atividade..."></textarea>
+                    </div>
+                    
+                    <!-- Tipo e Pontos em linha -->
+                    <div class="professional-form-grid">
+                        <div class="professional-input-group">
+                            <label for="edit-activity-type" class="professional-label">
+                                📊 Tipo
+                            </label>
+                            <select id="edit-activity-type" name="type" required class="professional-select">
+                                <option value="positive">Positiva</option>
+                                <option value="negative">Negativa</option>
+                            </select>
+                        </div>
+                        
+                        <div class="professional-input-group">
+                            <label for="edit-activity-points" class="professional-label">
+                                ⭐ Pontos
+                            </label>
+                            <input type="number" id="edit-activity-points" name="points" min="1" max="500" required
+                                   class="professional-input"
+                                   placeholder="10">
+                        </div>
+                    </div>
+                    
+                    <!-- Botões -->
+                    <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid #E5E7EB;">
+                        <button type="button" onclick="hideEditActivityModal()" class="professional-button professional-button-secondary">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="professional-button professional-button-success">
+                            ✅ Salvar Alterações
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação de Exclusão de Atividade -->
+    <div id="delete-activity-modal" class="modal hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="professional-card max-w-md w-full" id="delete-activity-modal-content">
+                <!-- Header com gradiente vermelho -->
+                <div class="professional-card-header" style="background: linear-gradient(135deg, #EF4444, #DC2626); border-radius: 16px 16px 0 0;">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-4">
+                                <span style="font-size: 24px;">🗑️</span>
+                            </div>
+                            <div>
+                                <h3 class="professional-card-title" style="color: white; margin: 0;">Confirmar Exclusão</h3>
+                                <p style="color: rgba(255,255,255,0.8); margin: 0; font-size: 14px;">Ação irreversível</p>
+                            </div>
+                        </div>
+                        <button onclick="hideDeleteActivityModal()" style="color: white; background: none; border: none; font-size: 24px; cursor: pointer;">
+                            ×
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Conteúdo -->
+                <div class="professional-card-body">
+                    <div class="text-center">
+                        <div class="text-gray-600 mb-4">
+                            <p>Tem certeza que deseja excluir a atividade:</p>
+                            <p class="font-semibold text-gray-900 mt-2" id="delete-activity-name">Nome da Atividade</p>
+                        </div>
+                        <p class="text-sm text-gray-500">Esta ação não pode ser desfeita.</p>
+                    </div>
+                    
+                    <!-- Botões -->
+                    <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid #E5E7EB;">
+                        <button onclick="hideDeleteActivityModal()" class="professional-button professional-button-secondary">
+                            Cancelar
+                        </button>
+                        <button onclick="confirmDeleteActivity()" class="professional-button professional-button-danger">
+                            🗑️ Excluir Atividade
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação Melhorado -->
+    <div id="confirm-modal" class="modal hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="professional-card max-w-md w-full" id="confirm-modal-content">
+                <!-- Header com gradiente vermelho -->
+                <div class="professional-card-header" style="background: linear-gradient(135deg, #EF4444, #DC2626); border-radius: 16px 16px 0 0;">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-4">
+                                <span style="font-size: 24px;">🗑️</span>
+                            </div>
+                            <div>
+                                <h3 class="professional-card-title" style="color: white; margin: 0;">Confirmar Exclusão</h3>
+                                <p style="color: rgba(255,255,255,0.8); margin: 0; font-size: 14px;">Ação irreversível</p>
+                            </div>
+                        </div>
+                        <button onclick="hideConfirmModal()" style="color: white; background: none; border: none; font-size: 24px; cursor: pointer;">
+                            ×
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Conteúdo -->
+                <div class="professional-card-body">
+                    <div style="display: flex; align-items: flex-start; margin-bottom: 24px;">
+                        <div style="flex-shrink: 0;">
+                            <div class="professional-icon" style="background: #FEE2E2; color: #DC2626;">
+                                ⚠️
+                            </div>
+                        </div>
+                        <div style="margin-left: 16px;">
+                            <h4 style="font-size: 18px; font-weight: 600; color: #1F2937; margin-bottom: 8px;">Excluir Criança</h4>
+                            <p style="color: #6B7280; margin-bottom: 16px;">Tem certeza que deseja excluir <strong id="confirm-kid-name" style="color: #059669;">esta criança</strong>?</p>
+                            <div style="background: #FEF2F2; border: 1px solid #FECACA; border-radius: 8px; padding: 16px;">
+                                <div style="display: flex;">
+                                    <div style="flex-shrink: 0; margin-right: 12px;">
+                                        <span style="color: #F87171; font-size: 20px;">⚠️</span>
+                                    </div>
+                                    <div>
+                                        <p style="font-size: 14px; color: #991B1B; margin-bottom: 8px;">
+                                            <strong>Atenção:</strong> Esta ação irá:
+                                        </p>
+                                        <ul style="font-size: 14px; color: #DC2626; margin: 0; padding-left: 16px;">
+                                            <li>Remover a criança permanentemente</li>
+                                            <li>Apagar todo o histórico de pontos</li>
+                                            <li>Excluir todas as atividades relacionadas</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Botões -->
+                    <div style="display: flex; justify-content: flex-end; gap: 12px;">
+                        <button onclick="hideConfirmModal()" class="professional-button professional-button-secondary">
+                            Cancelar
+                        </button>
+                        <button onclick="confirmDelete()" class="professional-button professional-button-danger">
+                            🗑️ Excluir
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+         <script src="js/main.js"></script>
+    <script src="js/toast.js"></script>
+     <script>
+         // Função para gerenciar abas (definida primeiro para evitar erro)
+         function showTab(tabName) {
+             // Esconder todas as abas
+             document.querySelectorAll('.tab-content').forEach(tab => {
+                 tab.classList.remove('active');
+             });
+             
+             // Remover active de todos os botões
+             document.querySelectorAll('.tab-button').forEach(btn => {
+                 btn.classList.remove('active');
+             });
+             
+             // Mostrar aba selecionada
+             document.getElementById(`${tabName}-tab`).classList.add('active');
+             document.getElementById(`tab-${tabName}`).classList.add('active');
+         }
+
+         // Variáveis específicas da página de cadastros
+         let currentKidId = null;
+         let currentActivityId = null;
+
+         // Carregar dados na inicialização
+         document.addEventListener('DOMContentLoaded', function() {
+             loadKids();
+             loadActivities();
+         });
+
+                 // Renderizar grid de crianças (específico para esta página)
+         function renderKidsGrid() {
+             const grid = document.getElementById('kids-grid');
+             
+             if (kids.length === 0) {
+                 grid.innerHTML = `
+                     <div class="col-span-full text-center py-12">
+                         <div class="text-gray-400 text-6xl mb-4">👶</div>
+                         <p class="text-gray-500 text-lg">Nenhuma criança cadastrada</p>
+                         <p class="text-gray-400 text-sm">Crie sua primeira criança usando o formulário acima</p>
+                     </div>
+                 `;
+                 return;
+             }
+
+             grid.innerHTML = kids.map(kid => `
+                 <div class="professional-summary-card">
+                     <div class="professional-summary-header">
+                         <div class="flex items-center justify-between">
+                             <div class="flex items-center">
+                                 <div class="ml-3">
+                                     <div class="professional-summary-name">${kid.name}</div>
+                                     <div class="professional-summary-age">${kid.age} anos</div>
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
+                                           <div class="mt-4 flex justify-end items-center">
+                          <div class="flex space-x-2">
+                              <button onclick="editKid('${kid._id}')" class="professional-button professional-button-secondary text-sm">
+                                  Editar
+                              </button>
+                              <button onclick="deleteKid('${kid._id}')" class="professional-button professional-button-danger text-sm">
+                                  Apagar
+                              </button>
+                          </div>
+                      </div>
+                 </div>
+             `).join('');
+         }
+
+        
+
+         // Renderizar atividades nas caixas separadas (específico para esta página)
+         function renderActivitiesList() {
+             const positiveContainer = document.getElementById('positive-activities');
+             const negativeContainer = document.getElementById('negative-activities');
+             
+             // Separar atividades por tipo e ordenar alfabeticamente
+             const positiveActivities = activities.filter(activity => activity.type === 'positive')
+                 .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+             const negativeActivities = activities.filter(activity => activity.type === 'negative')
+                 .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+             
+             // Renderizar atividades positivas
+             if (positiveActivities.length === 0) {
+                 positiveContainer.innerHTML = `
+                     <div class="activities-empty">
+                         <div class="activities-empty-icon">⭐</div>
+                         <h3>Nenhuma atividade positiva</h3>
+                         <p>Adicione atividades positivas para começar</p>
+                     </div>
+                 `;
+             } else {
+                 positiveContainer.innerHTML = positiveActivities.map(activity => `
+                     <div class="activity-card">
+                         <div class="activity-card-content">
+                             <div class="activity-info">
+                                 <div class="activity-icon">
+                                     ${activity.icon || activity.name.charAt(0).toUpperCase()}
+                                 </div>
+                                 <div class="activity-details">
+                                     <h3>${activity.name}</h3>
+                                     <p>${activity.description || activity.category || ''}</p>
+                                 </div>
+                             </div>
+                             <div class="activity-points positive">
+                                 <span class="activity-points-number">+${activity.points}</span>
+                                 <span>pontos</span>
+                             </div>
+                         </div>
+                         <div class="activity-actions">
+                             <button onclick="editActivity('${activity._id}')" class="activity-btn activity-btn-edit">
+                                 ✏️ Editar
+                             </button>
+                             <button onclick="deleteActivity('${activity._id}')" class="activity-btn activity-btn-delete">
+                                 🗑️ Apagar
+                             </button>
+                         </div>
+                     </div>
+                 `).join('');
+             }
+             
+             // Renderizar atividades negativas
+             if (negativeActivities.length === 0) {
+                 negativeContainer.innerHTML = `
+                     <div class="activities-empty">
+                         <div class="activities-empty-icon">⚠️</div>
+                         <h3>Nenhuma atividade negativa</h3>
+                         <p>Adicione atividades negativas para começar</p>
+                     </div>
+                 `;
+             } else {
+                 negativeContainer.innerHTML = negativeActivities.map(activity => `
+                     <div class="activity-card negative">
+                         <div class="activity-card-content">
+                             <div class="activity-info">
+                                 <div class="activity-icon">
+                                     ${activity.icon || activity.name.charAt(0).toUpperCase()}
+                                 </div>
+                                 <div class="activity-details">
+                                     <h3>${activity.name}</h3>
+                                     <p>${activity.description || activity.category || ''}</p>
+                                 </div>
+                             </div>
+                             <div class="activity-points negative">
+                                 <span class="activity-points-number">-${activity.points}</span>
+                                 <span>pontos</span>
+                             </div>
+                         </div>
+                         <div class="activity-actions">
+                             <button onclick="editActivity('${activity._id}')" class="activity-btn activity-btn-edit">
+                                 ✏️ Editar
+                             </button>
+                             <button onclick="deleteActivity('${activity._id}')" class="activity-btn activity-btn-delete">
+                                 🗑️ Apagar
+                             </button>
+                         </div>
+                     </div>
+                 `).join('');
+             }
+         }
+
+         
+
+        // Mostrar modal de editar criança com animação
+        function editKid(kidId) {
+            const kid = kids.find(k => k._id === kidId);
+            if (!kid) return;
+
+            document.getElementById('edit-kid-id').value = kid._id;
+            document.getElementById('edit-kid-name').value = kid.name;
+            document.getElementById('edit-kid-emoji').value = kid.emoji || '';
+            document.getElementById('edit-kid-color').value = kid.color || '#3B82F6';
+            document.getElementById('edit-kid-pin').value = kid.pin || '';
+            document.getElementById('edit-kid-age').value = kid.age;
+            currentKidId = kidId;
+            
+            // Selecionar o emoji correto no modal
+            const emojiButtons = document.querySelectorAll('#edit-kid-modal .emoji-option');
+            emojiButtons.forEach(btn => {
+                btn.classList.remove('selected');
+                if (btn.getAttribute('data-emoji') === (kid.emoji || '')) {
+                    btn.classList.add('selected');
+                }
+            });
+            
+            // Mostrar modal com animação
+            const modal = document.getElementById('edit-kid-modal');
+            const modalContent = document.getElementById('edit-kid-modal-content');
+            modal.classList.remove('hidden');
+            
+            // Animar entrada
+            setTimeout(() => {
+                modalContent.style.transform = 'scale(1)';
+                modalContent.style.opacity = '1';
+            }, 10);
+        }
+
+        // Esconder modal de editar com animação
+        function hideEditKidModal() {
+            const modal = document.getElementById('edit-kid-modal');
+            const modalContent = document.getElementById('edit-kid-modal-content');
+            
+            // Animar saída
+            modalContent.style.transform = 'scale(0.95)';
+            modalContent.style.opacity = '0';
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        // Excluir criança com toast
+        function deleteKid(kidId) {
+            console.log('🔍 [DELETE] Função deleteKid chamada com ID:', kidId);
+            currentKidId = kidId;
+            console.log('📋 [DELETE] currentKidId definido como:', currentKidId);
+            
+            // Buscar dados da criança para mostrar no toast
+            const kid = kids.find(k => k._id === kidId);
+            if (kid) {
+                showConfirmDelete(
+                    kid.name,
+                    `deleteKidConfirm()`,
+                    `console.log('Exclusão cancelada')`
+                );
+            }
+        }
+
+        // Confirmar exclusão
+        async function deleteKidConfirm() {
+            console.log('🔍 [CONFIRM DELETE] Função confirmDelete chamada');
+            console.log('🔍 [CONFIRM DELETE] currentKidId atual:', currentKidId);
+            
+            if (!currentKidId) {
+                console.log('❌ [CONFIRM DELETE] currentKidId não definido');
+                showToast('Erro', 'ID da criança não encontrado', 'error');
+                return;
+            }
+
+            console.log('🔍 [CONFIRM DELETE] Iniciando exclusão da criança:', currentKidId);
+
+            try {
+                console.log('📡 [CONFIRM DELETE] Enviando requisição DELETE para:', `/kids/${currentKidId}`);
+                
+                const response = await API.delete(`/kids/${currentKidId}`);
+                
+                console.log('✅ [CONFIRM DELETE] Resposta do servidor:', response);
+                
+                showToast('Sucesso', 'Criança excluída com sucesso!', 'success');
+                loadKids();
+                
+            } catch (error) {
+                console.error('❌ [CONFIRM DELETE] Erro na exclusão:', error);
+                console.error('❌ [CONFIRM DELETE] Detalhes do erro:', {
+                    message: error.message,
+                    status: error.status,
+                    response: error.response
+                });
+                
+                showToast('Erro', error.message, 'error');
+            }
+        }
+
+        // Funções para seleção de emoji
+        function selectEmoji(button, emoji) {
+            // Remover seleção anterior
+            document.querySelectorAll('.emoji-option').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            // Selecionar o botão clicado
+            button.classList.add('selected');
+            
+            // Atualizar o input hidden
+            document.getElementById('kid-emoji').value = emoji;
+        }
+
+        function selectEditEmoji(button, emoji) {
+            // Remover seleção anterior
+            document.querySelectorAll('#edit-kid-modal .emoji-option').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            // Selecionar o botão clicado
+            button.classList.add('selected');
+            
+            // Atualizar o input hidden
+            document.getElementById('edit-kid-emoji').value = emoji;
+        }
+
+        // Event listener para o formulário de criação
+        document.getElementById('create-kid-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = {
+                name: formData.get('name'),
+                emoji: formData.get('emoji'),
+                color: formData.get('color'),
+                pin: formData.get('pin'),
+                age: parseInt(formData.get('age'))
+            };
+
+            try {
+                await API.post('/kids', data);
+                showNotification('Sucesso', 'Criança criada com sucesso!', 'success');
+                this.reset();
+                // Limpar seleção de emoji
+                document.querySelectorAll('.emoji-option').forEach(btn => {
+                    btn.classList.remove('selected');
+                });
+                loadKids();
+            } catch (error) {
+                showNotification('Erro', error.message, 'error');
+            }
+        });
+
+                 // Funções para gerenciar atividades
+         function editActivity(activityId) {
+             const activity = activities.find(a => a._id === activityId);
+             if (!activity) return;
+
+             // Preencher formulário de edição
+             document.getElementById('edit-activity-id').value = activity._id;
+             document.getElementById('edit-activity-name').value = activity.name;
+             document.getElementById('edit-activity-description').value = activity.description || '';
+             document.getElementById('edit-activity-type').value = activity.type;
+             document.getElementById('edit-activity-points').value = activity.points;
+             
+             // Mostrar modal com animação
+             const modal = document.getElementById('edit-activity-modal');
+             const modalContent = document.getElementById('edit-activity-modal-content');
+             
+             // Garantir que o modal esteja visível
+             modal.style.display = 'flex';
+             modal.classList.remove('hidden');
+             
+             // Resetar transformações
+             modalContent.style.transform = 'scale(0.95)';
+             modalContent.style.opacity = '0';
+             
+             // Animar entrada
+             setTimeout(() => {
+                 modalContent.style.transform = 'scale(1)';
+                 modalContent.style.opacity = '1';
+             }, 10);
+         }
+
+         function hideEditActivityModal() {
+             const modal = document.getElementById('edit-activity-modal');
+             const modalContent = document.getElementById('edit-activity-modal-content');
+             
+             // Animar saída
+             modalContent.style.transform = 'scale(0.95)';
+             modalContent.style.opacity = '0';
+             
+             setTimeout(() => {
+                 modal.classList.add('hidden');
+                 document.getElementById('edit-activity-form').reset();
+                 // Garantir que o modal seja completamente removido
+                 modal.style.display = 'none';
+             }, 300);
+         }
+
+         // Excluir atividade com toast
+         function deleteActivity(activityId) {
+             currentActivityId = activityId;
+             
+             // Buscar dados da atividade para mostrar no toast
+             const activity = activities.find(a => a._id === activityId);
+             if (activity) {
+                 showConfirmDelete(
+                     activity.name,
+                     `deleteActivityConfirm()`,
+                     `console.log('Exclusão de atividade cancelada')`
+                 );
+             }
+         }
+
+         // Confirmar exclusão de atividade
+         async function deleteActivityConfirm() {
+             if (!currentActivityId) {
+                 showToast('Erro', 'ID da atividade não encontrado', 'error');
+                 return;
+             }
+
+             try {
+                 await API.delete(`/activities/${currentActivityId}`);
+                 showToast('Sucesso', 'Atividade excluída com sucesso!', 'success');
+                 loadActivities();
+             } catch (error) {
+                 showToast('Erro', error.message, 'error');
+             }
+         }
+
+         // Event listener para o formulário de edição
+         document.getElementById('edit-kid-form').addEventListener('submit', async function(e) {
+             e.preventDefault();
+             
+             console.log('🔍 [EDIT FORM] Formulário de edição submetido');
+             console.log('🔍 [EDIT FORM] currentKidId atual:', currentKidId);
+             
+             if (!currentKidId) {
+                 console.log('❌ [EDIT FORM] currentKidId não definido');
+                 showNotification('Erro', 'ID da criança não encontrado', 'error');
+                 return;
+             }
+             
+             const formData = new FormData(this);
+             const data = {
+                 name: formData.get('name'),
+                 emoji: formData.get('emoji'),
+                 color: formData.get('color'),
+                 pin: formData.get('pin'),
+                 age: parseInt(formData.get('age'))
+             };
+
+             try {
+                 console.log('📡 [EDIT FORM] Enviando requisição PUT para:', `/kids/${currentKidId}`);
+                 console.log('📡 [EDIT FORM] Dados:', data);
+                 
+                 await API.put(`/kids/${currentKidId}`, data);
+                 showNotification('Sucesso', 'Criança atualizada com sucesso!', 'success');
+                 hideEditKidModal();
+                 loadKids();
+             } catch (error) {
+                 console.error('❌ [EDIT FORM] Erro na edição:', error);
+                 showNotification('Erro', error.message, 'error');
+             }
+         });
+
+         // Event listener para o formulário de edição de atividades
+         document.getElementById('edit-activity-form').addEventListener('submit', async function(e) {
+             e.preventDefault();
+             
+             const formData = new FormData(this);
+             const activityId = document.getElementById('edit-activity-id').value;
+             const data = {
+                 name: formData.get('name'),
+                 type: formData.get('type'),
+                 points: parseInt(formData.get('points')),
+                 description: formData.get('description') || ''
+             };
+
+             try {
+                 await API.put(`/activities/${activityId}`, data);
+                 hideEditActivityModal();
+                 loadActivities();
+                 showToast('Sucesso', 'Atividade atualizada com sucesso!', 'success');
+             } catch (error) {
+                 showToast('Erro', error.message, 'error');
+             }
+         });
+
+         // Event listener para o formulário de criação de atividades
+         document.getElementById('create-activity-form').addEventListener('submit', async function(e) {
+             e.preventDefault();
+             
+             const formData = new FormData(this);
+             const data = {
+                 name: formData.get('name'),
+                 type: formData.get('type'),
+                 points: parseInt(formData.get('points')),
+                 description: formData.get('description') || ''
+             };
+
+             try {
+                 await API.post('/activities', data);
+                 this.reset();
+                 loadActivities();
+                 showToast('Sucesso', 'Atividade criada com sucesso!', 'success');
+             } catch (error) {
+                 showToast('Erro', error.message, 'error');
+             }
+         });
+
+         // Função para carregar crianças
+         async function loadKids() {
+             try {
+                 console.log('🔍 [LOAD KIDS] Carregando crianças...');
+                 const response = await API.get('/kids');
+                 console.log('✅ [LOAD KIDS] Resposta:', response);
+                 
+                 kids = response.data.kids || [];
+                 console.log('📋 [LOAD KIDS] Crianças carregadas:', kids.length);
+                 
+                 renderKidsGrid();
+                 
+             } catch (error) {
+                 console.error('❌ [LOAD KIDS] Erro ao carregar crianças:', error);
+                 showToast('Erro', 'Erro ao carregar crianças', 'error');
+             }
+         }
+
+         // Função para carregar atividades
+         async function loadActivities() {
+             try {
+                 console.log('🔍 [LOAD ACTIVITIES] Carregando atividades...');
+                 const response = await API.get('/activities');
+                 console.log('✅ [LOAD ACTIVITIES] Resposta:', response);
+                 
+                 activities = response.data.activities || [];
+                 console.log('📋 [LOAD ACTIVITIES] Atividades carregadas:', activities.length);
+                 
+                 renderActivitiesList();
+                 
+             } catch (error) {
+                 console.error('❌ [LOAD ACTIVITIES] Erro ao carregar atividades:', error);
+                 showToast('Erro', 'Erro ao carregar atividades', 'error');
+             }
+         }
+
+         // Modal de Notificação
+         const notificationModal = document.createElement('div');
+         notificationModal.id = 'notification-modal';
+         notificationModal.className = 'modal hidden';
+         notificationModal.innerHTML = `
+             <div class="modal-content">
+                 <div style="display: flex; align-items: center; margin-bottom: 16px;">
+                     <div id="notification-icon" style="margin-right: 12px; font-size: 24px;"></div>
+                     <h3 id="notification-title" class="modal-title"></h3>
+                 </div>
+                 <p id="notification-message" class="modal-message"></p>
+                 <div style="text-align: right;">
+                     <button id="notification-close" class="modal-button">
+                         OK
+                     </button>
+                 </div>
+             </div>
+         `;
+         document.body.appendChild(notificationModal);
+    </script>
+</body>
+</html> 

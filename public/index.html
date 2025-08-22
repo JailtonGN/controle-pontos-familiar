@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Pontos Familiar - Login</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/login.css">
+    <link rel="icon" type="image/png" href="assets/logo.png">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-logo">🏆</div>
+                <h2 class="login-title">Controle de Pontos</h2>
+                <p class="login-subtitle">Sistema familiar para incentivar o desenvolvimento das crianças</p>
+            </div>
+
+            <!-- Tabs -->
+            <div class="flex rounded-lg bg-gray-100 p-1">
+                <button id="login-tab" class="tab-button active">
+                    Pais
+                </button>
+                <button id="kids-tab" class="tab-button">
+                    Filhos
+                </button>
+            </div>
+
+            <!-- Formulário de Login -->
+            <form id="login-form" class="login-form">
+                <div class="form-group">
+                    <label for="login-email" class="form-label">
+                        Email
+                    </label>
+                    <input id="login-email" name="email" type="email" required 
+                           class="form-input" placeholder="Seu email">
+                </div>
+
+                <div class="form-group">
+                    <label for="login-password" class="form-label">
+                        Senha
+                    </label>
+                    <input id="login-password" name="password" type="password" required 
+                           class="form-input" placeholder="Sua senha">
+                </div>
+
+                <button type="submit" class="login-button">
+                    <span class="loading-spinner hidden"></span>
+                    <span class="button-text">Entrar</span>
+                </button>
+            </form>
+
+            <!-- Formulário de Login - Filhos -->
+            <form id="kids-login-form" class="login-form hidden">
+                <div class="form-group">
+                    <label for="kid-name" class="form-label">
+                        Usuário (nome da criança)
+                    </label>
+                    <input id="kid-name" name="name" type="text" required 
+                           class="form-input" placeholder="Digite o nome da criança">
+                </div>
+
+                <div class="form-group">
+                    <label for="kid-pin" class="form-label">
+                        PIN (senha)
+                    </label>
+                    <input id="kid-pin" name="pin" type="password" required 
+                           class="form-input" placeholder="PIN de 4 dígitos" 
+                           maxlength="4" pattern="[0-9]{4}">
+                </div>
+
+                <button type="submit" class="login-button">
+                    <span class="loading-spinner hidden"></span>
+                    <span class="button-text">Entrar</span>
+                </button>
+            </form>
+
+            <!-- Informações -->
+            <div class="text-center">
+                <p class="text-sm text-gray-500">
+                    Sistema seguro para famílias gerenciarem pontos e recompensas
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Notificação -->
+    <div id="notification-modal" class="modal hidden">
+        <div class="modal-content">
+            <div style="display: flex; align-items: center; margin-bottom: 16px;">
+                <div id="notification-icon" style="margin-right: 12px; font-size: 24px;"></div>
+                <h3 id="notification-title" class="modal-title"></h3>
+            </div>
+            <p id="notification-message" class="modal-message"></p>
+            <div style="text-align: right;">
+                <button id="notification-close" class="modal-button">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script src="js/toast.js"></script>
+    <script>
+        // Configuração específica da página de login
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginTab = document.getElementById('login-tab');
+            const kidsTab = document.getElementById('kids-tab');
+            const loginForm = document.getElementById('login-form');
+            const kidsLoginForm = document.getElementById('kids-login-form');
+
+            // Alternar entre tabs
+            loginTab.addEventListener('click', () => {
+                loginTab.classList.add('active');
+                kidsTab.classList.remove('active');
+                loginForm.classList.remove('hidden');
+                kidsLoginForm.classList.add('hidden');
+            });
+
+            kidsTab.addEventListener('click', () => {
+                kidsTab.classList.add('active');
+                loginTab.classList.remove('active');
+                kidsLoginForm.classList.remove('hidden');
+                loginForm.classList.add('hidden');
+            });
+
+            // Submit login Filhos
+            kidsLoginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const name = document.getElementById('kid-name').value.trim();
+                const pin = document.getElementById('kid-pin').value.trim();
+                if (!name) {
+                    showToast('Erro', 'Digite o nome da criança', 'error');
+                    return;
+                }
+                if (!pin || pin.length !== 4) {
+                    showToast('Erro', 'Digite um PIN de 4 dígitos', 'error');
+                    return;
+                }
+
+                const button = kidsLoginForm.querySelector('button[type="submit"]');
+                const spinner = button.querySelector('.loading-spinner');
+                const buttonText = button.querySelector('.button-text');
+                try {
+                    spinner.classList.remove('hidden');
+                    button.disabled = true;
+                    buttonText.textContent = 'Entrando...';
+                    const response = await fetch('/api/auth/kid/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name, pin })
+                    });
+                    const result = await response.json();
+                    if (response.ok && result.success) {
+                        showToast('Sucesso', 'Login realizado com sucesso!', 'success');
+                        localStorage.setItem('kidToken', result.data.token);
+                        localStorage.setItem('kidData', JSON.stringify(result.data.kid));
+                        setTimeout(() => {
+                            window.location.href = `/kid-dashboard?id=${result.data.kid._id}`;
+                        }, 2000);
+                    } else {
+                        showToast('Erro', result.message || 'Nome ou PIN incorretos', 'error');
+                    }
+                } catch (err) {
+                    showToast('Erro', 'Erro ao conectar com o servidor', 'error');
+                } finally {
+                    spinner.classList.add('hidden');
+                    button.disabled = false;
+                    buttonText.textContent = 'Entrar';
+                }
+            });
+
+            // Envio do formulário de login
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(loginForm);
+                const data = {
+                    email: formData.get('email'),
+                    password: formData.get('password')
+                };
+                
+                loginUser(data);
+            });
+            
+            // Botão Sou Criança removido; nenhum listener necessário
+        });
+
+        // Registro removido desta página; ficará em Config (admin)
+
+        // Função para login
+        async function loginUser(data) {
+            const button = document.querySelector('#login-form button[type="submit"]');
+            const spinner = button.querySelector('.loading-spinner');
+            const buttonText = button.querySelector('.button-text');
+            
+            try {
+                spinner.classList.remove('hidden');
+                buttonText.textContent = 'Entrando...';
+                button.disabled = true;
+                
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Sucesso', 'Login realizado com sucesso!', 'success');
+                    
+                    localStorage.setItem('token', result.data.token);
+                    localStorage.setItem('user', JSON.stringify(result.data.user));
+                    
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 2500); // Aumentado de 1500 para 2500ms (2.5 segundos)
+                } else {
+                    showToast('Erro', result.message || 'Usuário ou senha incorretos', 'error');
+                }
+            } catch (error) {
+                showToast('Erro', 'Erro ao conectar com o servidor', 'error');
+            } finally {
+                spinner.classList.add('hidden');
+                buttonText.textContent = 'Entrar';
+                button.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html> 

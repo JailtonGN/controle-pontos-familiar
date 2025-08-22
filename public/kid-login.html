@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login da Criança - Controle de Pontos</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/login.css">
+    <link rel="icon" type="image/png" href="assets/logo.png">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-logo">👶</div>
+                <h2 class="login-title">Área da Criança</h2>
+                <p class="login-subtitle">Entre com seu PIN para ver seus pontos</p>
+            </div>
+
+            <!-- Formulário de Login da Criança -->
+            <form id="kid-login-form" class="login-form">
+                <div class="form-group">
+                    <label for="kid-name" class="form-label">
+                        Seu nome (usuário)
+                    </label>
+                    <input id="kid-name" name="name" type="text" required 
+                           class="form-input" placeholder="Digite seu nome">
+                </div>
+
+                <div class="form-group">
+                    <label for="kid-pin" class="form-label">
+                        PIN (senha)
+                    </label>
+                    <input id="kid-pin" name="pin" type="password" required 
+                           class="form-input" placeholder="Digite seu PIN de 4 dígitos" 
+                           maxlength="4" pattern="[0-9]{4}">
+                </div>
+
+                <button type="submit" class="login-button">
+                    <span class="loading-spinner hidden"></span>
+                    <span class="button-text">Entrar</span>
+                </button>
+            </form>
+
+            <!-- Botão Voltar -->
+            <div class="text-center mt-6">
+                <button id="back-to-login" class="back-button">
+                    <span class="back-icon">←</span>
+                    Voltar para Login dos Pais
+                </button>
+            </div>
+
+            <!-- Informações -->
+            <div class="text-center mt-4">
+                <p class="text-sm text-gray-500">
+                    Digite o PIN que seus pais cadastraram para você
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Notificação -->
+    <div id="notification-modal" class="modal hidden">
+        <div class="modal-content">
+            <div style="display: flex; align-items: center; margin-bottom: 16px;">
+                <div id="notification-icon" style="margin-right: 12px; font-size: 24px;"></div>
+                <h3 id="notification-title" class="modal-title"></h3>
+            </div>
+            <p id="notification-message" class="modal-message"></p>
+            <div style="text-align: right;">
+                <button id="notification-close" class="modal-button">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script src="js/toast.js"></script>
+    <script>
+        // API específica para a página de login da criança
+        const KidAPI = {
+            baseURL: '/api',
+            
+            async request(endpoint, options = {}) {
+                const url = this.baseURL + endpoint;
+                const config = {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                };
+
+                try {
+                    const response = await fetch(url, config);
+                    const data = await response.json();
+                    
+                    if (!response.ok) {
+                        throw new Error(data.message || 'Erro na requisição');
+                    }
+                    
+                    return data;
+                } catch (error) {
+                    console.error('Erro na API:', error);
+                    throw error;
+                }
+            },
+
+            async get(endpoint) {
+                return this.request(endpoint, { method: 'GET' });
+            },
+
+            async post(endpoint, data) {
+                return this.request(endpoint, {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+            },
+
+            setToken(token) {
+                localStorage.setItem('kidToken', token);
+            },
+
+            getToken() {
+                return localStorage.getItem('kidToken');
+            }
+        };
+
+        // Configuração específica da página de login da criança
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Página de login da criança carregada');
+            
+            // Não é mais necessário carregar lista pública de crianças
+            
+            // Event listener para o formulário
+            document.getElementById('kid-login-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                handleKidLogin();
+            });
+            
+            // Event listener para voltar
+            document.getElementById('back-to-login').addEventListener('click', function() {
+                window.location.href = '/';
+            });
+
+            // Event listener para fechar modal
+            document.getElementById('notification-close').addEventListener('click', function() {
+                document.getElementById('notification-modal').classList.add('hidden');
+            });
+        });
+
+        // Handler de login por nome + PIN
+        async function handleKidLogin() {
+            const name = document.getElementById('kid-name').value.trim();
+            const pin = document.getElementById('kid-pin').value.trim();
+
+            if (!name) {
+                showToast('Erro', 'Digite seu nome', 'error');
+                return;
+            }
+            if (!pin || pin.length !== 4) {
+                showToast('Erro', 'Digite um PIN de 4 dígitos', 'error');
+                return;
+            }
+
+            const button = document.querySelector('.login-button');
+            const spinner = document.querySelector('.loading-spinner');
+            const btnText = document.querySelector('.button-text');
+            button.disabled = true;
+            spinner.classList.remove('hidden');
+            btnText.textContent = 'Entrando...';
+
+            try {
+                const response = await fetch('/api/auth/kid/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, pin })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast('Sucesso', 'Login realizado com sucesso!', 'success');
+                    localStorage.setItem('kidToken', result.data.token);
+                    localStorage.setItem('kidData', JSON.stringify(result.data.kid));
+                    setTimeout(() => {
+                        window.location.href = `/kid-dashboard?id=${result.data.kid._id}`;
+                    }, 2500);
+                } else {
+                    showToast('Erro', result.message || 'Erro no login', 'error');
+                }
+            } catch (error) {
+                console.error('Erro no login:', error);
+                showToast('Erro', 'Erro ao conectar com o servidor', 'error');
+            } finally {
+                button.disabled = false;
+                spinner.classList.add('hidden');
+                btnText.textContent = 'Entrar';
+            }
+        }
+    </script>
+</body>
+</html> 
+ 
+ 
+ 
