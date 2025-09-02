@@ -246,20 +246,47 @@ body {
 /* ===== FORMULÁRIOS MÁGICOS ===== */
 .professional-form-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr auto;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
     gap: 20px;
     align-items: end;
 }
 
 .professional-form-grid-4 {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr auto;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
     gap: 20px;
     align-items: end;
 }
 
 .professional-input-group {
     position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 110px; /* Altura padrão para todos os campos */
+}
+
+.professional-input-group.flex.items-end {
+    justify-content: flex-end;
+    align-items: flex-end;
+    min-height: 110px; /* Mesma altura para botões */
+}
+
+/* Garantir que todos os campos tenham a mesma altura base */
+.professional-input-group:has(.professional-helper-text) {
+    min-height: 110px; /* Altura consistente para campos com texto auxiliar */
+}
+
+/* Fallback para navegadores que não suportam :has() */
+.professional-input-group:last-of-type:not(.flex) {
+    min-height: 110px;
+}
+
+/* Alinhamento específico para containers de botão */
+.professional-input-group.flex.items-end.col-span-full {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    min-height: 110px;
 }
 
 .professional-label {
@@ -268,6 +295,8 @@ body {
     font-weight: 600;
     color: #4a5568;
     font-size: 0.9rem;
+    height: 20px; /* Altura fixa para labels */
+    line-height: 20px;
 }
 
 .professional-input,
@@ -281,6 +310,8 @@ body {
     backdrop-filter: blur(10px);
     transition: all 0.3s ease;
     color: #2d3748;
+    height: 54px; /* Altura fixa para inputs */
+    box-sizing: border-box;
 }
 
 .professional-input:focus,
@@ -311,6 +342,9 @@ body {
     position: relative;
     overflow: hidden;
     backdrop-filter: blur(10px);
+    height: 54px; /* Mesma altura dos inputs */
+    box-sizing: border-box;
+    justify-content: center;
 }
 
 .professional-button::before {
@@ -1350,9 +1384,16 @@ body {
 
 .history-filters-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr auto;
+    grid-template-columns: 1fr 1fr 1fr auto auto;
     gap: 1rem;
     align-items: end;
+}
+
+@media (max-width: 768px) {
+    .history-filters-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+    }
 }
 
 @media (max-width: 640px) {
@@ -1387,6 +1428,121 @@ body {
     outline: none;
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+} 
+
+/* ===== FEEDBACK DOS FILTROS ===== */
+.filter-feedback {
+    background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    border-left: 4px solid #667eea;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.filter-feedback-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.875rem;
+}
+
+.filter-feedback-icon {
+    font-size: 1rem;
+    color: #667eea;
+}
+
+.filter-feedback-text {
+    color: #374151;
+    font-weight: 500;
+    flex: 1;
+}
+
+.filter-feedback-count {
+    background: #667eea;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* ===== BOTÃO TERTIARY ===== */
+.professional-button-tertiary {
+    background: rgba(107, 114, 128, 0.1);
+    color: #6b7280;
+    border: 1px solid rgba(107, 114, 128, 0.2);
+}
+
+.professional-button-tertiary:hover {
+    background: rgba(107, 114, 128, 0.15);
+    color: #4b5563;
+    border-color: rgba(107, 114, 128, 0.3);
+    transform: translateY(-1px);
+}
+
+/* ===== TEXTO AUXILIAR ===== */
+.professional-helper-text {
+    display: block;
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 4px;
+    font-style: italic;
+    height: 16px; /* Altura fixa para o texto auxiliar */
+    line-height: 16px;
+}
+
+/* Garantir que campos sem texto auxiliar tenham o mesmo espaçamento */
+.professional-input-group:not(:has(.professional-helper-text)) {
+    padding-bottom: 20px; /* Compensa a ausência do texto auxiliar */
+}
+
+/* Fallback para navegadores que não suportam :has() */
+.professional-input-group .professional-input:not(+ .professional-helper-text),
+.professional-input-group .professional-select:not(+ .professional-helper-text) {
+    margin-bottom: 20px;
+}
+
+/* ===== ALINHAMENTO ESPECIAL PARA BOTÕES ===== */
+.professional-input-group.flex.items-end.col-span-full .professional-button {
+    margin-top: auto; /* Empurra o botão para baixo */
+    align-self: flex-end;
+}
+
+/* Garantir que todos os elementos tenham altura base consistente */
+.professional-form-grid-4 .professional-input-group {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* ===== AJUSTES DE LAYOUT RESPONSIVO ===== */
+@media (max-width: 768px) {
+    .professional-form-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .professional-form-grid-4 {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .professional-form-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .professional-form-grid-4 {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+}
+
+.col-span-full {
+    grid-column: 1 / -1;
 } 
 
 /* ===== ATIVIDADES GRID ===== */
