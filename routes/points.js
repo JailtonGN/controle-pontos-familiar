@@ -46,7 +46,12 @@ const addPointsValidation = [
         .optional()
         .trim()
         .isLength({ min: 1, max: 200 })
-        .withMessage('Motivo deve ter entre 1 e 200 caracteres')
+        .withMessage('Motivo deve ter entre 1 e 200 caracteres'),
+    body('date')
+        .optional()
+        .isISO8601()
+        .withMessage('Data deve estar no formato válido (YYYY-MM-DD)')
+        .toDate()
 ];
 
 // Validação para remover pontos
@@ -78,7 +83,12 @@ const removePointsValidation = [
         .optional()
         .trim()
         .isLength({ min: 1, max: 200 })
-        .withMessage('Motivo deve ter entre 1 e 200 caracteres')
+        .withMessage('Motivo deve ter entre 1 e 200 caracteres'),
+    body('date')
+        .optional()
+        .isISO8601()
+        .withMessage('Data deve estar no formato válido (YYYY-MM-DD)')
+        .toDate()
 ];
 
 // Rota para histórico da criança (autenticação da criança) - DEVE VIR ANTES das rotas protegidas

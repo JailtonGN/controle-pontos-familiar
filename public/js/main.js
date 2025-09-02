@@ -235,7 +235,17 @@ class LoadingManager {
 // Classe para formatação de dados
 class Formatter {
     static formatDate(date) {
-        return new Date(date).toLocaleDateString('pt-BR');
+        // Garantir que a data seja interpretada como local, sem conversão de fuso horário
+        const d = new Date(date);
+        
+        // Se a data for uma string no formato YYYY-MM-DD, precisamos tratá-la como local
+        if (typeof date === 'string' && date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            const [year, month, day] = date.split('-').map(Number);
+            const localDate = new Date(year, month - 1, day);
+            return localDate.toLocaleDateString('pt-BR');
+        }
+        
+        return d.toLocaleDateString('pt-BR');
     }
 
     static formatDateTime(date) {
@@ -428,9 +438,15 @@ async function loadDashboardData() {
         await Promise.all([
             loadKids(),
             loadActivities(),
-            loadHistory(),
             loadUserInfo()
         ]);
+        
+        // Definir mês corrente como padrão após carregar as crianças
+        setCurrentMonthDefault();
+        
+        // Carregar histórico com filtros padrão
+        await loadHistory();
+        
     } catch (error) {
         console.error('Erro ao carregar dados do dashboard:', error);
         showToast('Erro', 'Erro ao carregar dados do dashboard', 'error');
@@ -488,9 +504,8 @@ async function loadActivities() {
 // Carregar histórico
 async function loadHistory() {
     try {
-        const response = await API.get('/points/history');
-        history = response.data.history;
-        renderHistoryTable();
+        // Aplicar filtros com os valores atuais dos campos (incluindo mês padrão)
+        await applyFilters();
     } catch (error) {
         console.error('Erro ao carregar histórico:', error);
     }
@@ -769,24 +784,159 @@ function updateFilterSelects() {
 // Aplicar filtros
 async function applyFilters() {
     const kidId = document.getElementById('filter-kid')?.value;
-    const date = document.getElementById('filter-date')?.value;
+    const startDate = document.getElementById('filter-start-date')?.value;
+    const endDate = document.getElementById('filter-end-date')?.value;
+
+    console.log('🔍 [DEBUG] Valores dos campos de filtro:', {
+        kidId: kidId || 'Vazio',
+        startDate: startDate || 'Vazio', 
+        endDate: endDate || 'Vazio'
+    });
 
     try {
         let url = '/points/history';
         const params = new URLSearchParams();
         
         if (kidId) params.append('kidId', kidId);
-        if (date) params.append('date', date);
+        if (startDate) params.append('startDate', startDate);
+        if (endDate) params.append('endDate', endDate);
         
         if (params.toString()) {
             url += '?' + params.toString();
         }
+        
+        console.log('🔎 [PARENT UI] Aplicando filtros:', {
+            kidId: kidId || 'Todas',
+            startDate: startDate || 'Não definida',
+            endDate: endDate || 'Não definida',
+            url: url
+        });
+        
         const response = await API.get(url);
         history = response.data.history;
         renderHistoryTable();
+        
+        // Feedback visual para o usuário
+        const filterInfo = buildFilterInfo(kidId, startDate, endDate);
+        console.log('💬 [DEBUG] Informação do filtro criada:', filterInfo);
+        showFilterFeedback(filterInfo);
+        
     } catch (error) {
         console.error('❌ [PARENT UI] Erro ao aplicar filtros:', error);
         showToast('Erro', 'Erro ao aplicar filtros', 'error');
+    }
+}
+
+// Limpar filtros e voltar ao padrão (mês corrente)
+function clearFilters() {
+    // Limpar campos
+    const filterKid = document.getElementById('filter-kid');
+    const filterStartDate = document.getElementById('filter-start-date');
+    const filterEndDate = document.getElementById('filter-end-date');
+    
+    if (filterKid) filterKid.value = '';
+    if (filterStartDate) filterStartDate.value = '';
+    if (filterEndDate) filterEndDate.value = '';
+    
+    // Definir mês corrente como padrão
+    setCurrentMonthDefault();
+    
+    // Aplicar filtros automaticamente
+    applyFilters();
+    
+    console.log('🗑️ [PARENT UI] Filtros limpos - voltando ao mês corrente');
+}
+
+// Definir mês corrente como padrão
+function setCurrentMonthDefault() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    
+    // Primeiro dia do mês
+    const startDate = `${year}-${month}-01`;
+    
+    // Último dia do mês
+    const lastDay = new Date(year, now.getMonth() + 1, 0).getDate();
+    const endDate = `${year}-${month}-${String(lastDay).padStart(2, '0')}`;
+    
+    const filterStartDate = document.getElementById('filter-start-date');
+    const filterEndDate = document.getElementById('filter-end-date');
+    
+    if (filterStartDate) filterStartDate.value = startDate;
+    if (filterEndDate) filterEndDate.value = endDate;
+    
+    console.log('📅 [PARENT UI] Definindo mês corrente como padrão:', {
+        startDate,
+        endDate,
+        month: `${year}-${month}`
+    });
+}
+
+// Construir informação dos filtros aplicados
+function buildFilterInfo(kidId, startDate, endDate) {
+    const filters = [];
+    
+    if (kidId) {
+        const kidName = kids.find(kid => kid._id === kidId)?.name || 'Criança';
+        filters.push(`Criança: ${kidName}`);
+    } else {
+        filters.push('Todas as crianças');
+    }
+    
+    if (startDate && endDate) {
+        console.log('🔍 [DEBUG] Processando datas:', {
+            startDateRaw: startDate,
+            endDateRaw: endDate,
+            startDateObj: new Date(startDate),
+            endDateObj: new Date(endDate)
+        });
+        
+        const start = formatDate(new Date(startDate));
+        const end = formatDate(new Date(endDate));
+        
+        console.log('🔍 [DEBUG] Datas formatadas:', {
+            startFormatted: start,
+            endFormatted: end
+        });
+        
+        filters.push(`Período: ${start} até ${end}`);
+    } else if (startDate) {
+        const start = formatDate(new Date(startDate));
+        filters.push(`A partir de: ${start}`);
+    } else if (endDate) {
+        const end = formatDate(new Date(endDate));
+        filters.push(`Até: ${end}`);
+    }
+    
+    const result = filters.join(' • ');
+    console.log('🔍 [DEBUG] Resultado final do filtro:', result);
+    return result;
+}
+
+// Mostrar feedback dos filtros aplicados
+function showFilterFeedback(filterInfo) {
+    // Remover feedback anterior se existir
+    const existingFeedback = document.getElementById('filter-feedback');
+    if (existingFeedback) {
+        existingFeedback.remove();
+    }
+    
+    // Criar novo feedback
+    const historyCards = document.getElementById('history-cards');
+    if (historyCards && filterInfo) {
+        const feedback = document.createElement('div');
+        feedback.id = 'filter-feedback';
+        feedback.className = 'filter-feedback';
+        feedback.innerHTML = `
+            <div class="filter-feedback-content">
+                <span class="filter-feedback-icon">🔍</span>
+                <span class="filter-feedback-text">${filterInfo}</span>
+                <span class="filter-feedback-count">${history.length} resultado(s)</span>
+            </div>
+        `;
+        
+        historyCards.parentNode.insertBefore(feedback, historyCards);
     }
 }
 

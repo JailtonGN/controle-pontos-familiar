@@ -128,12 +128,21 @@
                                 </select>
                             </div>
                             <div class="history-filter-group">
-                                <label for="filter-date" class="history-filter-label">Data</label>
-                                <input type="date" id="filter-date" class="history-filter-input">
+                                <label for="filter-start-date" class="history-filter-label">Data Início</label>
+                                <input type="date" id="filter-start-date" class="history-filter-input">
                             </div>
                             <div class="history-filter-group">
-                                <button id="apply-filters-btn" onclick="applyFilters(); console.log('🔎 [PARENT UI] Clicou Filtrar', {kid: document.getElementById('filter-kid')?.value, date: document.getElementById('filter-date')?.value});" class="professional-button professional-button-secondary">
+                                <label for="filter-end-date" class="history-filter-label">Data Fim</label>
+                                <input type="date" id="filter-end-date" class="history-filter-input">
+                            </div>
+                            <div class="history-filter-group">
+                                <button id="apply-filters-btn" onclick="applyFilters();" class="professional-button professional-button-secondary">
                                     🔍 Filtrar
+                                </button>
+                            </div>
+                            <div class="history-filter-group">
+                                <button id="clear-filters-btn" onclick="clearFilters();" class="professional-button professional-button-tertiary">
+                                    🗑️ Limpar
                                 </button>
                             </div>
                         </div>

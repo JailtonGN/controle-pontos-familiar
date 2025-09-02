@@ -18,7 +18,7 @@ const addPoints = async (req, res) => {
             });
         }
 
-        const { kidId, activityId, points, notes, reason } = req.body;
+        const { kidId, activityId, points, notes, reason, date } = req.body;
 
         // Verificar se a criança existe e pertence ao usuário ou família
         let kid;
@@ -82,7 +82,8 @@ const addPoints = async (req, res) => {
             notes: notes || `Pontos ${activity ? 'da atividade' : 'avulsos'} adicionados`,
             reason: reason || null,
             awardedBy: req.user._id,
-            type: 'add'
+            type: 'add',
+            date: date ? new Date(date) : new Date()
         });
 
         console.log('💾 [ADD POINTS] Salvando registro...');
@@ -134,7 +135,7 @@ const removePoints = async (req, res) => {
             });
         }
 
-        const { kidId, activityId, points, notes, reason } = req.body;
+        const { kidId, activityId, points, notes, reason, date } = req.body;
 
         // Verificar se a criança existe e pertence ao usuário ou família
         let kid;
@@ -198,7 +199,8 @@ const removePoints = async (req, res) => {
             notes: notes || `Pontos ${activity ? 'da atividade' : 'avulsos'} removidos`,
             reason: reason || null,
             awardedBy: req.user._id,
-            type: 'remove'
+            type: 'remove',
+            date: date ? new Date(date) : new Date()
         });
 
         try {
@@ -426,7 +428,7 @@ const getPointsByCategory = async (req, res) => {
 // @access  Private
 const getGeneralHistory = async (req, res) => {
     try {
-        const { limit = 50, page = 1, kidId, date } = req.query;
+        const { limit = 50, page = 1, kidId, date, startDate, endDate } = req.query;
 
         // Buscar todas as crianças do usuário ou família
         let kids;
@@ -470,8 +472,10 @@ const getGeneralHistory = async (req, res) => {
         // Calcular skip para paginação
         const skip = (parseInt(page) - 1) * parseInt(limit);
 
-        // Filtro de data (dia específico) se fornecido
+        // Construir query de filtros
         const query = { kidId: { $in: kidIds }, isActive: true };
+        
+        // Filtro de data específica (mantido para compatibilidade)
         if (date) {
             const [y, m, d] = String(date).split('-').map(Number);
             if (y && m && d) {
@@ -479,6 +483,34 @@ const getGeneralHistory = async (req, res) => {
                 const end = new Date(y, m - 1, d, 23, 59, 59, 999);
                 query.date = { $gte: start, $lte: end };
             }
+        }
+        // Filtro de período (startDate e endDate)
+        else if (startDate || endDate) {
+            const dateFilter = {};
+            
+            if (startDate) {
+                // Garantir que a data seja tratada como local, sem conversão de fuso horário
+                const [year, month, day] = startDate.split('-').map(Number);
+                const start = new Date(year, month - 1, day, 0, 0, 0, 0);
+                dateFilter.$gte = start;
+            }
+            
+            if (endDate) {
+                // Garantir que a data seja tratada como local, sem conversão de fuso horário
+                const [year, month, day] = endDate.split('-').map(Number);
+                const end = new Date(year, month - 1, day, 23, 59, 59, 999);
+                dateFilter.$lte = end;
+            }
+            
+            query.date = dateFilter;
+            
+            console.log('📅 [HISTORY FILTER] Aplicando filtro de período:', {
+                startDate: startDate || 'Não definida',
+                endDate: endDate || 'Não definida',
+                startDateProcessed: dateFilter.$gte ? dateFilter.$gte.toISOString() : 'N/A',
+                endDateProcessed: dateFilter.$lte ? dateFilter.$lte.toISOString() : 'N/A',
+                dateFilter
+            });
         }
 
         // Buscar histórico de pontos
@@ -492,6 +524,17 @@ const getGeneralHistory = async (req, res) => {
 
         // Contar total de registros
         const total = await Point.countDocuments(query);
+
+        console.log('📊 [HISTORY RESULT] Resultado da consulta:', {
+            totalFound: total,
+            returned: points.length,
+            filters: {
+                kidId: kidId || 'Todas',
+                date: date || 'Não definida',
+                startDate: startDate || 'Não definida',
+                endDate: endDate || 'Não definida'
+            }
+        });
 
         res.json({
             success: true,
