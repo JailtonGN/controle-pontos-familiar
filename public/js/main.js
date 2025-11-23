@@ -711,8 +711,11 @@ function renderHistoryTable() {
                         <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: 110px;">
                             Data
                         </th>
-                        <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: auto;">
-                            Atividade/Razão
+                        <th scope="col" class="py-3 text-left text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: auto;">
+                            <div class="flex items-center px-6">
+                                <span class="text-xl mr-3 opacity-0">🎯</span>
+                                <span>Atividade/Razão</span>
+                            </div>
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: 160px;">
                             Criança
