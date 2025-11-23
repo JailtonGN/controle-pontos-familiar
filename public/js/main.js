@@ -705,25 +705,25 @@ function renderHistoryTable() {
 
     cardsContainer.innerHTML = `
         <div class="overflow-x-auto shadow-sm rounded-lg">
-            <table class="min-w-full divide-y divide-gray-200">
+            <table class="min-w-full divide-y divide-gray-200" style="table-layout: fixed;">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th scope="col" class="px-4 py-3 text-left text-sm font-medium text-gray-600 uppercase tracking-wider w-28">
+                        <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: 100px;">
                             Data
                         </th>
-                        <th scope="col" class="px-4 py-3 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">
+                        <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: auto;">
                             Atividade/Razão
                         </th>
-                        <th scope="col" class="px-4 py-3 text-left text-sm font-medium text-gray-600 uppercase tracking-wider w-36">
+                        <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: 150px;">
                             Criança
                         </th>
-                        <th scope="col" class="px-6 py-3 text-center text-sm font-medium text-gray-600 uppercase tracking-wider" style="min-width: 120px;">
+                        <th scope="col" class="px-8 py-3 text-center text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: 130px;">
                             Pontos
                         </th>
-                        <th scope="col" class="px-6 py-3 text-center text-sm font-medium text-gray-600 uppercase tracking-wider" style="min-width: 120px;">
+                        <th scope="col" class="px-8 py-3 text-center text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: 130px;">
                             Saldo
                         </th>
-                        <th scope="col" class="px-6 py-3 text-center text-sm font-medium text-gray-600 uppercase tracking-wider" style="min-width: 120px;">
+                        <th scope="col" class="px-8 py-3 text-center text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: 140px;">
                             Ações
                         </th>
                     </tr>
@@ -762,30 +762,30 @@ function renderHistoryTable() {
 
         return `
                             <tr class="hover:bg-gray-50">
-                                <td class="px-4 py-3 whitespace-nowrap text-base text-gray-700">
+                                <td class="px-6 py-4 whitespace-nowrap text-base text-gray-700">
                                     ${date}
                                 </td>
-                                <td class="px-4 py-3">
+                                <td class="px-6 py-4">
                                     <div class="flex items-center">
                                         <span class="text-xl mr-3">${activityIcon}</span>
-                                        <div class="text-base font-medium text-gray-900 truncate max-w-md">
+                                        <div class="text-base font-medium text-gray-900 truncate">
                                             ${activityName}
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-4 py-3 whitespace-nowrap">
+                                <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-base text-gray-900">${kidName}</div>
                                 </td>
-                                <td class="px-6 py-3 whitespace-nowrap text-center">
+                                <td class="px-8 py-4 whitespace-nowrap text-center">
                                     <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full ${isPositive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
                                         ${pointsDisplay >= 0 ? '+' : ''}${pointsDisplay}
                                     </span>
                                 </td>
-                                <td class="px-6 py-3 whitespace-nowrap text-center text-base text-gray-800 font-bold">
+                                <td class="px-8 py-4 whitespace-nowrap text-center text-base text-gray-800 font-bold">
                                     ${balanceDisplay}
                                 </td>
-                                <td class="px-6 py-3 whitespace-nowrap text-center text-base font-medium">
-                                    <button onclick="editHistoryItem('${item._id}')" class="text-indigo-600 hover:text-indigo-900 mr-3" title="Editar">
+                                <td class="px-8 py-4 whitespace-nowrap text-center text-base font-medium">
+                                    <button onclick="editHistoryItem('${item._id}')" class="text-indigo-600 hover:text-indigo-900 mr-4" title="Editar">
                                         ✏️
                                     </button>
                                     <button onclick="deleteHistoryItem('${item._id}')" class="text-red-600 hover:text-red-900" title="Excluir">
