@@ -22,23 +22,23 @@ const addPoints = async (req, res) => {
 
         // Verificar se a criança existe e pertence ao usuário ou família
         let kid;
-        
+
         if (req.user.role === 'admin') {
             // Admin pode adicionar pontos para qualquer criança
             kid = await Kid.findOne({ _id: kidId, isActive: true });
         } else if (req.user.familyId) {
             // Usuário pode adicionar pontos para crianças da sua família
-            kid = await Kid.findOne({ 
-                _id: kidId, 
+            kid = await Kid.findOne({
+                _id: kidId,
                 familyId: req.user.familyId,
-                isActive: true 
+                isActive: true
             });
         } else {
             // Usuário sem família só pode adicionar pontos para suas próprias crianças
-            kid = await Kid.findOne({ 
-                _id: kidId, 
+            kid = await Kid.findOne({
+                _id: kidId,
                 parentId: req.user._id,
-                isActive: true 
+                isActive: true
             });
         }
 
@@ -139,23 +139,23 @@ const removePoints = async (req, res) => {
 
         // Verificar se a criança existe e pertence ao usuário ou família
         let kid;
-        
+
         if (req.user.role === 'admin') {
             // Admin pode remover pontos de qualquer criança
             kid = await Kid.findOne({ _id: kidId, isActive: true });
         } else if (req.user.familyId) {
             // Usuário pode remover pontos de crianças da sua família
-            kid = await Kid.findOne({ 
-                _id: kidId, 
+            kid = await Kid.findOne({
+                _id: kidId,
                 familyId: req.user.familyId,
-                isActive: true 
+                isActive: true
             });
         } else {
             // Usuário sem família só pode remover pontos de suas próprias crianças
-            kid = await Kid.findOne({ 
-                _id: kidId, 
+            kid = await Kid.findOne({
+                _id: kidId,
                 parentId: req.user._id,
-                isActive: true 
+                isActive: true
             });
         }
 
@@ -169,7 +169,7 @@ const removePoints = async (req, res) => {
         // Se activityId for fornecido, buscar a atividade e usar seus pontos
         let pointsToRemove = points;
         let activity = null;
-        
+
         if (activityId) {
             activity = await Activity.findById(activityId);
             if (!activity || !activity.isActive) {
@@ -191,7 +191,7 @@ const removePoints = async (req, res) => {
         }
 
         // Criar registro de remoção de pontos
-        
+
         const pointRecord = new Point({
             kidId,
             activityId: activityId || null,
@@ -246,23 +246,23 @@ const getPointHistory = async (req, res) => {
 
         // Verificar se a criança existe e pertence ao usuário ou família
         let kid;
-        
+
         if (req.user.role === 'admin') {
             // Admin pode ver histórico de qualquer criança
             kid = await Kid.findOne({ _id: kidId, isActive: true });
         } else if (req.user.familyId) {
             // Usuário pode ver histórico de crianças da sua família
-            kid = await Kid.findOne({ 
-                _id: kidId, 
+            kid = await Kid.findOne({
+                _id: kidId,
                 familyId: req.user.familyId,
-                isActive: true 
+                isActive: true
             });
         } else {
             // Usuário sem família só pode ver histórico de suas próprias crianças
-            kid = await Kid.findOne({ 
-                _id: kidId, 
+            kid = await Kid.findOne({
+                _id: kidId,
                 parentId: req.user._id,
-                isActive: true 
+                isActive: true
             });
         }
 
@@ -278,9 +278,9 @@ const getPointHistory = async (req, res) => {
 
         // Buscar histórico de pontos
         const points = await Point.getPointHistory(kidId, parseInt(limit));
-        const total = await Point.countDocuments({ 
-            kidId, 
-            isActive: true 
+        const total = await Point.countDocuments({
+            kidId,
+            isActive: true
         });
 
         res.json({
@@ -315,23 +315,23 @@ const getPointStats = async (req, res) => {
 
         // Verificar se a criança existe e pertence ao usuário ou família
         let kid;
-        
+
         if (req.user.role === 'admin') {
             // Admin pode ver estatísticas de qualquer criança
             kid = await Kid.findOne({ _id: kidId, isActive: true });
         } else if (req.user.familyId) {
             // Usuário pode ver estatísticas de crianças da sua família
-            kid = await Kid.findOne({ 
-                _id: kidId, 
+            kid = await Kid.findOne({
+                _id: kidId,
                 familyId: req.user.familyId,
-                isActive: true 
+                isActive: true
             });
         } else {
             // Usuário sem família só pode ver estatísticas de suas próprias crianças
-            kid = await Kid.findOne({ 
-                _id: kidId, 
+            kid = await Kid.findOne({
+                _id: kidId,
                 parentId: req.user._id,
-                isActive: true 
+                isActive: true
             });
         }
 
@@ -376,23 +376,23 @@ const getPointsByCategory = async (req, res) => {
 
         // Verificar se a criança existe e pertence ao usuário ou família
         let kid;
-        
+
         if (req.user.role === 'admin') {
             // Admin pode ver pontos de qualquer criança
             kid = await Kid.findOne({ _id: kidId, isActive: true });
         } else if (req.user.familyId) {
             // Usuário pode ver pontos de crianças da sua família
-            kid = await Kid.findOne({ 
-                _id: kidId, 
+            kid = await Kid.findOne({
+                _id: kidId,
                 familyId: req.user.familyId,
-                isActive: true 
+                isActive: true
             });
         } else {
             // Usuário sem família só pode ver pontos de suas próprias crianças
-            kid = await Kid.findOne({ 
-                _id: kidId, 
+            kid = await Kid.findOne({
+                _id: kidId,
                 parentId: req.user._id,
-                isActive: true 
+                isActive: true
             });
         }
 
@@ -432,7 +432,7 @@ const getGeneralHistory = async (req, res) => {
 
         // Buscar todas as crianças do usuário ou família
         let kids;
-        
+
         if (req.user.role === 'admin') {
             // Admin vê todas as crianças
             kids = await Kid.find({ isActive: true });
@@ -474,7 +474,7 @@ const getGeneralHistory = async (req, res) => {
 
         // Construir query de filtros
         const query = { kidId: { $in: kidIds }, isActive: true };
-        
+
         // Filtro de data específica (mantido para compatibilidade)
         if (date) {
             const [y, m, d] = String(date).split('-').map(Number);
@@ -487,23 +487,23 @@ const getGeneralHistory = async (req, res) => {
         // Filtro de período (startDate e endDate)
         else if (startDate || endDate) {
             const dateFilter = {};
-            
+
             if (startDate) {
                 // Garantir que a data seja tratada como local, sem conversão de fuso horário
                 const [year, month, day] = startDate.split('-').map(Number);
                 const start = new Date(year, month - 1, day, 0, 0, 0, 0);
                 dateFilter.$gte = start;
             }
-            
+
             if (endDate) {
                 // Garantir que a data seja tratada como local, sem conversão de fuso horário
                 const [year, month, day] = endDate.split('-').map(Number);
                 const end = new Date(year, month - 1, day, 23, 59, 59, 999);
                 dateFilter.$lte = end;
             }
-            
+
             query.date = dateFilter;
-            
+
             console.log('📅 [HISTORY FILTER] Aplicando filtro de período:', {
                 startDate: startDate || 'Não definida',
                 endDate: endDate || 'Não definida',
@@ -515,12 +515,12 @@ const getGeneralHistory = async (req, res) => {
 
         // Buscar histórico de pontos
         const points = await Point.find(query)
-        .populate('kidId', 'name age avatar')
-        .populate('activityId', 'name icon color category')
-        .populate('awardedBy', 'name')
-        .sort({ date: -1 })
-        .skip(skip)
-        .limit(parseInt(limit));
+            .populate('kidId', 'name age avatar')
+            .populate('activityId', 'name icon color category')
+            .populate('awardedBy', 'name')
+            .sort({ date: -1 })
+            .skip(skip)
+            .limit(parseInt(limit));
 
         // Contar total de registros
         const total = await Point.countDocuments(query);
@@ -558,6 +558,105 @@ const getGeneralHistory = async (req, res) => {
     }
 };
 
+// @desc    Atualizar um registro de pontos
+// @route   PUT /api/points/:pointId
+// @access  Private
+const updatePoint = async (req, res) => {
+    try {
+        const { pointId } = req.params;
+        const { date, points, reason, notes, activityId } = req.body;
+
+        // Buscar o registro de pontos
+        const point = await Point.findById(pointId);
+        if (!point) {
+            return res.status(404).json({
+                success: false,
+                message: 'Registro de pontos não encontrado'
+            });
+        }
+
+        // Verificar permissão (mesma lógica do delete)
+        let kid;
+        if (req.user.role === 'admin') {
+            kid = await Kid.findOne({ _id: point.kidId, isActive: true });
+        } else if (req.user.familyId) {
+            kid = await Kid.findOne({ _id: point.kidId, familyId: req.user.familyId, isActive: true });
+        } else {
+            kid = await Kid.findOne({ _id: point.kidId, parentId: req.user._id, isActive: true });
+        }
+
+        if (!kid) {
+            return res.status(403).json({
+                success: false,
+                message: 'Acesso negado'
+            });
+        }
+
+        // Atualizar campos
+        if (date) point.date = new Date(date);
+        if (reason) point.reason = reason;
+        if (notes) point.notes = notes;
+
+        // Se activityId mudou, atualizar
+        if (activityId && activityId !== point.activityId?.toString()) {
+            const activity = await Activity.findById(activityId);
+            if (activity) {
+                point.activityId = activityId;
+                // Se points não foi passado explicitamente, usar da nova atividade
+                if (!points) {
+                    point.points = activity.points;
+                }
+            }
+        }
+
+        // Se points mudou, atualizar
+        if (points !== undefined) {
+            point.points = parseInt(points);
+        }
+
+        await point.save();
+
+        // Recalcular pontos da criança (recalculo total para garantir consistência)
+        const allActivePoints = await Point.find({
+            kidId: point.kidId,
+            isActive: true
+        });
+
+        let newTotalPoints = 0;
+        allActivePoints.forEach(p => {
+            if (p.type === 'add') {
+                newTotalPoints += p.points;
+            } else {
+                newTotalPoints -= p.points;
+            }
+        });
+
+        // Atualizar criança
+        kid.totalPoints = newTotalPoints;
+        kid.currentLevel = Math.max(1, Math.floor(newTotalPoints / 500) + 1);
+        await kid.save();
+
+        res.json({
+            success: true,
+            message: 'Registro atualizado com sucesso',
+            data: {
+                point,
+                kid: {
+                    totalPoints: kid.totalPoints,
+                    currentLevel: kid.currentLevel
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('Erro ao atualizar registro de pontos:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro interno do servidor'
+        });
+    }
+};
+
 // @desc    Deletar um registro de pontos
 // @route   DELETE /api/points/:pointId
 // @access  Private
@@ -576,23 +675,23 @@ const deletePoint = async (req, res) => {
 
         // Verificar se a criança pertence ao usuário ou família
         let kid;
-        
+
         if (req.user.role === 'admin') {
             // Admin pode deletar pontos de qualquer criança
             kid = await Kid.findOne({ _id: point.kidId, isActive: true });
         } else if (req.user.familyId) {
             // Usuário pode deletar pontos de crianças da sua família
-            kid = await Kid.findOne({ 
-                _id: point.kidId, 
+            kid = await Kid.findOne({
+                _id: point.kidId,
                 familyId: req.user.familyId,
-                isActive: true 
+                isActive: true
             });
         } else {
             // Usuário sem família só pode deletar pontos de suas próprias crianças
-            kid = await Kid.findOne({ 
-                _id: point.kidId, 
+            kid = await Kid.findOne({
+                _id: point.kidId,
                 parentId: req.user._id,
-                isActive: true 
+                isActive: true
             });
         }
 
@@ -654,21 +753,21 @@ const deleteAllPoints = async (req, res) => {
     try {
         // Buscar todas as crianças do usuário ou família
         let kids;
-        
+
         if (req.user.role === 'admin') {
             // Admin pode deletar pontos de todas as crianças
             kids = await Kid.find({ isActive: true });
         } else if (req.user.familyId) {
             // Usuário pode deletar pontos de crianças da sua família
-            kids = await Kid.find({ 
+            kids = await Kid.find({
                 familyId: req.user.familyId,
-                isActive: true 
+                isActive: true
             });
         } else {
             // Usuário sem família só pode deletar pontos de suas próprias crianças
-            kids = await Kid.find({ 
+            kids = await Kid.find({
                 parentId: req.user._id,
-                isActive: true 
+                isActive: true
             });
         }
 
@@ -691,7 +790,7 @@ const deleteAllPoints = async (req, res) => {
         // Zerar pontos de todas as crianças
         await Kid.updateMany(
             { _id: { $in: kidIds } },
-            { 
+            {
                 totalPoints: 0,
                 currentLevel: 1
             }
@@ -721,7 +820,7 @@ const deleteAllPoints = async (req, res) => {
 const getHistoryByMonth = async (req, res) => {
     try {
         const { month, kidId } = req.query;
-        
+
         if (!month) {
             return res.status(400).json({
                 success: false,
@@ -730,56 +829,56 @@ const getHistoryByMonth = async (req, res) => {
         }
 
         let kidIds;
-        
+
         if (kidId) {
             // Verificar se a criança pertence ao usuário ou família
             let kid;
-            
+
             if (req.user.role === 'admin') {
                 // Admin pode ver histórico de qualquer criança
                 kid = await Kid.findOne({ _id: kidId, isActive: true });
             } else if (req.user.familyId) {
                 // Usuário pode ver histórico de crianças da sua família
-                kid = await Kid.findOne({ 
-                    _id: kidId, 
+                kid = await Kid.findOne({
+                    _id: kidId,
                     familyId: req.user.familyId,
-                    isActive: true 
+                    isActive: true
                 });
             } else {
                 // Usuário sem família só pode ver histórico de suas próprias crianças
-                kid = await Kid.findOne({ 
-                    _id: kidId, 
+                kid = await Kid.findOne({
+                    _id: kidId,
                     parentId: req.user._id,
-                    isActive: true 
+                    isActive: true
                 });
             }
-            
+
             if (!kid) {
                 return res.status(404).json({
                     success: false,
                     message: 'Criança não encontrada'
                 });
             }
-            
+
             kidIds = [kid._id];
         } else {
             // Buscar todas as crianças do usuário ou família
             let kids;
-            
+
             if (req.user.role === 'admin') {
                 // Admin vê todas as crianças
                 kids = await Kid.find({ isActive: true });
             } else if (req.user.familyId) {
                 // Usuário vê crianças da sua família
-                kids = await Kid.find({ 
+                kids = await Kid.find({
                     familyId: req.user.familyId,
-                    isActive: true 
+                    isActive: true
                 });
             } else {
                 // Usuário sem família vê apenas suas próprias crianças
-                kids = await Kid.find({ 
+                kids = await Kid.find({
                     parentId: req.user._id,
-                    isActive: true 
+                    isActive: true
                 });
             }
 
@@ -813,10 +912,10 @@ const getHistoryByMonth = async (req, res) => {
             },
             isActive: true
         })
-        .populate('kidId', 'name age avatar emoji color')
-        .populate('activityId', 'name icon color category')
-        .populate('awardedBy', 'name')
-        .sort({ date: 1 }); // Ordenação crescente: do início para o fim do mês
+            .populate('kidId', 'name age avatar emoji color')
+            .populate('activityId', 'name icon color category')
+            .populate('awardedBy', 'name')
+            .sort({ date: 1 }); // Ordenação crescente: do início para o fim do mês
 
         res.json({
             success: true,
@@ -844,21 +943,21 @@ const deleteAllHistory = async (req, res) => {
     try {
         // Buscar todas as crianças do usuário ou família
         let kids;
-        
+
         if (req.user.role === 'admin') {
             // Admin pode deletar histórico de todas as crianças
             kids = await Kid.find({ isActive: true });
         } else if (req.user.familyId) {
             // Usuário pode deletar histórico de crianças da sua família
-            kids = await Kid.find({ 
+            kids = await Kid.find({
                 familyId: req.user.familyId,
-                isActive: true 
+                isActive: true
             });
         } else {
             // Usuário sem família só pode deletar histórico de suas próprias crianças
-            kids = await Kid.find({ 
+            kids = await Kid.find({
                 parentId: req.user._id,
-                isActive: true 
+                isActive: true
             });
         }
 
@@ -878,7 +977,7 @@ const deleteAllHistory = async (req, res) => {
         // Zerar pontos de todas as crianças
         await Kid.updateMany(
             { _id: { $in: kidIds } },
-            { 
+            {
                 totalPoints: 0,
                 currentLevel: 1
             }
@@ -910,6 +1009,7 @@ module.exports = {
     getPointStats,
     getPointsByCategory,
     deletePoint,
+    updatePoint,
     deleteAllPoints,
     deleteAllHistory,
     getHistoryByMonth

@@ -75,10 +75,10 @@ class NotificationManager {
     static show(message, type = 'info', duration = 5000) {
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
-        
+
         const icon = this.getIcon(type);
         const color = this.getColor(type);
-        
+
         notification.innerHTML = `
             <div style="display: flex; align-items: center; padding: 16px;">
                 <div style="flex-shrink: 0; margin-right: 12px;">
@@ -189,13 +189,13 @@ class AuthManager {
     static async checkAuth() {
         const protectedPages = ['/dashboard', '/manage-points', '/child-view', '/kids', '/kid-area', '/communication'];
         const currentPath = window.location.pathname;
-        
+
         if (protectedPages.includes(currentPath)) {
             if (!this.isAuthenticated()) {
                 window.location.href = '/';
                 return false;
             }
-            
+
             try {
                 const response = await API.get('/auth/verify');
                 if (!response.success) {
@@ -209,7 +209,7 @@ class AuthManager {
                 return false;
             }
         }
-        
+
         return true;
     }
 }
@@ -237,14 +237,14 @@ class Formatter {
     static formatDate(date) {
         // Garantir que a data seja interpretada como local, sem conversão de fuso horário
         const d = new Date(date);
-        
+
         // Se a data for uma string no formato YYYY-MM-DD, precisamos tratá-la como local
         if (typeof date === 'string' && date.match(/^\d{4}-\d{2}-\d{2}$/)) {
             const [year, month, day] = date.split('-').map(Number);
             const localDate = new Date(year, month - 1, day);
             return localDate.toLocaleDateString('pt-BR');
         }
-        
+
         return d.toLocaleDateString('pt-BR');
     }
 
@@ -270,7 +270,7 @@ class Formatter {
     static formatDuration(minutes) {
         const hours = Math.floor(minutes / 60);
         const mins = minutes % 60;
-        
+
         if (hours > 0) {
             return `${hours}h ${mins}min`;
         }
@@ -375,11 +375,11 @@ function logout() {
 }
 
 // Inicialização quando o DOM estiver pronto
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Verificar autenticação em páginas protegidas
     const protectedPages = ['/dashboard', '/child-view'];
     const currentPath = window.location.pathname;
-    
+
     if (protectedPages.includes(currentPath)) {
         checkAuth();
     }
@@ -394,21 +394,21 @@ document.addEventListener('DOMContentLoaded', function() {
 // Configurar listeners globais
 function setupGlobalListeners() {
     // Fechar modais ao clicar fora
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
         if (e.target.classList.contains('modal')) {
             e.target.classList.add('hidden');
         }
     });
 
     // Fechar notificações ao clicar em ESC
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
             ModalManager.hideAll();
         }
     });
 
     // Interceptar cliques em links de logout
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
         if (e.target.matches('[data-logout]')) {
             e.preventDefault();
             logout();
@@ -440,13 +440,13 @@ async function loadDashboardData() {
             loadActivities(),
             loadUserInfo()
         ]);
-        
+
         // Definir mês corrente como padrão após carregar as crianças
         setCurrentMonthDefault();
-        
+
         // Carregar histórico com filtros padrão
         await loadHistory();
-        
+
     } catch (error) {
         console.error('Erro ao carregar dados do dashboard:', error);
         showToast('Erro', 'Erro ao carregar dados do dashboard', 'error');
@@ -458,7 +458,7 @@ async function loadKids() {
     try {
         const response = await API.get('/kids');
         kids = response.data.kids;
-        
+
         // Verificar qual página está sendo carregada
         const currentPath = window.location.pathname;
         if (currentPath === '/kids') {
@@ -484,7 +484,7 @@ async function loadActivities() {
     try {
         const response = await API.get('/activities');
         activities = response.data.activities;
-        
+
         // Verificar qual página está sendo carregada
         const currentPath = window.location.pathname;
         if (currentPath === '/kids') {
@@ -516,7 +516,7 @@ async function loadUserInfo() {
     try {
         const user = AuthManager.getUser();
         const userNameElement = document.getElementById('user-name');
-        
+
         if (user && userNameElement) {
             userNameElement.textContent = user.name;
         }
@@ -547,10 +547,10 @@ function renderKidsCards() {
         const level = Math.floor(totalPoints / 100) + 1;
         const progressInLevel = totalPoints % 100;
         const progressPercentage = Math.min(100, (progressInLevel / 100) * 100);
-        
+
         // Determinar status baseado na progressão de pontos (0-500)
         let statusColor, statusText;
-        
+
         if (totalPoints <= 0) {
             statusColor = 'bg-red-100 text-red-800';
             statusText = 'Perda de todos os direitos';
@@ -579,19 +579,19 @@ function renderKidsCards() {
             // Garantir que pontos estejam no range 0-500
             const clampedPoints = Math.max(0, Math.min(500, points));
             const percentage = clampedPoints / 500; // 0 a 1
-            
+
             if (points <= 0) {
                 // Vermelho para pontos negativos ou zero
                 return '#DC2626'; // Vermelho forte
             }
-            
+
             // Progressão de cores:
             // 0-100 pontos: Vermelho para Laranja
             // 100-200 pontos: Laranja para Amarelo
             // 200-300 pontos: Amarelo para Verde Claro
             // 300-400 pontos: Verde Claro para Verde
             // 400-500 pontos: Verde para Verde Escuro
-            
+
             if (clampedPoints <= 100) {
                 // Vermelho (#DC2626) para Laranja (#EA580C)
                 const localPercentage = clampedPoints / 100;
@@ -634,7 +634,7 @@ function renderKidsCards() {
         const baseColor = getProgressiveColor(totalPoints);
         const headerColor = baseColor;
         const progressColor = baseColor;
-        
+
         return `
             <div class="kid-card">
                 <div class="kid-card-header" style="background: linear-gradient(135deg, ${headerColor}, ${progressColor})">
@@ -692,7 +692,7 @@ function renderKidsCards() {
 function renderHistoryTable() {
     const cardsContainer = document.getElementById('history-cards');
     const emptyContainer = document.getElementById('history-empty');
-    
+
     if (!cardsContainer || !emptyContainer) return;
 
     if (history.length === 0) {
@@ -702,72 +702,94 @@ function renderHistoryTable() {
     }
 
     emptyContainer.classList.add('hidden');
-    
-    cardsContainer.innerHTML = history.map(entry => {
+
+    cardsContainer.innerHTML = `
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Data
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Atividade/Razão
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Criança
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Pontos
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Ações
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    ${history.map(item => {
         // Determinar nome da criança
-        const kidName = entry.kidId ? entry.kidId.name : entry.kidName || 'N/A';
-        
+        const kidName = item.kidId ? item.kidId.name : item.kidName || 'N/A';
+
         // Determinar nome da atividade
         let activityName = 'N/A';
         let activityIcon = '🎯';
-        if (entry.activityId && entry.activityId.name) {
-            activityName = entry.activityId.name;
-            activityIcon = entry.activityId.icon || '🎯';
-        } else if (entry.activityName) {
-            activityName = entry.activityName;
-        } else if (entry.reason) {
-            activityName = entry.reason;
+        if (item.activityId && item.activityId.name) {
+            activityName = item.activityId.name;
+            activityIcon = item.activityId.icon || '🎯';
+        } else if (item.activityName) {
+            activityName = item.activityName;
+        } else if (item.reason) {
+            activityName = item.reason;
             activityIcon = '⭐'; // Ícone para pontos avulsos
         } else {
             activityName = 'Ponto Avulso';
             activityIcon = '⭐'; // Ícone para pontos avulsos
         }
-        
+
         // Determinar pontos com sinal
-        const points = entry.points || 0;
-        const pointsDisplay = entry.type === 'remove' ? -points : points;
+        const points = item.points || 0;
+        const pointsDisplay = item.type === 'remove' ? -points : points;
         const isPositive = pointsDisplay >= 0;
-        
+
         // Determinar data
-        const date = entry.date ? formatDate(new Date(entry.date)) : 'N/A';
-        
-        // Determinar observações
-        const notes = entry.notes || '-';
-        
+        const date = item.date ? new Date(item.date).toLocaleDateString('pt-BR') : 'N/A';
+
         return `
-            <div class="history-card ${isPositive ? 'positive' : 'negative'}">
-                <div class="history-card-content">
-                    <div class="history-card-header">
-                        <div class="history-activity-info">
-                            <div class="history-activity-icon">
-                                ${activityIcon}
-                            </div>
-                            <div class="history-activity-details">
-                                <h3>${activityName}</h3>
-                                <p>${kidName}</p>
-                            </div>
-                        </div>
-                        
-                        <div class="history-points-badge ${isPositive ? 'positive' : 'negative'}">
-                            <span>${entry.type === 'add' ? 'Adicionado' : 'Removido'}</span>
-                            <span>${pointsDisplay >= 0 ? '+' : ''}${pointsDisplay} pts</span>
-                        </div>
-                    </div>
-                    
-                    <div class="history-meta">
-                        <div class="history-meta-item">
-                            <span>📅</span>
-                            <span>${date}</span>
-                        </div>
-                        <div class="history-meta-item">
-                            <span>📝</span>
-                            <span>${notes}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-    }).join('');
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    ${date}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <span class="text-xl mr-2">${activityIcon}</span>
+                                        <div class="text-sm font-medium text-gray-900">
+                                            ${activityName}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">${kidName}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${isPositive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                        ${pointsDisplay >= 0 ? '+' : ''}${pointsDisplay}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <button onclick="editHistoryItem('${item._id}')" class="text-indigo-600 hover:text-indigo-900 mr-3" title="Editar">
+                                        ✏️
+                                    </button>
+                                    <button onclick="deleteHistoryItem('${item._id}')" class="text-red-600 hover:text-red-900" title="Excluir">
+                                        🗑️
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+    }).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
 }
 
 // Atualizar selects de filtro
@@ -789,38 +811,38 @@ async function applyFilters() {
 
     console.log('🔍 [DEBUG] Valores dos campos de filtro:', {
         kidId: kidId || 'Vazio',
-        startDate: startDate || 'Vazio', 
+        startDate: startDate || 'Vazio',
         endDate: endDate || 'Vazio'
     });
 
     try {
         let url = '/points/history';
         const params = new URLSearchParams();
-        
+
         if (kidId) params.append('kidId', kidId);
         if (startDate) params.append('startDate', startDate);
         if (endDate) params.append('endDate', endDate);
-        
+
         if (params.toString()) {
             url += '?' + params.toString();
         }
-        
+
         console.log('🔎 [PARENT UI] Aplicando filtros:', {
             kidId: kidId || 'Todas',
             startDate: startDate || 'Não definida',
             endDate: endDate || 'Não definida',
             url: url
         });
-        
+
         const response = await API.get(url);
         history = response.data.history;
         renderHistoryTable();
-        
+
         // Feedback visual para o usuário
         const filterInfo = buildFilterInfo(kidId, startDate, endDate);
         console.log('💬 [DEBUG] Informação do filtro criada:', filterInfo);
         showFilterFeedback(filterInfo);
-        
+
     } catch (error) {
         console.error('❌ [PARENT UI] Erro ao aplicar filtros:', error);
         showToast('Erro', 'Erro ao aplicar filtros', 'error');
@@ -833,17 +855,17 @@ function clearFilters() {
     const filterKid = document.getElementById('filter-kid');
     const filterStartDate = document.getElementById('filter-start-date');
     const filterEndDate = document.getElementById('filter-end-date');
-    
+
     if (filterKid) filterKid.value = '';
     if (filterStartDate) filterStartDate.value = '';
     if (filterEndDate) filterEndDate.value = '';
-    
+
     // Definir mês corrente como padrão
     setCurrentMonthDefault();
-    
+
     // Aplicar filtros automaticamente
     applyFilters();
-    
+
     console.log('🗑️ [PARENT UI] Filtros limpos - voltando ao mês corrente');
 }
 
@@ -852,20 +874,20 @@ function setCurrentMonthDefault() {
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
-    
+
     // Primeiro dia do mês
     const startDate = `${year}-${month}-01`;
-    
+
     // Último dia do mês
     const lastDay = new Date(year, now.getMonth() + 1, 0).getDate();
     const endDate = `${year}-${month}-${String(lastDay).padStart(2, '0')}`;
-    
+
     const filterStartDate = document.getElementById('filter-start-date');
     const filterEndDate = document.getElementById('filter-end-date');
-    
+
     if (filterStartDate) filterStartDate.value = startDate;
     if (filterEndDate) filterEndDate.value = endDate;
-    
+
     console.log('📅 [PARENT UI] Definindo mês corrente como padrão:', {
         startDate,
         endDate,
@@ -876,14 +898,14 @@ function setCurrentMonthDefault() {
 // Construir informação dos filtros aplicados
 function buildFilterInfo(kidId, startDate, endDate) {
     const filters = [];
-    
+
     if (kidId) {
         const kidName = kids.find(kid => kid._id === kidId)?.name || 'Criança';
-        filters.push(`Criança: ${kidName}`);
+        filters.push(`Criança: ${kidName} `);
     } else {
         filters.push('Todas as crianças');
     }
-    
+
     if (startDate && endDate) {
         console.log('🔍 [DEBUG] Processando datas:', {
             startDateRaw: startDate,
@@ -891,24 +913,24 @@ function buildFilterInfo(kidId, startDate, endDate) {
             startDateObj: new Date(startDate),
             endDateObj: new Date(endDate)
         });
-        
+
         const start = formatDate(new Date(startDate));
         const end = formatDate(new Date(endDate));
-        
+
         console.log('🔍 [DEBUG] Datas formatadas:', {
             startFormatted: start,
             endFormatted: end
         });
-        
-        filters.push(`Período: ${start} até ${end}`);
+
+        filters.push(`Período: ${start} até ${end} `);
     } else if (startDate) {
         const start = formatDate(new Date(startDate));
-        filters.push(`A partir de: ${start}`);
+        filters.push(`A partir de: ${start} `);
     } else if (endDate) {
         const end = formatDate(new Date(endDate));
-        filters.push(`Até: ${end}`);
+        filters.push(`Até: ${end} `);
     }
-    
+
     const result = filters.join(' • ');
     console.log('🔍 [DEBUG] Resultado final do filtro:', result);
     return result;
@@ -921,7 +943,7 @@ function showFilterFeedback(filterInfo) {
     if (existingFeedback) {
         existingFeedback.remove();
     }
-    
+
     // Criar novo feedback
     const historyCards = document.getElementById('history-cards');
     if (historyCards && filterInfo) {
@@ -935,7 +957,7 @@ function showFilterFeedback(filterInfo) {
                 <span class="filter-feedback-count">${history.length} resultado(s)</span>
             </div>
         `;
-        
+
         historyCards.parentNode.insertBefore(feedback, historyCards);
     }
 }
@@ -965,29 +987,29 @@ function hideAddKidModal() {
 
 // Inicializar dashboard se estiver na página
 if (window.location.pathname === '/dashboard') {
-    document.addEventListener('DOMContentLoaded', async function() {
+    document.addEventListener('DOMContentLoaded', async function () {
         // Verificar autenticação primeiro
         const isAuth = await AuthManager.checkAuth();
         if (!isAuth) {
             return; // checkAuth já redireciona se não autenticado
         }
-        
+
         loadDashboardData();
 
         // Garantir binding do botão Filtrar
         const filterBtn = document.getElementById('apply-filters-btn');
         if (filterBtn) {
-            filterBtn.addEventListener('click', function(){
+            filterBtn.addEventListener('click', function () {
                 // Listener ativo
             });
         }
-        
+
         // Event listener para formulário de adicionar criança
         const addKidForm = document.getElementById('add-kid-form');
         if (addKidForm) {
-            addKidForm.addEventListener('submit', async function(e) {
+            addKidForm.addEventListener('submit', async function (e) {
                 e.preventDefault();
-                
+
                 const formData = new FormData(this);
                 const data = {
                     name: formData.get('name'),
@@ -1020,16 +1042,16 @@ function setActiveNav(navId) {
     // Remover classe active de todos os botões
     const allNavButtons = document.querySelectorAll('.navbar-button');
     const allMobileItems = document.querySelectorAll('.navbar-mobile-item');
-    
+
     allNavButtons.forEach(btn => btn.classList.remove('active'));
     allMobileItems.forEach(item => item.classList.remove('active'));
-    
+
     // Adicionar classe active ao botão selecionado
     const selectedButton = document.getElementById(navId);
     if (selectedButton) {
         selectedButton.classList.add('active');
     }
-    
+
     // Fechar menu mobile após seleção
     const mobileMenu = document.getElementById('mobile-menu');
     if (mobileMenu) {
@@ -1038,10 +1060,10 @@ function setActiveNav(navId) {
 }
 
 // Fechar menu mobile ao clicar fora
-document.addEventListener('click', function(e) {
+document.addEventListener('click', function (e) {
     const mobileMenu = document.getElementById('mobile-menu');
     const mobileButton = document.querySelector('.navbar-mobile-button');
-    
+
     if (mobileMenu && !mobileMenu.contains(e.target) && !mobileButton.contains(e.target)) {
         mobileMenu.classList.add('hidden');
     }
@@ -1057,14 +1079,92 @@ function setCurrentPageActive() {
         '/communication': 'nav-communication',
         '/settings': 'nav-settings'
     };
-    
+
     const activeNavId = navMap[currentPath];
     if (activeNavId) {
         setActiveNav(activeNavId);
     }
 }
 
+// Funções para gerenciar histórico (Edição e Exclusão)
+
+// Abrir modal de edição
+async function editHistoryItem(pointId) {
+    try {
+        // Buscar dados atuais do ponto (pode ser via API ou pegando do DOM se tiver todos os dados)
+        // Aqui vamos buscar do array 'history' que já temos carregado na memória
+        const point = history.find(p => p._id === pointId);
+
+        if (!point) {
+            showToast('Erro', 'Registro não encontrado', 'error');
+            return;
+        }
+
+        const modal = document.getElementById('edit-point-modal');
+        const form = document.getElementById('edit-point-form');
+
+        // Preencher formulário
+        document.getElementById('edit-point-id').value = point._id;
+        document.getElementById('edit-date').value = point.date.split('T')[0];
+        document.getElementById('edit-points').value = point.points;
+        document.getElementById('edit-reason').value = point.reason || point.activityId?.name || '';
+        document.getElementById('edit-notes').value = point.notes || '';
+
+        // Mostrar modal
+        modal.classList.remove('hidden');
+    } catch (error) {
+        console.error('Erro ao abrir edição:', error);
+        showToast('Erro', 'Erro ao abrir edição', 'error');
+    }
+}
+
+// Fechar modal de edição
+function closeEditModal() {
+    const modal = document.getElementById('edit-point-modal');
+    modal.classList.add('hidden');
+    document.getElementById('edit-point-form').reset();
+}
+
+// Salvar edição
+document.getElementById('edit-point-form')?.addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const pointId = document.getElementById('edit-point-id').value;
+    const data = {
+        date: document.getElementById('edit-date').value,
+        points: parseInt(document.getElementById('edit-points').value),
+        reason: document.getElementById('edit-reason').value,
+        notes: document.getElementById('edit-notes').value
+    };
+
+    try {
+        await API.put(`/ points / ${pointId} `, data);
+        showToast('Sucesso', 'Registro atualizado com sucesso!', 'success');
+        closeEditModal();
+        loadHistory(); // Recarregar lista
+    } catch (error) {
+        console.error('Erro ao atualizar registro:', error);
+        showToast('Erro', 'Erro ao atualizar registro', 'error');
+    }
+});
+
+// Excluir item do histórico
+async function deleteHistoryItem(pointId) {
+    if (!confirm('Tem certeza que deseja excluir este registro? Essa ação irá recalcular os pontos da criança.')) {
+        return;
+    }
+
+    try {
+        await API.delete(`/ points / ${pointId} `);
+        showToast('Sucesso', 'Registro excluído com sucesso!', 'success');
+        loadHistory(); // Recarregar lista
+    } catch (error) {
+        console.error('Erro ao excluir registro:', error);
+        showToast('Erro', 'Erro ao excluir registro', 'error');
+    }
+}
+
 // Inicializar navegação quando o DOM estiver pronto
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     setCurrentPageActive();
 }); 
