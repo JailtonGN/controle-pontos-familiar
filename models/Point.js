@@ -17,6 +17,10 @@ const pointSchema = new mongoose.Schema({
         required: [true, 'Quantidade de pontos é obrigatória'],
         min: [1, 'Pontos devem ser pelo menos 1']
     },
+    balanceAfter: {
+        type: Number,
+        default: null
+    },
     date: {
         type: Date,
         default: Date.now
@@ -50,7 +54,7 @@ const pointSchema = new mongoose.Schema({
 });
 
 // Middleware para atualizar pontos da criança quando um ponto é adicionado
-pointSchema.pre('save', async function(next) {
+pointSchema.pre('save', async function (next) {
     if (this.isNew) {
         try {
             console.log('🔄 [POINT PRE-SAVE] Atualizando pontos da criança...');
@@ -60,10 +64,10 @@ pointSchema.pre('save', async function(next) {
                 type: this.type,
                 activityId: this.activityId
             });
-            
+
             const Kid = require('./Kid');
             const kid = await Kid.findById(this.kidId);
-            
+
             if (kid) {
                 console.log('✅ [POINT PRE-SAVE] Criança encontrada:', kid.name);
                 if (this.type === 'add') {
@@ -85,7 +89,7 @@ pointSchema.pre('save', async function(next) {
 });
 
 // Método estático para obter pontos por período
-pointSchema.statics.getPointsByPeriod = async function(kidId, startDate, endDate) {
+pointSchema.statics.getPointsByPeriod = async function (kidId, startDate, endDate) {
     return this.find({
         kidId,
         date: {
@@ -94,15 +98,15 @@ pointSchema.statics.getPointsByPeriod = async function(kidId, startDate, endDate
         },
         isActive: true
     }).populate('activityId', 'name icon color category')
-      .populate('awardedBy', 'name')
-      .sort({ date: -1 });
+        .populate('awardedBy', 'name')
+        .sort({ date: -1 });
 };
 
 // Método estático para obter estatísticas de pontos
-pointSchema.statics.getPointsStats = async function(kidId, period = 'month') {
+pointSchema.statics.getPointsStats = async function (kidId, period = 'month') {
     const now = new Date();
     let startDate;
-    
+
     switch (period) {
         case 'week':
             startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -147,7 +151,7 @@ pointSchema.statics.getPointsStats = async function(kidId, period = 'month') {
 };
 
 // Método estático para obter pontos por categoria
-pointSchema.statics.getPointsByCategory = async function(kidId, category) {
+pointSchema.statics.getPointsByCategory = async function (kidId, category) {
     return this.aggregate([
         {
             $match: {
@@ -196,19 +200,19 @@ pointSchema.statics.getPointsByCategory = async function(kidId, category) {
 };
 
 // Método estático para obter histórico de pontos
-pointSchema.statics.getPointHistory = async function(kidId, limit = 50) {
+pointSchema.statics.getPointHistory = async function (kidId, limit = 50) {
     return this.find({
         kidId,
         isActive: true
     })
-    .populate('activityId', 'name icon color category')
-    .populate('awardedBy', 'name')
-    .sort({ date: -1 })
-    .limit(limit);
+        .populate('activityId', 'name icon color category')
+        .populate('awardedBy', 'name')
+        .sort({ date: -1 })
+        .limit(limit);
 };
 
 // Método estático para obter pontos do dia
-pointSchema.statics.getTodayPoints = async function(kidId) {
+pointSchema.statics.getTodayPoints = async function (kidId) {
     const today = new Date();
     const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
@@ -221,9 +225,9 @@ pointSchema.statics.getTodayPoints = async function(kidId) {
         },
         isActive: true
     })
-    .populate('activityId', 'name icon color')
-    .populate('awardedBy', 'name')
-    .sort({ date: -1 });
+        .populate('activityId', 'name icon color')
+        .populate('awardedBy', 'name')
+        .sort({ date: -1 });
 };
 
 // Índices

@@ -721,6 +721,9 @@ function renderHistoryTable() {
                             Pontos
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Saldo
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Ações
                         </th>
                     </tr>
@@ -751,6 +754,9 @@ function renderHistoryTable() {
         const pointsDisplay = item.type === 'remove' ? -points : points;
         const isPositive = pointsDisplay >= 0;
 
+        // Determinar saldo
+        const balanceDisplay = item.balanceAfter !== undefined && item.balanceAfter !== null ? item.balanceAfter : '-';
+
         // Determinar data
         const date = item.date ? new Date(item.date).toLocaleDateString('pt-BR') : 'N/A';
 
@@ -774,6 +780,9 @@ function renderHistoryTable() {
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${isPositive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
                                         ${pointsDisplay >= 0 ? '+' : ''}${pointsDisplay}
                                     </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">
+                                    ${balanceDisplay}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <button onclick="editHistoryItem('${item._id}')" class="text-indigo-600 hover:text-indigo-900 mr-3" title="Editar">

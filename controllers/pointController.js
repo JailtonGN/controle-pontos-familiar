@@ -83,7 +83,8 @@ const addPoints = async (req, res) => {
             reason: reason || null,
             awardedBy: req.user._id,
             type: 'add',
-            date: date ? new Date(date) : new Date()
+            date: date ? new Date(date) : new Date(),
+            balanceAfter: (kid.totalPoints || 0) + pointsToAdd
         });
 
         console.log('💾 [ADD POINTS] Salvando registro...');
@@ -200,7 +201,8 @@ const removePoints = async (req, res) => {
             reason: reason || null,
             awardedBy: req.user._id,
             type: 'remove',
-            date: date ? new Date(date) : new Date()
+            date: date ? new Date(date) : new Date(),
+            balanceAfter: (kid.totalPoints || 0) - pointsToRemove
         });
 
         try {
