@@ -705,28 +705,25 @@ function renderHistoryTable() {
 
     cardsContainer.innerHTML = `
         <div class="overflow-x-auto shadow-sm rounded-lg">
-            <table class="min-w-full divide-y divide-gray-200" style="table-layout: fixed;">
+            <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: 110px;">
+                        <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: 100px;">
                             Data
                         </th>
-                        <th scope="col" class="py-3 text-left text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: auto;">
-                            <div class="flex items-center px-6">
-                                <span class="text-xl mr-3 opacity-0">🎯</span>
-                                <span>Atividade/Razão</span>
-                            </div>
+                        <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">
+                            Atividade/Razão
                         </th>
-                        <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: 160px;">
+                        <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: 150px;">
                             Criança
                         </th>
-                        <th scope="col" class="px-6 py-3 text-center text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: 140px;">
+                        <th scope="col" class="px-6 py-3 text-center text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: 120px;">
                             Pontos
                         </th>
-                        <th scope="col" class="px-6 py-3 text-center text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: 140px;">
+                        <th scope="col" class="px-6 py-3 text-center text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: 120px;">
                             Saldo
                         </th>
-                        <th scope="col" class="px-6 py-3 text-center text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: 150px;">
+                        <th scope="col" class="px-6 py-3 text-center text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: 140px;">
                             Ações
                         </th>
                     </tr>
@@ -769,15 +766,13 @@ function renderHistoryTable() {
                                     ${date}
                                 </td>
                                 <td class="px-6 py-4">
-                                    <div class="flex items-center">
-                                        <span class="text-xl mr-3">${activityIcon}</span>
-                                        <div class="text-base font-medium text-gray-900 truncate">
-                                            ${activityName}
-                                        </div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-lg flex-shrink-0">${activityIcon}</span>
+                                        <span class="text-base font-medium text-gray-900">${activityName}</span>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-base text-gray-900">${kidName}</div>
+                                <td class="px-6 py-4 whitespace-nowrap text-base text-gray-900">
+                                    ${kidName}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
                                     <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full ${isPositive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
