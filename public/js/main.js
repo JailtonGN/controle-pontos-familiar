@@ -708,13 +708,13 @@ function renderHistoryTable() {
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: 100px;">
+                        <th scope="col" class="px-6 py-3 text-center text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: 100px;">
                             Data
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">
                             Atividade/Razão
                         </th>
-                        <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: 150px;">
+                        <th scope="col" class="px-6 py-3 text-center text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: 150px;">
                             Criança
                         </th>
                         <th scope="col" class="px-6 py-3 text-center text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: 120px;">
@@ -762,7 +762,7 @@ function renderHistoryTable() {
 
         return `
                             <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 whitespace-nowrap text-base text-gray-700">
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-base text-gray-700">
                                     ${date}
                                 </td>
                                 <td class="px-6 py-4">
@@ -771,7 +771,7 @@ function renderHistoryTable() {
                                         <span class="text-base font-medium text-gray-900">${activityName}</span>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-base text-gray-900">
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-base text-gray-900">
                                     ${kidName}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
