@@ -708,22 +708,22 @@ function renderHistoryTable() {
             <table class="min-w-full divide-y divide-gray-200" style="table-layout: fixed;">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: 100px;">
+                        <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: 110px;">
                             Data
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: auto;">
                             Atividade/Razão
                         </th>
-                        <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: 150px;">
+                        <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: 160px;">
                             Criança
                         </th>
-                        <th scope="col" class="px-8 py-3 text-center text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: 130px;">
+                        <th scope="col" class="px-6 py-3 text-center text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: 140px;">
                             Pontos
                         </th>
-                        <th scope="col" class="px-8 py-3 text-center text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: 130px;">
+                        <th scope="col" class="px-6 py-3 text-center text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: 140px;">
                             Saldo
                         </th>
-                        <th scope="col" class="px-8 py-3 text-center text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: 140px;">
+                        <th scope="col" class="px-6 py-3 text-center text-sm font-medium text-gray-600 uppercase tracking-wider" style="width: 150px;">
                             Ações
                         </th>
                     </tr>
@@ -776,15 +776,15 @@ function renderHistoryTable() {
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-base text-gray-900">${kidName}</div>
                                 </td>
-                                <td class="px-8 py-4 whitespace-nowrap text-center">
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
                                     <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full ${isPositive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
                                         ${pointsDisplay >= 0 ? '+' : ''}${pointsDisplay}
                                     </span>
                                 </td>
-                                <td class="px-8 py-4 whitespace-nowrap text-center text-base text-gray-800 font-bold">
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-base text-gray-800 font-bold">
                                     ${balanceDisplay}
                                 </td>
-                                <td class="px-8 py-4 whitespace-nowrap text-center text-base font-medium">
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-base font-medium">
                                     <button onclick="editHistoryItem('${item._id}')" class="text-indigo-600 hover:text-indigo-900 mr-4" title="Editar">
                                         ✏️
                                     </button>
