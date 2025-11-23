@@ -166,8 +166,9 @@ router.get('/stats/:kidId', getPointStats);
 router.get('/by-category/:kidId/:category', getPointsByCategory);
 router.put('/:pointId', [
     body('points').optional().isInt({ min: 1, max: 500 }),
-    body('date').optional().isISO8601().toDate(),
-    body('activityId').optional().isMongoId()
+    body('date').optional().isISO8601(), // Removido .toDate() - conversão será feita no controller
+    body('activityId').optional().isMongoId(),
+    body('kidId').optional().isMongoId()
 ], updatePoint);
 router.delete('/:pointId', deletePoint);
 

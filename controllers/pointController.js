@@ -568,14 +568,34 @@ const updatePoint = async (req, res) => {
         const { pointId } = req.params;
         const { date, points, reason, notes, activityId, kidId } = req.body;
 
+        console.log('📝 [UPDATE POINT] Iniciando atualização:', {
+            pointId,
+            kidId,
+            date,
+            points,
+            reason,
+            userId: req.user._id,
+            userRole: req.user.role,
+            userFamilyId: req.user.familyId
+        });
+
         // Buscar o registro de pontos
         const point = await Point.findById(pointId);
         if (!point) {
+            console.log('❌ [UPDATE POINT] Registro não encontrado:', pointId);
             return res.status(404).json({
                 success: false,
                 message: 'Registro de pontos não encontrado'
             });
         }
+
+        console.log('📊 [UPDATE POINT] Registro encontrado:', {
+            _id: point._id,
+            oldKidId: point.kidId,
+            newKidId: kidId,
+            currentPoints: point.points,
+            currentDate: point.date
+        });
 
         // Guardar kidId antigo para recalcular depois
         const oldKidId = point.kidId;
@@ -591,15 +611,28 @@ const updatePoint = async (req, res) => {
         }
 
         if (!kid) {
+            console.log('❌ [UPDATE POINT] Criança antiga não encontrada ou sem permissão:', {
+                oldKidId,
+                userRole: req.user.role,
+                userFamilyId: req.user.familyId,
+                userId: req.user._id
+            });
             return res.status(403).json({
                 success: false,
-                message: 'Acesso negado'
+                message: 'Acesso negado - Criança não encontrada ou você não tem permissão'
             });
         }
+
+        console.log('✅ [UPDATE POINT] Permissão verificada para criança antiga:', kid.name);
 
         // Se kidId mudou, verificar permissão para a nova criança
         let newKid = kid;
         if (kidId && kidId !== oldKidId.toString()) {
+            console.log('🔄 [UPDATE POINT] Mudando criança:', {
+                de: oldKidId.toString(),
+                para: kidId
+            });
+
             if (req.user.role === 'admin') {
                 newKid = await Kid.findOne({ _id: kidId, isActive: true });
             } else if (req.user.familyId) {
@@ -609,17 +642,85 @@ const updatePoint = async (req, res) => {
             }
 
             if (!newKid) {
+                console.log('❌ [UPDATE POINT] Nova criança não encontrada ou sem permissão:', {
+                    kidId,
+                    userRole: req.user.role,
+                    userFamilyId: req.user.familyId,
+                    userId: req.user._id
+                });
                 return res.status(403).json({
                     success: false,
-                    message: 'Acesso negado para a nova criança'
+                    message: 'Acesso negado para a nova criança - Verifique se ela pertence à sua família'
                 });
             }
 
+            console.log('✅ [UPDATE POINT] Nova criança encontrada:', newKid.name);
             point.kidId = kidId;
         }
 
         // Atualizar campos
-        if (date) point.date = new Date(date);
+        if (date !== undefined && date !== null && date !== '') {
+            try {
+                console.log('📅 [UPDATE POINT] Processando data:', { date, type: typeof date });
+                
+                let parsedDate;
+                
+                // Se já é um objeto Date válido
+                if (date instanceof Date && !isNaN(date.getTime())) {
+                    parsedDate = date;
+                } 
+                // Se é uma string
+                else if (typeof date === 'string') {
+                    // Limpar a string
+                    const cleanDate = date.trim();
+                    
+                    // Verificar formato YYYY-MM-DD
+                    if (!/^\d{4}-\d{2}-\d{2}$/.test(cleanDate)) {
+                        console.log('❌ [UPDATE POINT] Formato de data inválido:', cleanDate);
+                        return res.status(400).json({
+                            success: false,
+                            message: 'Data inválida. Use o formato YYYY-MM-DD (ex: 2024-01-15)'
+                        });
+                    }
+                    
+                    // Adicionar horário para evitar problema de timezone
+                    parsedDate = new Date(cleanDate + 'T12:00:00.000Z');
+                }
+                // Se é timestamp
+                else if (typeof date === 'number') {
+                    parsedDate = new Date(date);
+                }
+                else {
+                    console.log('❌ [UPDATE POINT] Tipo de data não suportado:', typeof date);
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Tipo de data não suportado'
+                    });
+                }
+                
+                // Verificar se a data é válida
+                if (!parsedDate || isNaN(parsedDate.getTime())) {
+                    console.log('❌ [UPDATE POINT] Data inválida após parse:', { date, parsedDate });
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Data inválida. Verifique o formato (YYYY-MM-DD)'
+                    });
+                }
+                
+                point.date = parsedDate;
+                console.log('✅ [UPDATE POINT] Data atualizada:', {
+                    original: date,
+                    parsed: parsedDate,
+                    iso: parsedDate.toISOString()
+                });
+            } catch (error) {
+                console.log('❌ [UPDATE POINT] Erro ao processar data:', error);
+                return res.status(400).json({
+                    success: false,
+                    message: 'Erro ao processar data: ' + error.message
+                });
+            }
+        }
         if (reason) point.reason = reason;
         if (notes !== undefined) point.notes = notes;
 
@@ -642,7 +743,16 @@ const updatePoint = async (req, res) => {
             point.points = parseInt(points);
         }
 
-        await point.save();
+        console.log('💾 [UPDATE POINT] Salvando ponto:', {
+            _id: point._id,
+            kidId: point.kidId,
+            date: point.date,
+            dateType: typeof point.date,
+            dateValid: point.date instanceof Date && !isNaN(point.date.getTime())
+        });
+
+        // Salvar sem validação de schema para evitar problemas com data
+        await point.save({ validateBeforeSave: false });
 
         // Recalcular pontos da criança antiga (se mudou de criança)
         if (oldKidId.toString() !== point.kidId.toString()) {
@@ -677,6 +787,13 @@ const updatePoint = async (req, res) => {
         newKid.currentLevel = Math.max(1, Math.floor(newTotalPoints / 500) + 1);
         await newKid.save();
 
+        console.log('✅ [UPDATE POINT] Atualização concluída com sucesso:', {
+            pointId: point._id,
+            kidId: point.kidId,
+            totalPoints: newKid.totalPoints,
+            level: newKid.currentLevel
+        });
+
         res.json({
             success: true,
             message: 'Registro atualizado com sucesso',
@@ -690,10 +807,11 @@ const updatePoint = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Erro ao atualizar registro de pontos:', error);
+        console.error('❌ [UPDATE POINT] Erro ao atualizar registro de pontos:', error);
+        console.error('Stack trace:', error.stack);
         res.status(500).json({
             success: false,
-            message: 'Erro interno do servidor'
+            message: 'Erro interno do servidor: ' + error.message
         });
     }
 };

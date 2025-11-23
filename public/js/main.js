@@ -1108,17 +1108,13 @@ async function editHistoryItem(pointId) {
             return;
         }
 
-        // Garantir que crianças e atividades estejam carregadas
+        // Garantir que crianças estejam carregadas
         if (!kids || kids.length === 0) {
             await loadKids();
-        }
-        if (!activities || activities.length === 0) {
-            await loadActivities();
         }
 
         const modal = document.getElementById('edit-point-modal');
         const kidSelect = document.getElementById('edit-kid');
-        const activitySelect = document.getElementById('edit-activity');
 
         // Popular dropdown de crianças
         kidSelect.innerHTML = '<option value="">Selecione uma criança</option>';
@@ -1128,17 +1124,6 @@ async function editHistoryItem(pointId) {
                 option.value = kid._id;
                 option.textContent = kid.name;
                 kidSelect.appendChild(option);
-            });
-        }
-
-        // Popular dropdown de atividades
-        activitySelect.innerHTML = '<option value="">Selecione uma atividade</option>';
-        if (activities && activities.length > 0) {
-            activities.forEach(activity => {
-                const option = document.createElement('option');
-                option.value = activity._id;
-                option.textContent = `${activity.icon} ${activity.name} (${activity.points >= 0 ? '+' : ''}${activity.points} pontos)`;
-                activitySelect.appendChild(option);
             });
         }
 
@@ -1152,14 +1137,42 @@ async function editHistoryItem(pointId) {
         }
 
         // Preencher data
-        document.getElementById('edit-date').value = point.date.split('T')[0];
-
-        // Selecionar atividade atual se existir
-        if (point.activityId) {
-            const activityId = typeof point.activityId === 'object' ? point.activityId._id : point.activityId;
-            activitySelect.value = activityId;
+        try {
+            let dateValue = '';
+            
+            if (point.date) {
+                // Se é uma string ISO
+                if (typeof point.date === 'string') {
+                    dateValue = point.date.split('T')[0];
+                }
+                // Se é um objeto Date
+                else if (point.date instanceof Date) {
+                    const year = point.date.getFullYear();
+                    const month = String(point.date.getMonth() + 1).padStart(2, '0');
+                    const day = String(point.date.getDate()).padStart(2, '0');
+                    dateValue = `${year}-${month}-${day}`;
+                }
+                // Se é timestamp
+                else if (typeof point.date === 'number') {
+                    const d = new Date(point.date);
+                    const year = d.getFullYear();
+                    const month = String(d.getMonth() + 1).padStart(2, '0');
+                    const day = String(d.getDate()).padStart(2, '0');
+                    dateValue = `${year}-${month}-${day}`;
+                }
+            }
+            
+            console.log('📅 Data do ponto:', { original: point.date, formatted: dateValue });
+            document.getElementById('edit-date').value = dateValue;
+        } catch (error) {
+            console.error('Erro ao formatar data:', error);
+            // Usar data atual como fallback
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            document.getElementById('edit-date').value = `${year}-${month}-${day}`;
         }
-
 
         // Mostrar modal
         modal.classList.remove('hidden');
@@ -1181,20 +1194,67 @@ document.getElementById('edit-point-form')?.addEventListener('submit', async fun
     e.preventDefault();
 
     const pointId = document.getElementById('edit-point-id').value;
+    const kidId = document.getElementById('edit-kid').value;
+    const dateInput = document.getElementById('edit-date').value;
+
+    // Validar campos
+    if (!kidId) {
+        showToast('Erro', 'Selecione uma criança', 'error');
+        return;
+    }
+
+    if (!dateInput) {
+        showToast('Erro', 'Informe uma data', 'error');
+        return;
+    }
+
+    // Validar formato da data (YYYY-MM-DD)
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(dateInput)) {
+        showToast('Erro', 'Data inválida. Use o formato YYYY-MM-DD', 'error');
+        return;
+    }
+
+    // Verificar se a data é válida
+    const testDate = new Date(dateInput + 'T12:00:00');
+    if (isNaN(testDate.getTime())) {
+        showToast('Erro', 'Data inválida. Verifique o dia, mês e ano', 'error');
+        return;
+    }
+
     const data = {
-        kidId: document.getElementById('edit-kid').value,
-        date: document.getElementById('edit-date').value,
-        activityId: document.getElementById('edit-activity').value
+        kidId: kidId,
+        date: dateInput
     };
 
+    console.log('📝 Enviando atualização:', { 
+        pointId, 
+        data,
+        dateTest: testDate.toISOString()
+    });
+
     try {
-        await API.put(`/points/${pointId}`, data);
+        const response = await API.put(`/points/${pointId}`, data);
+        console.log('✅ Resposta da API:', response);
+        
         showToast('Sucesso', 'Registro atualizado com sucesso!', 'success');
         closeEditModal();
-        loadHistory(); // Recarregar lista
+        
+        // Recarregar dados
+        await loadKids(); // Atualizar pontos das crianças
+        await loadHistory(); // Recarregar lista
     } catch (error) {
-        console.error('Erro ao atualizar registro:', error);
-        showToast('Erro', 'Erro ao atualizar registro', 'error');
+        console.error('❌ Erro ao atualizar registro:', error);
+        
+        // Mostrar mensagem de erro mais específica
+        let errorMessage = 'Erro ao atualizar registro';
+        if (error.response && error.response.data && error.response.data.message) {
+            errorMessage = error.response.data.message;
+        } else if (error.message) {
+            errorMessage = error.message;
+        }
+        
+        showToast('Erro', errorMessage, 'error');
     }
 });
 
