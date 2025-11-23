@@ -8,6 +8,7 @@
     "dev": "nodemon server.js",
     "test-server": "node test-server.js",
     "test-atlas": "node scripts/test-mongodb-atlas.js",
+    "check-admin": "node scripts/check-admin-exists.js",
     "create-admin": "node scripts/create-first-admin.js",
     "seed": "node scripts/seed-activities.js",
     "test": "echo \"Error: no test specified\" && exit 1",
