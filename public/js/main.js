@@ -704,26 +704,26 @@ function renderHistoryTable() {
     emptyContainer.classList.add('hidden');
 
     cardsContainer.innerHTML = `
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto shadow-sm rounded-lg">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th scope="col" class="px-4 py-3 text-left text-sm font-medium text-gray-600 uppercase tracking-wider w-28">
                             Data
                         </th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th scope="col" class="px-4 py-3 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">
                             Atividade/Razão
                         </th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th scope="col" class="px-4 py-3 text-left text-sm font-medium text-gray-600 uppercase tracking-wider w-36">
                             Criança
                         </th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th scope="col" class="px-6 py-3 text-center text-sm font-medium text-gray-600 uppercase tracking-wider" style="min-width: 120px;">
                             Pontos
                         </th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th scope="col" class="px-6 py-3 text-center text-sm font-medium text-gray-600 uppercase tracking-wider" style="min-width: 120px;">
                             Saldo
                         </th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th scope="col" class="px-6 py-3 text-center text-sm font-medium text-gray-600 uppercase tracking-wider" style="min-width: 120px;">
                             Ações
                         </th>
                     </tr>
@@ -758,33 +758,33 @@ function renderHistoryTable() {
         const balanceDisplay = item.balanceAfter !== undefined && item.balanceAfter !== null ? item.balanceAfter : '-';
 
         // Determinar data
-        const date = item.date ? new Date(item.date).toLocaleDateString('pt-BR') : 'N/A';
+        const date = item.date ? new Date(item.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : 'N/A';
 
         return `
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-3 whitespace-nowrap text-base text-gray-700">
                                     ${date}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-4 py-3">
                                     <div class="flex items-center">
-                                        <span class="text-xl mr-2">${activityIcon}</span>
-                                        <div class="text-sm font-medium text-gray-900">
+                                        <span class="text-xl mr-3">${activityIcon}</span>
+                                        <div class="text-base font-medium text-gray-900 truncate max-w-md">
                                             ${activityName}
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">${kidName}</div>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <div class="text-base text-gray-900">${kidName}</div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${isPositive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                <td class="px-6 py-3 whitespace-nowrap text-center">
+                                    <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full ${isPositive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
                                         ${pointsDisplay >= 0 ? '+' : ''}${pointsDisplay}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">
+                                <td class="px-6 py-3 whitespace-nowrap text-center text-base text-gray-800 font-bold">
                                     ${balanceDisplay}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <td class="px-6 py-3 whitespace-nowrap text-center text-base font-medium">
                                     <button onclick="editHistoryItem('${item._id}')" class="text-indigo-600 hover:text-indigo-900 mr-3" title="Editar">
                                         ✏️
                                     </button>
@@ -1164,7 +1164,7 @@ async function deleteHistoryItem(pointId) {
     }
 
     try {
-        await API.delete(`/ points / ${pointId} `);
+        await API.delete(`/points/${pointId}`);
         showToast('Sucesso', 'Registro excluído com sucesso!', 'success');
         loadHistory(); // Recarregar lista
     } catch (error) {
