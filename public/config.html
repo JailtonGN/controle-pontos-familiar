@@ -1142,22 +1142,36 @@
                         doc.text(`Criança: ${kidName}`, 20, yPosition);
                         yPosition += 10;
                         
-                        // Tabela de pontos
-                        const tableData = points.map(point => [
-                            new Date(point.date).toLocaleDateString('pt-BR'),
-                            point.activityId ? point.activityId.name : 'Pontos avulsos',
-                            point.type === 'add' ? `+${point.points}` : `-${point.points}`,
-                            point.notes || '-'
-                        ]);
+                        // Tabela de pontos com saldo acumulado
+                        let saldoAcumulado = 0;
+                        const tableData = points.map(point => {
+                            const pontosAtividade = point.type === 'add' ? point.points : -point.points;
+                            saldoAcumulado += pontosAtividade;
+                            
+                            return [
+                                new Date(point.date).toLocaleDateString('pt-BR'),
+                                point.activityId ? point.activityId.name : 'Pontos avulsos',
+                                point.type === 'add' ? `+${point.points}` : `-${point.points}`,
+                                saldoAcumulado.toString(),
+                                point.notes || '-'
+                            ];
+                        });
                         
                         console.log(`📊 [CONFIG] Gerando tabela para ${kidName} com ${tableData.length} linhas`);
                         
                         doc.autoTable({
                             startY: yPosition,
-                            head: [['Data', 'Atividade', 'Pontos', 'Observações']],
+                            head: [['Data', 'Atividade', 'Pontos', 'Saldo', 'Observações']],
                             body: tableData,
                             theme: 'grid',
-                            headStyles: { fillColor: [66, 139, 202] }
+                            headStyles: { fillColor: [66, 139, 202] },
+                            columnStyles: {
+                                0: { cellWidth: 25 },  // Data
+                                1: { cellWidth: 50 },  // Atividade
+                                2: { cellWidth: 20, halign: 'center' },  // Pontos
+                                3: { cellWidth: 20, halign: 'center', fontStyle: 'bold' },  // Saldo
+                                4: { cellWidth: 'auto' }  // Observações
+                            }
                         });
                         
                         yPosition = doc.lastAutoTable.finalY + 15;
