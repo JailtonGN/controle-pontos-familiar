@@ -1109,9 +1109,13 @@
                 doc.text(`Mês: ${data.month}`, 20, 30);
                 doc.text(`Período: ${new Date(data.startDate).toLocaleDateString('pt-BR')} a ${new Date(data.endDate).toLocaleDateString('pt-BR')}`, 20, 40);
                 
+                // Data de geração do relatório
+                doc.setFontSize(10);
+                doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, 20, 50);
+                
                 if (data.history.length === 0) {
                     console.log('📝 [CONFIG] Nenhum registro encontrado para este mês');
-                    doc.text('Nenhum registro encontrado para este mês.', 20, 60);
+                    doc.text('Nenhum registro encontrado para este mês.', 20, 65);
                 } else {
                     console.log(`📝 [CONFIG] Processando ${data.history.length} registros...`);
                     // Agrupar por criança
@@ -1126,7 +1130,7 @@
                     
                     console.log(`👶 [CONFIG] Dados agrupados por ${Object.keys(kidsData).length} crianças`);
                     
-                    let yPosition = 60;
+                    let yPosition = 65;
                     
                     Object.keys(kidsData).forEach(kidName => {
                         const points = kidsData[kidName];
