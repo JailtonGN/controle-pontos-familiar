@@ -1100,8 +1100,7 @@ function setCurrentPageActive() {
 // Abrir modal de edição
 async function editHistoryItem(pointId) {
     try {
-        // Buscar dados atuais do ponto (pode ser via API ou pegando do DOM se tiver todos os dados)
-        // Aqui vamos buscar do array 'history' que já temos carregado na memória
+        // Buscar dados atuais do ponto
         const point = history.find(p => p._id === pointId);
 
         if (!point) {
@@ -1109,15 +1108,58 @@ async function editHistoryItem(pointId) {
             return;
         }
 
+        // Garantir que crianças e atividades estejam carregadas
+        if (!kids || kids.length === 0) {
+            await loadKids();
+        }
+        if (!activities || activities.length === 0) {
+            await loadActivities();
+        }
+
         const modal = document.getElementById('edit-point-modal');
-        const form = document.getElementById('edit-point-form');
+        const kidSelect = document.getElementById('edit-kid');
+        const activitySelect = document.getElementById('edit-activity');
+
+        // Popular dropdown de crianças
+        kidSelect.innerHTML = '<option value="">Selecione uma criança</option>';
+        if (kids && kids.length > 0) {
+            kids.forEach(kid => {
+                const option = document.createElement('option');
+                option.value = kid._id;
+                option.textContent = kid.name;
+                kidSelect.appendChild(option);
+            });
+        }
+
+        // Popular dropdown de atividades
+        activitySelect.innerHTML = '<option value="">Selecione uma atividade</option>';
+        if (activities && activities.length > 0) {
+            activities.forEach(activity => {
+                const option = document.createElement('option');
+                option.value = activity._id;
+                option.textContent = `${activity.icon} ${activity.name} (${activity.points >= 0 ? '+' : ''}${activity.points} pontos)`;
+                activitySelect.appendChild(option);
+            });
+        }
 
         // Preencher formulário
         document.getElementById('edit-point-id').value = point._id;
+
+        // Selecionar criança atual
+        if (point.kidId) {
+            const kidId = typeof point.kidId === 'object' ? point.kidId._id : point.kidId;
+            kidSelect.value = kidId;
+        }
+
+        // Preencher data
         document.getElementById('edit-date').value = point.date.split('T')[0];
-        document.getElementById('edit-points').value = point.points;
-        document.getElementById('edit-reason').value = point.reason || point.activityId?.name || '';
-        document.getElementById('edit-notes').value = point.notes || '';
+
+        // Selecionar atividade atual se existir
+        if (point.activityId) {
+            const activityId = typeof point.activityId === 'object' ? point.activityId._id : point.activityId;
+            activitySelect.value = activityId;
+        }
+
 
         // Mostrar modal
         modal.classList.remove('hidden');
@@ -1140,14 +1182,13 @@ document.getElementById('edit-point-form')?.addEventListener('submit', async fun
 
     const pointId = document.getElementById('edit-point-id').value;
     const data = {
+        kidId: document.getElementById('edit-kid').value,
         date: document.getElementById('edit-date').value,
-        points: parseInt(document.getElementById('edit-points').value),
-        reason: document.getElementById('edit-reason').value,
-        notes: document.getElementById('edit-notes').value
+        activityId: document.getElementById('edit-activity').value
     };
 
     try {
-        await API.put(`/ points / ${pointId} `, data);
+        await API.put(`/points/${pointId}`, data);
         showToast('Sucesso', 'Registro atualizado com sucesso!', 'success');
         closeEditModal();
         loadHistory(); // Recarregar lista

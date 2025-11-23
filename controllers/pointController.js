@@ -566,7 +566,7 @@ const getGeneralHistory = async (req, res) => {
 const updatePoint = async (req, res) => {
     try {
         const { pointId } = req.params;
-        const { date, points, reason, notes, activityId } = req.body;
+        const { date, points, reason, notes, activityId, kidId } = req.body;
 
         // Buscar o registro de pontos
         const point = await Point.findById(pointId);
@@ -577,14 +577,17 @@ const updatePoint = async (req, res) => {
             });
         }
 
+        // Guardar kidId antigo para recalcular depois
+        const oldKidId = point.kidId;
+
         // Verificar permissão (mesma lógica do delete)
         let kid;
         if (req.user.role === 'admin') {
-            kid = await Kid.findOne({ _id: point.kidId, isActive: true });
+            kid = await Kid.findOne({ _id: oldKidId, isActive: true });
         } else if (req.user.familyId) {
-            kid = await Kid.findOne({ _id: point.kidId, familyId: req.user.familyId, isActive: true });
+            kid = await Kid.findOne({ _id: oldKidId, familyId: req.user.familyId, isActive: true });
         } else {
-            kid = await Kid.findOne({ _id: point.kidId, parentId: req.user._id, isActive: true });
+            kid = await Kid.findOne({ _id: oldKidId, parentId: req.user._id, isActive: true });
         }
 
         if (!kid) {
@@ -594,16 +597,39 @@ const updatePoint = async (req, res) => {
             });
         }
 
+        // Se kidId mudou, verificar permissão para a nova criança
+        let newKid = kid;
+        if (kidId && kidId !== oldKidId.toString()) {
+            if (req.user.role === 'admin') {
+                newKid = await Kid.findOne({ _id: kidId, isActive: true });
+            } else if (req.user.familyId) {
+                newKid = await Kid.findOne({ _id: kidId, familyId: req.user.familyId, isActive: true });
+            } else {
+                newKid = await Kid.findOne({ _id: kidId, parentId: req.user._id, isActive: true });
+            }
+
+            if (!newKid) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Acesso negado para a nova criança'
+                });
+            }
+
+            point.kidId = kidId;
+        }
+
         // Atualizar campos
         if (date) point.date = new Date(date);
         if (reason) point.reason = reason;
-        if (notes) point.notes = notes;
+        if (notes !== undefined) point.notes = notes;
 
         // Se activityId mudou, atualizar
         if (activityId && activityId !== point.activityId?.toString()) {
             const activity = await Activity.findById(activityId);
             if (activity) {
                 point.activityId = activityId;
+                // Atualizar type baseado no tipo da atividade
+                point.type = activity.type === 'positive' ? 'add' : 'remove';
                 // Se points não foi passado explicitamente, usar da nova atividade
                 if (!points) {
                     point.points = activity.points;
@@ -618,7 +644,20 @@ const updatePoint = async (req, res) => {
 
         await point.save();
 
-        // Recalcular pontos da criança (recalculo total para garantir consistência)
+        // Recalcular pontos da criança antiga (se mudou de criança)
+        if (oldKidId.toString() !== point.kidId.toString()) {
+            const oldKidPoints = await Point.find({ kidId: oldKidId, isActive: true });
+            let oldKidTotal = 0;
+            oldKidPoints.forEach(p => {
+                if (p.type === 'add') oldKidTotal += p.points;
+                else oldKidTotal -= p.points;
+            });
+            kid.totalPoints = oldKidTotal;
+            kid.currentLevel = Math.max(1, Math.floor(oldKidTotal / 500) + 1);
+            await kid.save();
+        }
+
+        // Recalcular pontos da criança atual
         const allActivePoints = await Point.find({
             kidId: point.kidId,
             isActive: true
@@ -633,10 +672,10 @@ const updatePoint = async (req, res) => {
             }
         });
 
-        // Atualizar criança
-        kid.totalPoints = newTotalPoints;
-        kid.currentLevel = Math.max(1, Math.floor(newTotalPoints / 500) + 1);
-        await kid.save();
+        // Atualizar criança atual
+        newKid.totalPoints = newTotalPoints;
+        newKid.currentLevel = Math.max(1, Math.floor(newTotalPoints / 500) + 1);
+        await newKid.save();
 
         res.json({
             success: true,
@@ -644,8 +683,8 @@ const updatePoint = async (req, res) => {
             data: {
                 point,
                 kid: {
-                    totalPoints: kid.totalPoints,
-                    currentLevel: kid.currentLevel
+                    totalPoints: newKid.totalPoints,
+                    currentLevel: newKid.currentLevel
                 }
             }
         });

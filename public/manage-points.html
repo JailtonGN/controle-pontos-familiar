@@ -347,24 +347,24 @@
                 <input type="hidden" id="edit-point-id">
 
                 <div class="professional-input-group">
+                    <label for="edit-kid" class="professional-label">Criança</label>
+                    <select id="edit-kid" name="kidId" class="professional-input" required>
+                        <option value="">Selecione uma criança</option>
+                        <!-- Crianças serão carregadas aqui -->
+                    </select>
+                </div>
+
+                <div class="professional-input-group">
                     <label for="edit-date" class="professional-label">Data</label>
                     <input type="date" id="edit-date" name="date" class="professional-input" required>
                 </div>
 
                 <div class="professional-input-group">
-                    <label for="edit-points" class="professional-label">Pontos</label>
-                    <input type="number" id="edit-points" name="points" class="professional-input" min="1" max="500"
-                        required>
-                </div>
-
-                <div class="professional-input-group">
-                    <label for="edit-reason" class="professional-label">Motivo/Atividade</label>
-                    <input type="text" id="edit-reason" name="reason" class="professional-input" placeholder="Opcional">
-                </div>
-
-                <div class="professional-input-group">
-                    <label for="edit-notes" class="professional-label">Observações</label>
-                    <textarea id="edit-notes" name="notes" class="professional-input" rows="2"></textarea>
+                    <label for="edit-activity" class="professional-label">Atividade</label>
+                    <select id="edit-activity" name="activityId" class="professional-input" required>
+                        <option value="">Selecione uma atividade</option>
+                        <!-- Atividades serão carregadas aqui -->
+                    </select>
                 </div>
 
                 <div class="flex justify-end space-x-3 pt-4">
