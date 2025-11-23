@@ -13,7 +13,8 @@
     "test-new-password": "node scripts/update-mongodb-password.js",
     "generate-connection": "node scripts/update-mongodb-password.js --generate",
     "find-cluster": "node scripts/find-mongodb-connection.js",
-    "check-config": "node scripts/check-render-config.js"
+    "check-config": "node scripts/check-render-config.js",
+    "start:offline": "node scripts/start-offline.js"
   },
   "keywords": [
     "pontos",
@@ -48,6 +49,7 @@
     "mongoose": "^7.5.0"
   },
   "devDependencies": {
+    "mongodb-memory-server": "^10.3.0",
     "nodemon": "^3.0.1"
   }
 }

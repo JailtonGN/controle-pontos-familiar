@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administração de Pontos - Controle Familiar</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    <style>
+        .admin-header {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        
+        .admin-warning {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            color: #92400e;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+        }
+        
+        .filters-section {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 24px;
+        }
+        
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .history-table {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .table-header {
+            background: #f8fafc;
+            padding: 16px;
+            border-bottom: 1px solid #e5e7eb;
+            font-weight: 600;
+        }
+        
+        .table-row {
+            padding: 16px;
+            border-bottom: 1px solid #f3f4f6;
+            display: grid;
+            grid-template-columns: 1fr 1fr 100px 100px 80px 120px 100px;
+            gap: 16px;
+            align-items: center;
+        }
+        
+        .table-row:hover {
+            background: #f9fafb;
+        }
+        
+        .point-type-add {
+            color: #059669;
+            font-weight: 600;
+        }
+        
+        .point-type-remove {
+            color: #dc2626;
+            font-weight: 600;
+        }
+        
+        .delete-btn {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        
+        .delete-btn:hover {
+            background: #b91c1c;
+            transform: translateY(-1px);
+        }
+        
+        .delete-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 24px;
+        }
+        
+        .pagination button {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        
+        .pagination button:hover:not(:disabled) {
+            background: #f3f4f6;
+        }
+        
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .pagination .active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        
+        @media (max-width: 768px) {
+            .table-row {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header Administrativo -->
+        <div class="admin-header">
+            <h1>🛡️ Administração de Pontos</h1>
+            <p>Painel exclusivo para administradores gerenciarem registros de pontos</p>
+        </div>
+
+        <!-- Aviso de Segurança -->
+        <div class="admin-warning">
+            <strong>⚠️ Atenção:</strong> Esta área é restrita a administradores. A exclusão de registros de pontos é permanente e afetará o histórico das crianças.
+        </div>
+
+        <!-- Estatísticas -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="total-records">-</div>
+                <div class="stat-label">Total de Registros</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="total-additions" style="color: #059669;">-</div>
+                <div class="stat-label">Adições de Pontos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="total-removals" style="color: #dc2626;">-</div>
+                <div class="stat-label">Remoções de Pontos</div>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filters-section">
+            <h3>🔍 Filtros de Busca</h3>
+            <div class="filters-grid">
+                <div>
+                    <label class="form-label">Criança</label>
+                    <select id="filter-kid" class="form-input">
+                        <option value="">Todas as crianças</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Tipo</label>
+                    <select id="filter-type" class="form-input">
+                        <option value="">Todos os tipos</option>
+                        <option value="add">Adições</option>
+                        <option value="remove">Remoções</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Data Inicial</label>
+                    <input type="date" id="filter-start-date" class="form-input">
+                </div>
+                <div>
+                    <label class="form-label">Data Final</label>
+                    <input type="date" id="filter-end-date" class="form-input">
+                </div>
+            </div>
+            <div style="text-align: right; margin-top: 16px;">
+                <button onclick="applyFilters()" class="professional-button">
+                    🔍 Aplicar Filtros
+                </button>
+                <button onclick="clearFilters()" class="professional-button professional-button-secondary">
+                    🗑️ Limpar
+                </button>
+            </div>
+        </div>
+
+        <!-- Tabela de Histórico -->
+        <div class="history-table">
+            <div class="table-header">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 100px 100px 80px 120px 100px; gap: 16px;">
+                    <div>Criança</div>
+                    <div>Atividade</div>
+                    <div>Pontos</div>
+                    <div>Tipo</div>
+                    <div>Data</div>
+                    <div>Concedido por</div>
+                    <div>Ações</div>
+                </div>
+            </div>
+            <div id="history-content">
+                <div style="padding: 40px; text-align: center; color: #6b7280;">
+                    Carregando histórico...
+                </div>
+            </div>
+        </div>
+
+        <!-- Paginação -->
+        <div class="pagination" id="pagination">
+            <!-- Será preenchido dinamicamente -->
+        </div>
+
+        <!-- Botão Voltar -->
+        <div style="text-align: center; margin-top: 32px;">
+            <button onclick="goBack()" class="professional-button professional-button-secondary">
+                ← Voltar ao Dashboard
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação -->
+    <div id="confirm-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3 class="modal-title">⚠️ Confirmar Exclusão</h3>
+            <div id="confirm-content" class="modal-message"></div>
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+                <button onclick="hideConfirmModal()" class="professional-button professional-button-secondary">
+                    Cancelar
+                </button>
+                <button onclick="confirmDelete()" class="professional-button professional-button-danger">
+                    🗑️ Excluir Registro
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script src="js/toast.js"></script>
+    <script>
+        let currentPage = 1;
+        let currentFilters = {};
+        let pointToDelete = null;
+
+        // Verificar se é admin ao carregar
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                if (user.role !== 'admin') {
+                    showToast('Erro', 'Acesso negado. Apenas administradores podem acessar esta página.', 'error');
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 2000);
+                    return;
+                }
+
+                await loadKids();
+                await loadHistory();
+            } catch (error) {
+                console.error('Erro ao carregar página:', error);
+                showToast('Erro', 'Erro ao carregar dados administrativos', 'error');
+            }
+        });
+
+        // Carregar lista de crianças para filtro
+        async function loadKids() {
+            try {
+                const response = await API.get('/kids');
+                const select = document.getElementById('filter-kid');
+                
+                response.data.kids.forEach(kid => {
+                    const option = document.createElement('option');
+                    option.value = kid._id;
+                    option.textContent = `${kid.emoji || '👶'} ${kid.name}`;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Erro ao carregar crianças:', error);
+            }
+        }
+
+        // Carregar histórico
+        async function loadHistory(page = 1) {
+            try {
+                const params = new URLSearchParams({
+                    page: page,
+                    limit: 20,
+                    ...currentFilters
+                });
+
+                const response = await API.get(`/points/admin/history?${params}`);
+                
+                displayHistory(response.data.history);
+                displayStats(response.data.stats);
+                displayPagination(response.data.pagination);
+                
+                currentPage = page;
+            } catch (error) {
+                console.error('Erro ao carregar histórico:', error);
+                showToast('Erro', 'Erro ao carregar histórico administrativo', 'error');
+            }
+        }
+
+        // Exibir histórico
+        function displayHistory(history) {
+            const content = document.getElementById('history-content');
+            
+            if (history.length === 0) {
+                content.innerHTML = `
+                    <div style="padding: 40px; text-align: center; color: #6b7280;">
+                        Nenhum registro encontrado com os filtros aplicados.
+                    </div>
+                `;
+                return;
+            }
+
+            content.innerHTML = history.map(point => `
+                <div class="table-row">
+                    <div>
+                        <div style="font-weight: 600;">${point.kidId.emoji || '👶'} ${point.kidId.name}</div>
+                    </div>
+                    <div>
+                        <div>${point.activityId ? `${point.activityId.icon || '🎯'} ${point.activityId.name}` : '📝 Pontos avulsos'}</div>
+                    </div>
+                    <div>
+                        <span style="font-weight: 600; font-size: 1.1em;">${point.points}</span>
+                    </div>
+                    <div>
+                        <span class="point-type-${point.type}">
+                            ${point.type === 'add' ? '➕ Adição' : '➖ Remoção'}
+                        </span>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.875rem;">
+                            ${new Date(point.date).toLocaleDateString('pt-BR')}
+                        </div>
+                        <div style="font-size: 0.75rem; color: #6b7280;">
+                            ${new Date(point.date).toLocaleTimeString('pt-BR')}
+                        </div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.875rem;">${point.awardedBy.name}</div>
+                    </div>
+                    <div>
+                        <button onclick="deletePoint('${point._id}', '${point.kidId.name}', '${point.activityId ? point.activityId.name : 'Pontos avulsos'}', ${point.points}, '${point.type}')" 
+                                class="delete-btn">
+                            🗑️ Excluir
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Exibir estatísticas
+        function displayStats(stats) {
+            document.getElementById('total-records').textContent = stats.totalRecords;
+            document.getElementById('total-additions').textContent = stats.additions.count;
+            document.getElementById('total-removals').textContent = stats.removals.count;
+        }
+
+        // Exibir paginação
+        function displayPagination(pagination) {
+            const paginationEl = document.getElementById('pagination');
+            
+            if (pagination.totalPages <= 1) {
+                paginationEl.innerHTML = '';
+                return;
+            }
+
+            let html = '';
+            
+            // Botão anterior
+            html += `<button onclick="loadHistory(${pagination.currentPage - 1})" ${pagination.currentPage === 1 ? 'disabled' : ''}>← Anterior</button>`;
+            
+            // Páginas
+            for (let i = Math.max(1, pagination.currentPage - 2); i <= Math.min(pagination.totalPages, pagination.currentPage + 2); i++) {
+                html += `<button onclick="loadHistory(${i})" class="${i === pagination.currentPage ? 'active' : ''}">${i}</button>`;
+            }
+            
+            // Botão próximo
+            html += `<button onclick="loadHistory(${pagination.currentPage + 1})" ${pagination.currentPage === pagination.totalPages ? 'disabled' : ''}>Próximo →</button>`;
+            
+            paginationEl.innerHTML = html;
+        }
+
+        // Aplicar filtros
+        function applyFilters() {
+            currentFilters = {};
+            
+            const kidId = document.getElementById('filter-kid').value;
+            const type = document.getElementById('filter-type').value;
+            const startDate = document.getElementById('filter-start-date').value;
+            const endDate = document.getElementById('filter-end-date').value;
+            
+            if (kidId) currentFilters.kidId = kidId;
+            if (type) currentFilters.type = type;
+            if (startDate) currentFilters.startDate = startDate;
+            if (endDate) currentFilters.endDate = endDate;
+            
+            loadHistory(1);
+        }
+
+        // Limpar filtros
+        function clearFilters() {
+            document.getElementById('filter-kid').value = '';
+            document.getElementById('filter-type').value = '';
+            document.getElementById('filter-start-date').value = '';
+            document.getElementById('filter-end-date').value = '';
+            
+            currentFilters = {};
+            loadHistory(1);
+        }
+
+        // Excluir ponto
+        function deletePoint(pointId, kidName, activityName, points, type) {
+            pointToDelete = pointId;
+            
+            const typeText = type === 'add' ? 'adição' : 'remoção';
+            const content = `
+                <p>Você está prestes a excluir permanentemente este registro:</p>
+                <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin: 16px 0;">
+                    <strong>Criança:</strong> ${kidName}<br>
+                    <strong>Atividade:</strong> ${activityName}<br>
+                    <strong>Pontos:</strong> ${points}<br>
+                    <strong>Tipo:</strong> ${typeText}
+                </div>
+                <p style="color: #dc2626; font-weight: 600;">Esta ação não pode ser desfeita!</p>
+            `;
+            
+            document.getElementById('confirm-content').innerHTML = content;
+            document.getElementById('confirm-modal').classList.remove('hidden');
+        }
+
+        // Confirmar exclusão
+        async function confirmDelete() {
+            if (!pointToDelete) return;
+            
+            try {
+                const response = await API.request(`/points/${pointToDelete}`, { method: 'DELETE' });
+                
+                showToast('Sucesso', response.message, 'success');
+                hideConfirmModal();
+                loadHistory(currentPage);
+                
+            } catch (error) {
+                console.error('Erro ao excluir ponto:', error);
+                showToast('Erro', error.message || 'Erro ao excluir registro', 'error');
+            }
+        }
+
+        // Esconder modal
+        function hideConfirmModal() {
+            document.getElementById('confirm-modal').classList.add('hidden');
+            pointToDelete = null;
+        }
+
+        // Voltar ao dashboard
+        function goBack() {
+            window.location.href = '/dashboard';
+        }
+    </script>
+</body>
+</html>

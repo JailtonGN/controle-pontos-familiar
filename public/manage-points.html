@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="icon" type="image/png" href="assets/logo.png">
 </head>
+
 <body>
     <!-- Navigation Bar -->
     <nav class="navbar">
@@ -62,7 +64,8 @@
                 <div class="navbar-mobile-menu">
                     <button class="navbar-mobile-button" onclick="toggleMobileMenu()">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     </button>
                 </div>
@@ -123,7 +126,8 @@
                         </div>
                         <div class="professional-input-group">
                             <label for="positive-date" class="professional-label">Data da Atividade</label>
-                            <input type="date" id="positive-date" name="date" class="professional-input" title="Deixe em branco para usar a data atual">
+                            <input type="date" id="positive-date" name="date" class="professional-input"
+                                title="Deixe em branco para usar a data atual">
                             <small class="professional-helper-text">Deixe em branco para usar hoje</small>
                         </div>
                         <div class="professional-input-group flex items-end">
@@ -163,7 +167,8 @@
                         </div>
                         <div class="professional-input-group">
                             <label for="negative-date" class="professional-label">Data da Atividade</label>
-                            <input type="date" id="negative-date" name="date" class="professional-input" title="Deixe em branco para usar a data atual">
+                            <input type="date" id="negative-date" name="date" class="professional-input"
+                                title="Deixe em branco para usar a data atual">
                             <small class="professional-helper-text">Deixe em branco para usar hoje</small>
                         </div>
                         <div class="professional-input-group flex items-end">
@@ -185,7 +190,8 @@
                         <span class="professional-icon">⭐</span>
                         Adicionar Pontos Avulsos
                     </div>
-                    <div class="professional-card-subtitle">Reconhecimento personalizado para comportamentos especiais</div>
+                    <div class="professional-card-subtitle">Reconhecimento personalizado para comportamentos especiais
+                    </div>
                 </div>
                 <div class="professional-card-body">
                     <form id="add-custom-points-form" class="professional-form-grid-4">
@@ -197,15 +203,18 @@
                         </div>
                         <div class="professional-input-group">
                             <label for="custom-reason" class="professional-label">Motivo</label>
-                            <input type="text" id="custom-reason" name="reason" placeholder="Ex: Comportamento exemplar" required class="professional-input">
+                            <input type="text" id="custom-reason" name="reason" placeholder="Ex: Comportamento exemplar"
+                                required class="professional-input">
                         </div>
                         <div class="professional-input-group">
                             <label for="custom-points" class="professional-label">Quantidade de Pontos</label>
-                            <input type="number" id="custom-points" name="points" min="1" max="500" placeholder="10" required class="professional-input">
+                            <input type="number" id="custom-points" name="points" min="1" max="500" placeholder="10"
+                                required class="professional-input">
                         </div>
                         <div class="professional-input-group">
                             <label for="custom-date" class="professional-label">Data da Atividade</label>
-                            <input type="date" id="custom-date" name="date" class="professional-input" title="Deixe em branco para usar a data atual">
+                            <input type="date" id="custom-date" name="date" class="professional-input"
+                                title="Deixe em branco para usar a data atual">
                             <small class="professional-helper-text">Deixe em branco para usar hoje</small>
                         </div>
                         <div class="professional-input-group flex items-end col-span-full">
@@ -239,15 +248,18 @@
                         </div>
                         <div class="professional-input-group">
                             <label for="remove-reason" class="professional-label">Motivo</label>
-                            <input type="text" id="remove-reason" name="reason" placeholder="Ex: Comportamento inadequado" required class="professional-input">
+                            <input type="text" id="remove-reason" name="reason"
+                                placeholder="Ex: Comportamento inadequado" required class="professional-input">
                         </div>
                         <div class="professional-input-group">
                             <label for="remove-points" class="professional-label">Quantidade de Pontos</label>
-                            <input type="number" id="remove-points" name="points" min="1" max="500" placeholder="5" required class="professional-input">
+                            <input type="number" id="remove-points" name="points" min="1" max="500" placeholder="5"
+                                required class="professional-input">
                         </div>
                         <div class="professional-input-group">
                             <label for="remove-date" class="professional-label">Data da Atividade</label>
-                            <input type="date" id="remove-date" name="date" class="professional-input" title="Deixe em branco para usar a data atual">
+                            <input type="date" id="remove-date" name="date" class="professional-input"
+                                title="Deixe em branco para usar a data atual">
                             <small class="professional-helper-text">Deixe em branco para usar hoje</small>
                         </div>
                         <div class="professional-input-group flex items-end col-span-full">
@@ -264,18 +276,58 @@
 
 
         <!-- Resumo Atual -->
+        <!-- Histórico de Atividades -->
         <div class="professional-section">
             <div class="professional-card">
                 <div class="professional-card-header">
                     <div class="professional-card-title">
-                        <span class="professional-icon">📊</span>
-                        Resumo Atual
+                        📊 Histórico de Atividades
                     </div>
-                    <div class="professional-card-subtitle">Pontuação atual de todas as crianças</div>
+                    <div class="professional-card-subtitle">Acompanhe todas as atividades registradas</div>
                 </div>
                 <div class="professional-card-body">
-                    <div id="current-summary" class="professional-summary-grid">
-                        <!-- Resumo será carregado aqui -->
+                    <!-- Filtros -->
+                    <div class="history-filters">
+                        <div class="history-filters-grid">
+                            <div class="history-filter-group">
+                                <label for="filter-kid" class="history-filter-label">Criança</label>
+                                <select id="filter-kid" class="history-filter-input">
+                                    <option value="">Todas as crianças</option>
+                                </select>
+                            </div>
+                            <div class="history-filter-group">
+                                <label for="filter-start-date" class="history-filter-label">Data Início</label>
+                                <input type="date" id="filter-start-date" class="history-filter-input">
+                            </div>
+                            <div class="history-filter-group">
+                                <label for="filter-end-date" class="history-filter-label">Data Fim</label>
+                                <input type="date" id="filter-end-date" class="history-filter-input">
+                            </div>
+                            <div class="history-filter-group">
+                                <button id="apply-filters-btn" onclick="applyFilters();"
+                                    class="professional-button professional-button-secondary">
+                                    🔍 Filtrar
+                                </button>
+                            </div>
+                            <div class="history-filter-group">
+                                <button id="clear-filters-btn" onclick="clearFilters();"
+                                    class="professional-button professional-button-tertiary">
+                                    🗑️ Limpar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cards de Histórico -->
+                    <div id="history-cards" class="space-y-4">
+                        <!-- Cards serão carregados aqui -->
+                    </div>
+
+                    <!-- Estado vazio -->
+                    <div id="history-empty" class="history-empty hidden">
+                        <div class="history-empty-icon">📝</div>
+                        <h3>Nenhuma atividade registrada</h3>
+                        <p>Comece a registrar atividades para ver o histórico aqui</p>
                     </div>
                 </div>
             </div>
@@ -306,7 +358,7 @@
         let negativeActivities = [];
 
         // Inicialização
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Verificar autenticação
             const token = localStorage.getItem('token');
             if (!token) {
@@ -316,7 +368,7 @@
                 }, 2000);
                 return;
             }
-            
+
             loadData();
         });
 
@@ -325,9 +377,12 @@
             try {
                 await Promise.all([
                     loadKids(),
-                    loadActivities(),
-                    loadCurrentSummary()
+                    loadActivities()
                 ]);
+
+                // Configurar mês padrão e carregar histórico
+                setCurrentMonthDefault();
+                await loadHistory();
             } catch (error) {
                 showNotification('Erro', 'Erro ao carregar dados: ' + error.message, 'error');
             }
@@ -348,15 +403,15 @@
         async function loadActivities() {
             try {
                 const response = await API.get('/activities');
-                
+
                 const allActivities = response.data.activities || [];
-                
+
                 // Separar atividades positivas e negativas pelo campo type e ordenar alfabeticamente
                 positiveActivities = allActivities.filter(activity => activity.type === 'positive')
                     .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
                 negativeActivities = allActivities.filter(activity => activity.type === 'negative')
                     .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
-                
+
                 updateActivitySelects();
             } catch (error) {
                 showNotification('Error', 'Erro ao carregar atividades: ' + error.message, 'error');
@@ -371,9 +426,9 @@
                 if (!select) {
                     return;
                 }
-                
+
                 select.innerHTML = '<option value="">Selecione uma criança</option>';
-                
+
                 if (kids && kids.length > 0) {
                     kids.forEach(kid => {
                         const option = document.createElement('option');
@@ -418,49 +473,25 @@
             }
         }
 
-        // Carregar resumo atual
-        async function loadCurrentSummary() {
-            try {
-                const response = await API.get('/kids');
-                const kidsData = response.data.kids;
-                
-                                 const summaryContainer = document.getElementById('current-summary');
-                 summaryContainer.innerHTML = kidsData.map(kid => `
-                     <div class="professional-summary-card">
-                         <div class="professional-summary-header">
-                             <div>
-                                 <div class="professional-summary-name">${kid.name}</div>
-                                 <div class="professional-summary-age">${kid.age} anos</div>
-                             </div>
-                             <div class="text-right">
-                                 <div class="professional-summary-points">${kid.totalPoints ?? 0}</div>
-                                 <div class="professional-summary-label">pontos</div>
-                             </div>
-                         </div>
-                     </div>
-                 `).join('');
-            } catch (error) {
-                console.error('Erro ao carregar resumo:', error);
-            }
-        }
+
 
         // Event listeners para formulários
-        document.getElementById('add-positive-points-form').addEventListener('submit', async function(e) {
+        document.getElementById('add-positive-points-form').addEventListener('submit', async function (e) {
             e.preventDefault();
             await submitPointsForm(this, 'add');
         });
 
-        document.getElementById('remove-negative-points-form').addEventListener('submit', async function(e) {
+        document.getElementById('remove-negative-points-form').addEventListener('submit', async function (e) {
             e.preventDefault();
             await submitPointsForm(this, 'remove');
         });
 
-        document.getElementById('add-custom-points-form').addEventListener('submit', async function(e) {
+        document.getElementById('add-custom-points-form').addEventListener('submit', async function (e) {
             e.preventDefault();
             await submitCustomPointsForm(this, 'add');
         });
 
-        document.getElementById('remove-custom-points-form').addEventListener('submit', async function(e) {
+        document.getElementById('remove-custom-points-form').addEventListener('submit', async function (e) {
             e.preventDefault();
             await submitCustomPointsForm(this, 'remove');
         });
@@ -469,13 +500,13 @@
         async function submitPointsForm(form, action) {
             const formData = new FormData(form);
             const customDate = formData.get('date');
-            
+
             const data = {
                 kidId: formData.get('kidId'),
                 activityId: formData.get('activityId'),
                 notes: `Atividade ${action === 'add' ? 'positiva' : 'negativa'}`
             };
-            
+
             // Adicionar data personalizada se fornecida
             if (customDate) {
                 data.date = customDate;
@@ -484,10 +515,10 @@
             try {
                 const endpoint = action === 'add' ? '/points/add' : '/points/remove';
                 const response = await API.post(endpoint, data);
-                
+
                 showToast('Sucesso', `Pontos ${action === 'add' ? 'adicionados' : 'removidos'} com sucesso!`, 'success');
                 form.reset();
-                loadCurrentSummary();
+                loadHistory();
             } catch (error) {
                 showToast('Erro', error.message, 'error');
             }
@@ -497,14 +528,14 @@
         async function submitCustomPointsForm(form, action) {
             const formData = new FormData(form);
             const customDate = formData.get('date');
-            
+
             const data = {
                 kidId: formData.get('kidId'),
                 reason: formData.get('reason'),
                 points: parseInt(formData.get('points')),
                 notes: `Pontos ${action === 'add' ? 'adicionados' : 'removidos'} avulsos`
             };
-            
+
             // Adicionar data personalizada se fornecida
             if (customDate) {
                 data.date = customDate;
@@ -513,10 +544,10 @@
             try {
                 const endpoint = action === 'add' ? '/points/add' : '/points/remove';
                 const response = await API.post(endpoint, data);
-                
+
                 showToast('Sucesso', `Pontos ${action === 'add' ? 'adicionados' : 'removidos'} com sucesso!`, 'success');
                 form.reset();
-                loadCurrentSummary();
+                loadHistory();
             } catch (error) {
                 showToast('Erro', error.message, 'error');
             }
@@ -546,10 +577,11 @@
             modal.classList.remove('hidden');
 
             // Fechar modal ao clicar em OK
-            document.getElementById('notification-close').onclick = function() {
+            document.getElementById('notification-close').onclick = function () {
                 modal.classList.add('hidden');
             };
         }
     </script>
 </body>
-</html> 
+
+</html>
